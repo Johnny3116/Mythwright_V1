@@ -4,6 +4,10 @@ import { useTurnManager } from '@hooks/useTurnManager';
 import { ZoneCard } from '@components/ZoneCard';
 import { FloatingDamage } from '@components/FloatingDamage';
 import { EncounterSplash } from '@components/EncounterSplash';
+import { useState } from 'react';
+import { useGameEngine } from '@hooks/useGameEngine';
+import { useTurnManager } from '@hooks/useTurnManager';
+import { ZoneCard } from '@components/ZoneCard';
 import { TurnTracker } from './TurnTracker';
 import { CharacterSheet } from './CharacterSheet';
 import { ZoneMap } from './ZoneMap';
@@ -159,6 +163,7 @@ export default function GameView() {
     : null;
 
   // Build a mock blueprint zone for demo mode when no blueprint is loaded.
+  // Build a mock blueprint zone for demo mode.
   const demoZone = selectedZoneId && !selectedZone
     ? {
         id:         selectedZoneId,
@@ -167,6 +172,7 @@ export default function GameView() {
         description:'A treacherous region teeming with danger and opportunity for the skilled hunter.',
         retreatModifier: 0,
         trapBonus:  'None',
+        trapBonus:  0,
         connectedZones: [],
       }
     : null;
@@ -174,6 +180,7 @@ export default function GameView() {
   const zonePopupData = selectedZone ?? demoZone;
 
   function handleZoneClick(zoneId, event) {
+    // Position popup near click, clamped to visible area.
     if (event) {
       const containerRect = event.currentTarget?.closest?.('[data-map-area]')?.getBoundingClientRect?.();
       if (containerRect) {
@@ -203,6 +210,10 @@ export default function GameView() {
       }
     } else {
       // Phase 5: dispatch player action intent to host via network.
+    // In live mode, dispatch the player action intent.
+    // This will be wired to the full engine dispatch in Phase 5.
+    if (!isDemoMode) {
+      // TODO (Phase 5): dispatch player action intent to host via network.
       console.debug('[GameView] Player action intent:', actionType); // eslint-disable-line no-console
     }
   }
@@ -235,6 +246,15 @@ export default function GameView() {
         />
       ))}
 
+  // Derive myPlayer.
+  const myPlayer = myPlayerId ? (gameState.players[myPlayerId] ?? null) : null;
+
+  // Turn tracker timer config.
+  const timerEnabled   = blueprint?.settings?.turnTimer?.enabled ?? false;
+  const timerSeconds   = blueprint?.settings?.turnTimer?.defaultSeconds ?? 60;
+
+  return (
+    <div className={styles.gameView} role="main" aria-label="Game view">
       {/* ── Turn tracker (top bar) ── */}
       <div className={styles.turnBar}>
         <TurnTracker
@@ -257,6 +277,10 @@ export default function GameView() {
 
       {/* ── Zone map (center) ── */}
       <div className={styles.mapArea} data-map-area="">
+      <div
+        className={styles.mapArea}
+        data-map-area=""
+      >
         <ZoneMap
           zones={enrichedZones}
           players={gameState.players}
@@ -282,6 +306,24 @@ export default function GameView() {
         {/* Demo mode badge */}
         {isDemoMode && (
           <div className={styles.demoBadge} aria-hidden="true">
+          <div
+            style={{
+              position: 'absolute',
+              top: 12,
+              right: 12,
+              padding: '4px 10px',
+              background: 'rgba(212, 168, 67, 0.18)',
+              border: '1px solid rgba(212, 168, 67, 0.4)',
+              borderRadius: 4,
+              fontSize: '0.68rem',
+              fontWeight: 700,
+              color: 'var(--accent-secondary)',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              pointerEvents: 'none',
+            }}
+            aria-hidden="true"
+          >
             Demo Mode
           </div>
         )}

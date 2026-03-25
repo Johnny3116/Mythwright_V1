@@ -41,21 +41,9 @@ export function TurnOrderBar({ entities = [], activeEntityId, round = 1 }) {
                   <div className={styles.turnOrderDeadOverlay} aria-hidden="true">✕</div>
                 )}
               </div>
-
               <span className={styles.turnOrderName} title={entity.name}>
                 {entity.name}
               </span>
-
-              {/* Initiative roll number shown below the portrait */}
-              {entity.initiative != null && (
-                <span
-                  className={styles.turnOrderInitiative}
-                  title={`Initiative roll: ${entity.initiative}`}
-                  aria-label={`Initiative ${entity.initiative}`}
-                >
-                  {entity.initiative}
-                </span>
-              )}
             </div>
           );
         })}

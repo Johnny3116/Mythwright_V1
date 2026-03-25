@@ -184,6 +184,60 @@
   text-align: center;
 }
 
+}
+
+/* ============================================================
+   StatCard
+   ============================================================ */
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  min-width: 72px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.statCard:hover {
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 8px rgba(212, 168, 67, 0.15);
+}
+
+.statCard--sm { padding: var(--space-2) var(--space-3); min-width: 56px; }
+.statCard--lg { padding: var(--space-6); min-width: 96px; }
+
+.statCard--highlight {
+  border-color: var(--accent-secondary);
+  background: rgba(212, 168, 67, 0.05);
+}
+
+.statCard--danger {
+  border-color: var(--accent-danger);
+  background: rgba(199, 74, 56, 0.05);
+}
+
+.statCardIcon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.statCard--sm .statCardIcon { font-size: 1rem; }
+.statCard--lg .statCardIcon { font-size: 1.5rem; }
+
+.statCardLabel {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  text-align: center;
+}
+
 .statCardValue {
   font-family: var(--font-mono);
   font-size: var(--text-xl);
@@ -251,6 +305,8 @@
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   filter: brightness(1.15);
+  background: #d95a46;
+  border-color: #d95a46;
   box-shadow: var(--shadow-glow-red);
 }
 
@@ -258,6 +314,38 @@
   background: rgba(199, 74, 56, 0.15);
   border-color: var(--accent-danger);
   color: var(--accent-danger);
+}
+
+.actionButton--danger:hover:not(:disabled) {
+  background: var(--accent-danger);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-glow-red);
+}
+
+.actionButton--success {
+  background: rgba(74, 158, 106, 0.15);
+  border-color: var(--accent-success);
+  color: var(--accent-success);
+}
+
+.actionButton--success:hover:not(:disabled) {
+  background: var(--accent-success);
+  color: var(--text-primary);
+  box-shadow: 0 0 16px rgba(74, 158, 106, 0.3);
+}
+
+.actionButton--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-secondary);
+}
+
+.actionButton--ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
 }
 
 .actionButton--danger:hover:not(:disabled) {
@@ -792,6 +880,30 @@
   white-space: nowrap;
 }
 
+}
+
+.zoneCardSectionValue {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.zoneCardBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.zoneCardBadge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px var(--space-2);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
 .zoneCardStatRow {
   display: flex;
   gap: var(--space-3);
@@ -1072,6 +1184,7 @@
 .encounterSplash--evolution .encounterSplashTitle { color: var(--accent-secondary); }
 .encounterSplash--victory   .encounterSplashTitle { color: var(--accent-success); }
 .encounterSplash--defeat    .encounterSplashTitle { color: var(--accent-danger); filter: brightness(0.75); }
+.encounterSplash--defeat    .encounterSplashTitle { color: #8b1a1a; }
 
 .encounterSplashSubtitle {
   font-family: var(--font-body);

@@ -106,9 +106,8 @@ export function DiceRoller({ onRollComplete, modifier = 0, disabled = false, sho
     ? `Roll D20 ${modifier >= 0 ? '+' : ''}${modifier}`
     : 'Roll D20';
 
-  // The inner dice panel (shared between inline and overlay modes).
-  const dicePanel = (
-    <>
+  return (
+    <div className={rollerClass}>
       {/* D20 polygon shape */}
       <div className={styles.diceD20} aria-live="assertive" aria-label={result ? `Rolled ${result.total}` : 'Dice'}>
         <div className={styles.diceShape} aria-hidden="true" />
