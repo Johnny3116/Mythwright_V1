@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
+  <defs>
+    <linearGradient id="swamp-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1a2218"/>
+      <stop offset="100%" stop-color="#0a120a"/>
+    </linearGradient>
+    <linearGradient id="fog-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5a6e55" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#4a5e45" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#3a4e35" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+  <!-- Dark swamp background -->
+  <rect width="400" height="240" fill="url(#swamp-bg)"/>
+  <!-- Dead trees -->
+  <rect x="30"  y="40" width="8" height="180" fill="#1a1510" rx="3"/>
+  <path d="M34 40 Q20 55 15 45" stroke="#1a1510" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M34 60 Q48 50 52 58" stroke="#1a1510" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <rect x="100" y="30" width="7" height="200" fill="#1c1610" rx="3"/>
+  <path d="M103 30 Q88 42 85 35" stroke="#1c1610" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M103 55 Q118 48 120 55" stroke="#1c1610" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <rect x="290" y="50" width="8" height="170" fill="#1a1510" rx="3"/>
+  <path d="M294 50 Q278 62 275 55" stroke="#1a1510" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <rect x="360" y="35" width="7" height="200" fill="#1c1610" rx="3"/>
+  <path d="M363 35 Q376 47 380 42" stroke="#1c1610" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Murky swamp water -->
+  <path d="M0 180 Q50 175 100 180 Q150 176 200 181 Q250 176 300 180 Q350 176 400 180 L400 240 L0 240 Z" fill="#1a2a18"/>
+  <!-- Water reflections -->
+  <path d="M40 195 Q80 192 120 196" stroke="#2a3a28" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M180 200 Q220 197 260 200" stroke="#2a3a28" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M300 194 Q340 191 380 195" stroke="#2a3a28" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <!-- Fog layers -->
+  <rect x="0" y="120" width="400" height="100" fill="url(#fog-grad)"/>
+  <!-- Extra fog wisps -->
+  <ellipse cx="100" cy="160" rx="120" ry="25" fill="#4a5e45" opacity="0.25"/>
+  <ellipse cx="300" cy="155" rx="130" ry="22" fill="#4a5e45" opacity="0.2"/>
+  <ellipse cx="200" cy="170" rx="180" ry="20" fill="#3a4e35" opacity="0.3"/>
+  <!-- Lily pads -->
+  <ellipse cx="80"  cy="210" rx="14" ry="8" fill="#1e3e1a" opacity="0.8"/>
+  <ellipse cx="220" cy="215" rx="12" ry="7" fill="#1e3e1a" opacity="0.8"/>
+  <ellipse cx="340" cy="208" rx="15" ry="8" fill="#1e3e1a" opacity="0.8"/>
+</svg>

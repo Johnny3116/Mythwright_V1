@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="currentColor">
+  <!-- Gear/cog motif -->
+  <!-- Outer gear teeth (8 teeth) -->
+  <path d="M24 4 L27 10 L33 8 L32 14 L38 16 L35 21 L40 25 L35 29 L38 34 L32 34 L33 40 L27 38 L24 44 L21 38 L15 40 L16 34 L10 34 L13 29 L8 25 L13 21 L10 16 L16 14 L15 8 L21 10 Z" fill="currentColor" opacity="0.9"/>
+  <!-- Inner circle cutout effect via second shape -->
+  <circle cx="24" cy="24" r="9" fill="var(--bg-primary, #0a0a0f)"/>
+  <!-- Center hole -->
+  <circle cx="24" cy="24" r="4" fill="currentColor"/>
+  <!-- Small center dot -->
+  <circle cx="24" cy="24" r="2" fill="var(--bg-primary, #0a0a0f)"/>
+</svg>

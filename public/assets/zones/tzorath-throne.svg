@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
+  <defs>
+    <linearGradient id="throne-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#050e05"/>
+      <stop offset="50%" stop-color="#0a1a08"/>
+      <stop offset="100%" stop-color="#020602"/>
+    </linearGradient>
+    <radialGradient id="throne-glow" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#1a4a10" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#020602" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold-accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7a5a10"/>
+      <stop offset="50%" stop-color="#c4922a"/>
+      <stop offset="100%" stop-color="#7a5a10"/>
+    </linearGradient>
+  </defs>
+  <!-- Dark emerald background -->
+  <rect width="400" height="240" fill="url(#throne-bg)"/>
+  <!-- Atmosphere glow (throne power) -->
+  <rect width="400" height="240" fill="url(#throne-glow)"/>
+  <!-- Ancient temple/throne structure (center) -->
+  <!-- Base platform -->
+  <rect x="120" y="160" width="160" height="30" fill="#1a1408" rx="2"/>
+  <rect x="110" y="155" width="180" height="12" fill="url(#gold-accent)" opacity="0.4"/>
+  <!-- Throne back -->
+  <rect x="160" y="80" width="80" height="80" fill="#0e1a0a"/>
+  <rect x="158" y="78" width="84" height="6" fill="url(#gold-accent)" opacity="0.5"/>
+  <!-- Throne armrests -->
+  <rect x="152" y="110" width="20" height="30" fill="#1a1408"/>
+  <rect x="228" y="110" width="20" height="30" fill="#1a1408"/>
+  <!-- Gold trim on throne -->
+  <rect x="160" y="80" width="80" height="4" fill="#c4922a" opacity="0.6"/>
+  <rect x="152" y="110" width="20" height="4" fill="#c4922a" opacity="0.5"/>
+  <rect x="228" y="110" width="20" height="4" fill="#c4922a" opacity="0.5"/>
+  <!-- Spiral carved patterns on throne back -->
+  <path d="M185 100 Q190 90 200 95 Q210 90 215 100" stroke="#2a4020" stroke-width="2" fill="none" opacity="0.8"/>
+  <path d="M183 115 Q190 105 200 108 Q210 105 217 115" stroke="#2a4020" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <!-- Ancient pillars flanking -->
+  <rect x="70"  y="60" width="22" height="130" fill="#121a0a"/>
+  <rect x="308" y="60" width="22" height="130" fill="#121a0a"/>
+  <!-- Pillar capitals (gold) -->
+  <rect x="66"  y="56" width="30" height="8" fill="url(#gold-accent)" opacity="0.5"/>
+  <rect x="304" y="56" width="30" height="8" fill="url(#gold-accent)" opacity="0.5"/>
+  <!-- Carved runes on pillars -->
+  <rect x="77"  y="80"  width="8" height="2" fill="#2a4020" opacity="0.8"/>
+  <rect x="77"  y="90"  width="8" height="2" fill="#2a4020" opacity="0.8"/>
+  <rect x="77"  y="100" width="8" height="2" fill="#2a4020" opacity="0.8"/>
+  <rect x="315" y="80"  width="8" height="2" fill="#2a4020" opacity="0.8"/>
+  <rect x="315" y="90"  width="8" height="2" fill="#2a4020" opacity="0.8"/>
+  <rect x="315" y="100" width="8" height="2" fill="#2a4020" opacity="0.8"/>
+  <!-- Jungle vines reclaiming the structure -->
+  <path d="M70 60 Q55 50 45 70 Q38 90 50 100" stroke="#1a3010" stroke-width="3" fill="none"/>
+  <path d="M330 60 Q345 50 355 70 Q362 90 350 100" stroke="#1a3010" stroke-width="3" fill="none"/>
+  <!-- Eerie ground mist/golden glow -->
+  <ellipse cx="200" cy="185" rx="180" ry="30" fill="#1e3a10" opacity="0.3"/>
+  <ellipse cx="200" cy="190" rx="120" ry="18" fill="#c4922a" opacity="0.06"/>
+  <!-- Ground -->
+  <path d="M0 195 Q80 190 160 196 Q240 190 320 195 Q360 191 400 195 L400 240 L0 240 Z" fill="#050d04"/>
+  <!-- Ground runes/glyphs -->
+  <ellipse cx="200" cy="210" rx="60" ry="8" fill="#1a2e10" opacity="0.6"/>
+  <ellipse cx="200" cy="210" rx="30" ry="4" fill="#2a4818" opacity="0.5"/>
+</svg>

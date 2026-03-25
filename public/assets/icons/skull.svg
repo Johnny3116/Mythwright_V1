@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="currentColor">
+  <!-- Skull dome -->
+  <path d="M24 4 C13 4 7 12 7 21 C7 28 10 33 16 35 L16 40 C16 41 17 42 18 42 L30 42 C31 42 32 41 32 40 L32 35 C38 33 41 28 41 21 C41 12 35 4 24 4 Z" fill="currentColor"/>
+  <!-- Eye sockets (cutouts) -->
+  <ellipse cx="17" cy="21" rx="4.5" ry="5" fill="var(--bg-primary,#0a0a0f)"/>
+  <ellipse cx="31" cy="21" rx="4.5" ry="5" fill="var(--bg-primary,#0a0a0f)"/>
+  <!-- Nose cavity -->
+  <path d="M22 28 L24 26 L26 28 L25 30 L23 30 Z" fill="var(--bg-primary,#0a0a0f)"/>
+  <!-- Jaw teeth dividers -->
+  <rect x="19" y="37" width="2" height="4" rx="1" fill="var(--bg-primary,#0a0a0f)" opacity="0.5"/>
+  <rect x="23" y="37" width="2" height="4" rx="1" fill="var(--bg-primary,#0a0a0f)" opacity="0.5"/>
+  <rect x="27" y="37" width="2" height="4" rx="1" fill="var(--bg-primary,#0a0a0f)" opacity="0.5"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="currentColor">
+  <!-- Crossed swords motif -->
+  <!-- Sword 1: top-left to bottom-right -->
+  <line x1="8" y1="8" x2="36" y2="36" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <!-- Blade 1 tip -->
+  <polygon points="36,36 30,38 38,30" fill="currentColor"/>
+  <!-- Hilt 1 -->
+  <rect x="5" y="11" width="10" height="3" rx="1.5" transform="rotate(-45 10 12.5)" fill="currentColor"/>
+  <!-- Sword 2: top-right to bottom-left -->
+  <line x1="40" y1="8" x2="12" y2="36" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <!-- Blade 2 tip -->
+  <polygon points="12,36 10,30 18,38" fill="currentColor"/>
+  <!-- Hilt 2 -->
+  <rect x="33" y="11" width="10" height="3" rx="1.5" transform="rotate(45 38 12.5)" fill="currentColor"/>
+  <!-- Center gem -->
+  <circle cx="24" cy="24" r="3" fill="currentColor" opacity="0.8"/>
+</svg>
