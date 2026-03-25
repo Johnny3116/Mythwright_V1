@@ -18,6 +18,7 @@ export const PLAYER_ACTIONS = {
   MOVE: 'MOVE',
   RETREAT: 'RETREAT',
   SEARCH_FLORA: 'SEARCH_FLORA',
+  END_TURN: 'END_TURN',
 };
 
 export const DICE_FACES = 20;
