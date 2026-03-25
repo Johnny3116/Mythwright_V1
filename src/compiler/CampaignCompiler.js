@@ -6,11 +6,13 @@
 /**
  * Compile raw campaign data into a full session-ready blueprint using Claude API.
  * @param {object} rawData - Partial or full campaign data
- * @param {string} apiKey - Claude API key
+ * @param {string} [apiKey] - Claude API key (falls back to VITE_CLAUDE_API_KEY env var)
  * @returns {Promise<{ blueprint: object|null, errors: string[] }>}
  */
 export async function compileCampaign(rawData, apiKey) {
+  const key = apiKey ?? import.meta.env.VITE_CLAUDE_API_KEY
   // TODO: Implement in Phase 5
+  void key
   throw new Error('CampaignCompiler.compileCampaign not yet implemented');
 }
 
