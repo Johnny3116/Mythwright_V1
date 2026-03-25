@@ -1,9 +1,34 @@
 # Mythwright — JARVIS QA Coordination Log
 
-## Status: Phase 2–6 Complete ✅
+## Status: Phases 7/8/9 IN PROGRESS 🔄
 
-**Last run:** 2026-03-25
-**Result:** 236/236 passing — 100% green
+**Last clean run:** 2026-03-25
+**Result:** 236/236 passing — 100% green (pre-Phase 7/8/9 baseline)
+
+---
+
+## ⚠️ ACTIVE INTEGRATION CONFLICT — Phase 07 Session
+
+**Phase 07 spec includes a known-broken vite.config.js template.** The spec's `manualChunks` uses string paths (`'src/engine/GameEngine.js'`) which Rollup cannot match — produces empty `engine` and `peer` chunks (0.00 kB). **JARVIS already fixed this at commit `99ba392`** using the function form.
+
+If the Phase 07 session implements the spec exactly as written, it will revert this fix.
+
+**After Phase 07 merges: check vite.config.js `manualChunks` and confirm function form is preserved.**
+```js
+// CORRECT (commit 99ba392):
+manualChunks(id) {
+  if (id.includes('node_modules/react') ...) return 'vendor';
+  if (id.includes('node_modules/peerjs') ...) return 'peer';
+  if (id.includes('/src/engine/')) return 'engine';
+}
+
+// BROKEN (what Phase 07 spec says to write — DO NOT USE):
+manualChunks: { 'peer': ['peerjs'], 'engine': ['src/engine/GameEngine.js', ...] }
+```
+
+---
+
+## Phase 07/08/09 Session Tracking
 
 ---
 
@@ -107,6 +132,43 @@ import { selectBossAction, selectBossTarget, shouldBossRetreat, selectRetreatZon
 | claude/build-game-engine-T5uOX | Phase 2 | All 12 engine modules | ✅ Merged (PR #6) |
 | claude/build-networking-layer-xgvWn | Phase 3 | PeerManager, StateSync, MessageTypes | ✅ Merged |
 | claude/build-game-views-ui-49z2U | Phase 5 | Views/UI components | ✅ Merged |
+
+---
+
+## Phase 07/08/09 — What Each Session Ships
+
+### Phase 07 — Package & Config (Build Engineer)
+Delivers: finalized `package.json`, ESLint config (`.eslintrc.cjs`), Prettier config (`.prettierrc`), deployment configs (`vercel.json`, `netlify.toml`), production build verification.
+
+**Watch for:** Session may rewrite `vite.config.js` with the broken `manualChunks` object form (see conflict warning above). Check immediately after merge.
+
+**Expected new files:** `.eslintrc.cjs`, `.prettierrc` (already exists but may be updated), `vercel.json` (already committed), `netlify.toml` (already committed)
+
+### Phase 08 — Code Review (Senior Dev / QA Lead)
+Delivers: `REVIEW_RESULTS.md` documenting all findings + fixes across architecture, engine correctness, network, UI, error handling, performance, security, accessibility.
+
+**Expected findings (pre-flagged by JARVIS):**
+- Engine + network not wired to React contexts (HIGH — Phase 5 integration gap, expected)
+- `console.debug` in GameView.jsx:172 and ActionPanel.jsx:46 (LOW)
+- Driver stubs (AIDriver/HumanDriver/ScriptedDriver) still TODO (MEDIUM — Phase 5 work)
+
+**JARVIS action:** After Phase 08 merges, run `npm test` to ensure review fixes didn't break passing tests.
+
+### Phase 09 — Test All Modules (QA Engineer)
+Delivers: new test files covering what's currently missing:
+- `tests/engine/TurnManager.test.js` — no standalone tests yet
+- `tests/engine/WildlifeSystem.test.js` — no tests yet
+- `tests/engine/FloraSystem.test.js` — no tests yet
+- `tests/engine/RetreatSystem.test.js` — no tests yet
+- `tests/views/LobbyView.test.jsx` — new
+- `tests/views/CharacterSelect.test.jsx` — new
+- `tests/views/GameView.test.jsx` — new
+- `tests/views/HostView.test.jsx` — new
+- `tests/integration/fullGameLoop.test.js` — new (headless multi-round)
+- `tests/integration/saveLoad.test.js` — new
+- `tests/integration/networkSync.test.js` — new (mock PeerJS)
+
+**JARVIS action:** After Phase 09 merges, run full suite, report new pass/fail counts, flag any API mismatches.
 
 ---
 
