@@ -1,56 +1,139 @@
 /**
- * StatusEffects — Track and tick active status effects per entity
+ * StatusEffects — Immutable helpers for tracking status effects per entity.
+ *
+ * Each entity's state has a `statusEffects: []` array. All functions are pure
+ * and return new state objects rather than mutating in place.
  */
 
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
 /**
- * Apply a new status effect to an entity.
- * @param {object} entityState - Entity's current state
- * @param {object} effect - { type, value, duration, source }
+ * Add a new effect to an entity's state.
+ * @param {object} entityState
+ * @param {{ type:string, value?:number, duration:number, source?:string }} effect
  * @returns {object} Updated entity state
  */
 export function applyEffect(entityState, effect) {
-  // TODO: Implement in Phase 2
-  throw new Error('StatusEffects.applyEffect not yet implemented');
+  const entry = {
+    id: crypto.randomUUID(),
+    type: effect.type,
+    value: effect.value ?? 0,
+    duration: effect.duration,
+    source: effect.source ?? 'unknown',
+  };
+  return {
+    ...entityState,
+    statusEffects: [...(entityState.statusEffects ?? []), entry],
+  };
 }
 
 /**
- * Tick all active effects on an entity (called at end of their turn).
+ * Decrement duration on all effects; remove expired ones.
  * @param {object} entityState
- * @returns {{ entityState: object, expiredEffects: Array, damageDealt: number }}
+ * @returns {{ entityState:object, expiredEffects:object[], damageDealt:number }}
  */
 export function tickEffects(entityState) {
-  // TODO: Implement in Phase 2
-  throw new Error('StatusEffects.tickEffects not yet implemented');
+  const current = entityState.statusEffects ?? [];
+  let damageDealt = 0;
+  const remaining = [];
+  const expiredEffects = [];
+
+  current.forEach(effect => {
+    // Apply DOT damage
+    if (effect.type === 'poison' || effect.type === 'bleed') {
+      damageDealt += effect.value ?? 0;
+    }
+
+    const newDuration = effect.duration - 1;
+    if (newDuration > 0) {
+      remaining.push({ ...effect, duration: newDuration });
+    } else {
+      expiredEffects.push(effect);
+    }
+  });
+
+  let newHp = entityState.hp ?? 0;
+  if (damageDealt > 0) newHp = Math.max(0, newHp - damageDealt);
+
+  return {
+    entityState: { ...entityState, statusEffects: remaining, hp: newHp },
+    expiredEffects,
+    damageDealt,
+  };
 }
 
 /**
- * Remove a specific effect by type.
+ * Remove all effects of a given type.
  * @param {object} entityState
  * @param {string} effectType
  * @returns {object} Updated entity state
  */
 export function removeEffect(entityState, effectType) {
-  // TODO: Implement in Phase 2
-  throw new Error('StatusEffects.removeEffect not yet implemented');
+  return {
+    ...entityState,
+    statusEffects: (entityState.statusEffects ?? []).filter(e => e.type !== effectType),
+  };
 }
 
 /**
- * Get all active effects for an entity.
+ * Remove a specific effect by its id.
  * @param {object} entityState
- * @returns {Array}
+ * @param {string} effectId
+ * @returns {object}
+ */
+export function removeEffectById(entityState, effectId) {
+  return {
+    ...entityState,
+    statusEffects: (entityState.statusEffects ?? []).filter(e => e.id !== effectId),
+  };
+}
+
+/**
+ * Return all active effects.
+ * @param {object} entityState
+ * @returns {object[]}
  */
 export function getActiveEffects(entityState) {
-  // TODO: Implement in Phase 2
-  throw new Error('StatusEffects.getActiveEffects not yet implemented');
+  return [...(entityState.statusEffects ?? [])];
 }
 
 /**
- * Calculate combined modifier from all active effects of a given type.
+ * Sum all active modifier values for a given stat type.
  * @param {object} entityState
- * @param {string} modifierType - e.g. 'defense', 'damage', 'speed'
+ * @param {string} modifierType  e.g. 'defense', 'damageMultiplier'
  * @returns {number}
  */
 export function getEffectModifier(entityState, modifierType) {
-  // TODO: Implement in Phase 2
-  throw new Error('StatusEffects.getEffectModifier not yet implemented');
+  return (entityState.statusEffects ?? [])
+    .filter(e => e.type === modifierType)
+    .reduce((acc, e) => acc + (e.value ?? 0), 0);
+}
+
+/**
+ * Remove all effects from an entity.
+ * @param {object} entityState
+ * @returns {object}
+ */
+export function clearAllEffects(entityState) {
+  return { ...entityState, statusEffects: [] };
+}
+
+/**
+ * Serialize entity state to JSON-safe plain object.
+ * @param {object} entityState
+ * @returns {object}
+ */
+export function serialize(entityState) {
+  return JSON.parse(JSON.stringify(entityState));
+}
+
+/**
+ * Deserialize from a plain object (identity for already-plain objects).
+ * @param {object} data
+ * @returns {object}
+ */
+export function deserialize(data) {
+  return JSON.parse(JSON.stringify(data));
 }

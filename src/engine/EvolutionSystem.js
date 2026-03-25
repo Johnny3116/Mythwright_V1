@@ -1,37 +1,77 @@
 /**
- * EvolutionSystem — Boss stage transitions
- * Monitors HP thresholds and triggers evolution sequences.
+ * EvolutionSystem — Boss stage transitions.
+ * Monitors HP thresholds and applies evolution (stage advance + HP recovery).
  */
 
 /**
- * Check if the boss should evolve based on current HP and stage data.
- * @param {object} bossState - Current boss state { hp, currentStage }
- * @param {Array} stages - Blueprint enemies.boss.stages array
- * @returns {{ shouldEvolve: boolean, nextStageIndex: number|null }}
+ * Check whether the boss should evolve.
+ * @param {{ hp:number, currentStage:number }} bossState
+ * @param {object[]} stages  blueprint.enemies.boss.stages
+ * @returns {{ shouldEvolve:boolean, nextStageIndex:number|null }}
  */
 export function checkEvolutionThreshold(bossState, stages) {
-  // TODO: Implement in Phase 2
-  throw new Error('EvolutionSystem.checkEvolutionThreshold not yet implemented');
+  const currentStageIndex = bossState.currentStage - 1; // stages are 1-indexed
+  const currentStage = stages[currentStageIndex];
+
+  if (!currentStage || currentStage.retreatThreshold === null || currentStage.retreatThreshold === undefined) {
+    return { shouldEvolve: false, nextStageIndex: null };
+  }
+
+  if (bossState.hp <= currentStage.retreatThreshold) {
+    const nextIndex = currentStageIndex + 1;
+    if (nextIndex < stages.length) {
+      return { shouldEvolve: true, nextStageIndex: nextIndex };
+    }
+  }
+
+  return { shouldEvolve: false, nextStageIndex: null };
 }
 
 /**
- * Apply evolution to boss state — transition to next stage, apply HP recovery.
- * @param {object} bossState
- * @param {object} nextStage - Blueprint stage data
- * @returns {object} Updated boss state
+ * Apply evolution — transition boss to next stage with HP recovery and new stats.
+ * @param {object} bossState   Current boss state
+ * @param {object} nextStage   The next stage object from blueprint
+ * @returns {object}  Updated boss state
  */
 export function applyEvolution(bossState, nextStage) {
-  // TODO: Implement in Phase 2
-  throw new Error('EvolutionSystem.applyEvolution not yet implemented');
+  const recoveredHp = Math.min(
+    bossState.hp + (nextStage.retreatRecovery ?? 0),
+    nextStage.maxHp
+  );
+
+  return {
+    ...bossState,
+    currentStage: nextStage.stage,
+    name: nextStage.name,
+    hp: recoveredHp,
+    maxHp: nextStage.maxHp,
+    damage: nextStage.damage,
+    defense: nextStage.defense,
+    zoneId: nextStage.behavior?.retreatZone ?? bossState.zoneId,
+  };
 }
 
 /**
  * Get the narrative text for a stage transition.
- * @param {number} stageIndex
- * @param {object} narrative - Blueprint narrative block
+ * @param {number} fromStage  1-based current stage
+ * @param {object} narrative  blueprint.narrative
  * @returns {string}
  */
-export function getEvolutionNarrative(stageIndex, narrative) {
-  // TODO: Implement in Phase 2
-  throw new Error('EvolutionSystem.getEvolutionNarrative not yet implemented');
+export function getEvolutionNarrative(fromStage, narrative) {
+  const evNarrative = narrative?.bossEvolutionNarrative ?? {};
+  // Keys are 'stage1to2', 'stage2to3', etc.
+  const key = `stage${fromStage}to${fromStage === 4 ? 'Final' : fromStage + 1}`;
+  return evNarrative[key] ?? `Stage ${fromStage} → ${fromStage + 1} evolution!`;
+}
+
+/**
+ * Returns true when the boss is on its final (non-retreating) stage.
+ * @param {object} bossState
+ * @param {object[]} stages
+ * @returns {boolean}
+ */
+export function isFinalForm(bossState, stages) {
+  const idx = bossState.currentStage - 1;
+  const stage = stages[idx];
+  return stage?.retreatThreshold === null || stage?.retreatThreshold === undefined;
 }

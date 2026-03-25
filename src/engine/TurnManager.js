@@ -1,35 +1,98 @@
 /**
- * TurnManager — Turn order, phase cycling, initiative tracking
+ * TurnManager — Turn order and phase cycling.
+ *
+ * Turn cycle: PLAYER_TURN (×n players) → BOSS_TURN → ENVIRONMENT → CHECK_WIN → NEXT_ROUND
  */
 
+export const TurnPhase = {
+  PLAYER_TURN: 'PLAYER_TURN',
+  BOSS_TURN: 'BOSS_TURN',
+  ENVIRONMENT: 'ENVIRONMENT',
+  CHECK_WIN: 'CHECK_WIN',
+  NEXT_ROUND: 'NEXT_ROUND',
+};
+
 /**
- * Initialize turn order from player list.
- * @param {Array} players - Array of player objects
- * @returns {object} Turn state { order: string[], currentIndex: number, round: number, phase: string }
+ * Build initial turn state from a player array.
+ * @param {object[]} players  Each player must have an `id` field.
+ * @returns {{ order:string[], currentIndex:number, round:number, phase:string }}
  */
 export function initializeTurnOrder(players) {
-  // TODO: Implement in Phase 2
-  throw new Error('TurnManager.initializeTurnOrder not yet implemented');
+  return {
+    order: players.map(p => p.id),
+    currentIndex: 0,
+    round: 1,
+    phase: TurnPhase.PLAYER_TURN,
+  };
 }
 
 /**
- * Advance to the next turn/phase in the cycle.
- * Cycle: all player turns → boss turn → environment → win check → next round
- * @param {object} turnState
+ * Advance to the next phase/player in the cycle.
+ * @param {{ order:string[], currentIndex:number, round:number, phase:string }} turnState
  * @param {number} playerCount
  * @returns {object} New turn state
  */
 export function advanceTurn(turnState, playerCount) {
-  // TODO: Implement in Phase 2
-  throw new Error('TurnManager.advanceTurn not yet implemented');
+  const { currentIndex, round, phase } = turnState;
+
+  switch (phase) {
+    case TurnPhase.PLAYER_TURN: {
+      if (currentIndex < playerCount - 1) {
+        return { ...turnState, currentIndex: currentIndex + 1 };
+      }
+      return { ...turnState, phase: TurnPhase.BOSS_TURN, currentIndex: 0 };
+    }
+    case TurnPhase.BOSS_TURN:
+      return { ...turnState, phase: TurnPhase.ENVIRONMENT };
+    case TurnPhase.ENVIRONMENT:
+      return { ...turnState, phase: TurnPhase.CHECK_WIN };
+    case TurnPhase.CHECK_WIN:
+      return { ...turnState, phase: TurnPhase.NEXT_ROUND };
+    case TurnPhase.NEXT_ROUND:
+      return { ...turnState, phase: TurnPhase.PLAYER_TURN, round: round + 1, currentIndex: 0 };
+    default:
+      return turnState;
+  }
 }
 
 /**
- * Get the currently active entity id.
+ * Return the currently active entity identifier.
  * @param {object} turnState
- * @returns {string} Entity id or 'boss' or 'environment'
+ * @returns {string|null}  Player ID, 'boss', 'environment', or null
  */
 export function getActiveEntity(turnState) {
-  // TODO: Implement in Phase 2
-  throw new Error('TurnManager.getActiveEntity not yet implemented');
+  switch (turnState.phase) {
+    case TurnPhase.PLAYER_TURN:
+      return turnState.order[turnState.currentIndex] ?? null;
+    case TurnPhase.BOSS_TURN:
+      return 'boss';
+    case TurnPhase.ENVIRONMENT:
+      return 'environment';
+    default:
+      return null;
+  }
+}
+
+/**
+ * Skip dead players when cycling through PLAYER_TURN.
+ * @param {object} turnState
+ * @param {object[]} players  Full player array with `id` and `isAlive` fields
+ * @returns {object} Turn state pointing to next alive player (or BOSS_TURN if all dead)
+ */
+export function skipDeadPlayers(turnState, players) {
+  if (turnState.phase !== TurnPhase.PLAYER_TURN) return turnState;
+
+  let state = turnState;
+  let attempts = 0;
+
+  while (attempts < players.length) {
+    const activeId = state.order[state.currentIndex];
+    const player = players.find(p => p.id === activeId);
+    if (player?.isAlive !== false) break; // alive or unknown
+    state = advanceTurn(state, players.length);
+    if (state.phase !== TurnPhase.PLAYER_TURN) break;
+    attempts++;
+  }
+
+  return state;
 }
