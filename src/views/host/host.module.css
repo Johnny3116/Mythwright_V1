@@ -1,10 +1,222 @@
+/* ── Host View ──────────────────────────────────────────────── */
 .hostView {
   min-height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 300px 1fr 280px;
+  grid-template-areas:
+    "header header header"
+    "left   main   right"
+    "footer footer footer";
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.hostHeader {
+  grid-area: header;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: var(--space-3) var(--space-6);
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
+  justify-content: space-between;
+  gap: var(--space-4);
 }
+
+.hostTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--accent-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.roundBadge {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent-secondary);
+}
+
+.phaseBadge {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Left Panel — Monster ─────────────────────────────────── */
+.hostLeft {
+  grid-area: left;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  padding: var(--space-4);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ── Main Area ─────────────────────────────────────────────── */
+.hostMain {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.narratorArea {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.zoneMapArea {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Right Panel — Players ────────────────────────────────── */
+.hostRight {
+  grid-area: right;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
+  padding: var(--space-4);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ── Footer — GM Controls ─────────────────────────────────── */
+.hostFooter {
+  grid-area: footer;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ── Section ─────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-1);
+}
+
+/* ── Monster Panel ───────────────────────────────────────── */
+.monsterName {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--accent-danger);
+  margin-bottom: var(--space-1);
+}
+
+.stageBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: rgba(199, 74, 56, 0.15);
+  border: 1px solid var(--accent-danger);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--text-xs);
+  color: var(--accent-danger);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  margin-bottom: var(--space-3);
+}
+
+.monsterStats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.monsterStatRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ── Player Overview ─────────────────────────────────────── */
+.playerCard {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.playerCardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.playerCardIcon { font-size: var(--text-xl); }
+.playerCardName { font-family: var(--font-display); font-size: var(--text-sm); }
+.playerCardZone { font-size: var(--text-xs); color: var(--text-muted); }
+
+/* ── GM Controls ─────────────────────────────────────────── */
+.gmControls {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.gmLabel {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+/* ── Driver Toggle ───────────────────────────────────────── */
+.driverToggle {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.driverBtn {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.driverBtn:hover { border-color: var(--accent-secondary); color: var(--text-primary); }
+.driverBtnActive { border-color: var(--accent-secondary); color: var(--accent-secondary); background: var(--bg-secondary); }

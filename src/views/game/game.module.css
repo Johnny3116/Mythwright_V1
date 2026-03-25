@@ -1,10 +1,270 @@
+/* ── Game View ──────────────────────────────────────────────── */
 .gameView {
   min-height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 280px 1fr;
+  grid-template-areas:
+    "header header"
+    "sidebar main"
+    "actions actions";
+}
+
+/* ── Header / Turn Tracker ───────────────────────────────── */
+.gameHeader {
+  grid-area: header;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: var(--space-3) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.gameMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.roundBadge {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent-secondary);
+}
+
+.phaseBadge {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.gameSidebar {
+  grid-area: sidebar;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  padding: var(--space-4);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sidebarSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sidebarTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-1);
+}
+
+.playerName {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.playerClass {
+  font-size: var(--text-sm);
+  color: var(--accent-secondary);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.statusEffects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.effectTag {
+  padding: var(--space-1) var(--space-2);
+  background: rgba(199, 74, 56, 0.15);
+  border: 1px solid var(--accent-danger);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--text-xs);
+  color: var(--accent-danger);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+}
+
+/* ── Main Area ─────────────────────────────────────────────── */
+.gameMain {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.narratorArea {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.zoneMapArea {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Actions ─────────────────────────────────────────────── */
+.gameActions {
+  grid-area: actions;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.actionGroup {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.diceArea {
+  margin-left: auto;
+}
+
+/* ── ZoneMap ─────────────────────────────────────────────── */
+.zoneMap {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: auto;
+  background: var(--bg-primary);
+}
+
+.zoneMapCanvas {
+  position: relative;
+  min-width: 800px;
+  min-height: 500px;
+}
+
+.zoneNode {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.zoneNode:hover { transform: translate(-50%, -50%) scale(1.05); }
+
+.zoneNodeCircle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: var(--text-xl);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.zoneNodeWithBoss { border-color: var(--accent-danger); box-shadow: var(--shadow-glow-red); }
+.zoneNodeWithPlayer { border-color: var(--accent-secondary); box-shadow: var(--shadow-glow-gold); }
+.zoneNodeWithTrap { border-color: var(--accent-warning); }
+.zoneNodeWithFlora { border-color: var(--accent-success); }
+
+.zoneNodeName {
   font-family: var(--font-display);
-  font-size: var(--text-2xl);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.connectionLine {
+  position: absolute;
+  height: 2px;
+  background: var(--border-color);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.zonePopup {
+  position: absolute;
+  z-index: var(--z-dropdown);
+}
+
+/* ── Narrator Feed ───────────────────────────────────────── */
+.narratorFeed {
+  width: 100%;
+}
+
+/* ── Turn Tracker ────────────────────────────────────────── */
+.turnTracker {
+  flex: 1;
+  overflow-x: auto;
+}
+
+/* ── Action Panel ────────────────────────────────────────── */
+.actionPanel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.turnLabel {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  color: var(--accent-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.trapMenu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 200px;
+}
+
+/* ── Character Sheet ─────────────────────────────────────── */
+.charSheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }

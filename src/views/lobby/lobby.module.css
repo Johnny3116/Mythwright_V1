@@ -1,10 +1,326 @@
+/* ── Lobby View ─────────────────────────────────────────────── */
 .lobbyView {
   min-height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding: var(--space-8) var(--space-6);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-10);
+}
+
+.title {
   font-family: var(--font-display);
-  font-size: var(--text-2xl);
+  font-size: var(--text-4xl);
+  color: var(--accent-secondary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+}
+
+.subtitle {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.tabBar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--space-8);
+}
+
+.tab {
+  padding: var(--space-3) var(--space-8);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: -1px;
+}
+
+.tab:hover { color: var(--text-primary); }
+
+.tabActive {
+  color: var(--accent-secondary);
+  border-bottom-color: var(--accent-secondary);
+}
+
+.panel {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ── Campaign Upload ─────────────────────────────────────── */
+.uploadArea {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-10);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+  background: var(--bg-secondary);
+}
+
+.uploadArea:hover, .uploadAreaDragOver {
+  border-color: var(--accent-secondary);
+}
+
+.uploadIcon { font-size: 3rem; margin-bottom: var(--space-3); }
+
+.uploadTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.uploadSubtext {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.uploadErrors {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: rgba(199, 74, 56, 0.1);
+  border: 1px solid var(--accent-danger);
+  border-radius: var(--border-radius-md);
+  font-size: var(--text-sm);
+  color: var(--accent-danger);
+}
+
+.uploadSuccess {
+  margin-top: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: rgba(74, 158, 106, 0.1);
+  border: 1px solid var(--accent-success);
+  border-radius: var(--border-radius-md);
+  color: var(--accent-success);
+  font-size: var(--text-sm);
+}
+
+/* ── Host Editor ─────────────────────────────────────────── */
+.editorSection {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-6);
+}
+
+.editorTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--accent-secondary);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.editorGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.formLabel {
+  font-size: var(--text-xs);
+  font-family: var(--font-display);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.formInput, .formSelect {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+  font-family: var(--font-body);
+  transition: border-color var(--transition-fast);
+  width: 100%;
+}
+
+.formInput:focus, .formSelect:focus {
+  outline: none;
+  border-color: var(--accent-secondary);
+}
+
+/* ── Room Code & Player List ─────────────────────────────── */
+.roomSection {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.roomCodeDisplay {
+  font-family: var(--font-mono);
+  font-size: var(--text-4xl);
+  color: var(--accent-secondary);
+  letter-spacing: 0.4em;
+  margin: var(--space-4) 0;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.roomCodeDisplay:hover { color: var(--text-primary); }
+.roomCodeHint { font-size: var(--text-sm); color: var(--text-secondary); }
+
+.playerList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.playerItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.playerItemIcon { font-size: var(--text-xl); }
+.playerItemName { flex: 1; font-size: var(--text-base); }
+.playerItemHost {
+  font-size: var(--text-xs);
+  color: var(--accent-secondary);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+}
+
+/* ── GM Mode Selector ────────────────────────────────────── */
+.gmModes {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.gmModeCard {
+  flex: 1;
+  padding: var(--space-4);
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+}
+
+.gmModeCard:hover {
+  border-color: var(--accent-secondary);
+}
+
+.gmModeCardActive {
+  border-color: var(--accent-secondary);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-glow-gold);
+}
+
+.gmModeIcon { font-size: 2rem; margin-bottom: var(--space-2); }
+.gmModeTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-1);
+}
+.gmModeDesc { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.4; }
+
+.apiKeyInput {
+  margin-top: var(--space-3);
+}
+
+/* ── Join Game ───────────────────────────────────────────── */
+.joinSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.roomCodeInput {
+  background: var(--bg-primary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  color: var(--accent-secondary);
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-3xl);
+  font-family: var(--font-mono);
+  text-align: center;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  width: 320px;
+  transition: border-color var(--transition-fast);
+}
+
+.roomCodeInput:focus {
+  outline: none;
+  border-color: var(--accent-secondary);
+}
+
+.actionRow {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  margin-top: var(--space-2);
+}
+
+.startBtn {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-lg);
+}
+
+.errorText {
+  color: var(--accent-danger);
+  font-size: var(--text-sm);
+}
+
+.statusText {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.defaultBlueprintBtn {
+  font-size: var(--text-xs);
+  color: var(--accent-info);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2) 0;
+  text-decoration: underline;
 }

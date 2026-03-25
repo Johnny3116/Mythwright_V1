@@ -3,12 +3,50 @@
  */
 
 /**
+ * Generate a short room code (6 uppercase alphanumeric chars).
+ * @returns {string}
+ */
+function generateRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const array = new Uint32Array(6);
+  crypto.getRandomValues(array);
+  return Array.from(array).map(n => chars[n % chars.length]).join('');
+}
+
+/**
  * Initialize a host peer and generate a room code.
  * @returns {Promise<{ peer: object, roomCode: string }>}
  */
 export async function createRoom() {
-  // TODO: Implement in Phase 3
-  throw new Error('PeerManager.createRoom not yet implemented');
+  const { Peer } = await import('peerjs');
+  const roomCode = generateRoomCode();
+  return new Promise((resolve, reject) => {
+    const peer = new Peer(roomCode, {
+      debug: 0,
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+        ],
+      },
+    });
+
+    peer.on('open', id => {
+      resolve({ peer, roomCode: id });
+    });
+
+    peer.on('error', err => {
+      // If room code is taken, try a new one
+      if (err.type === 'unavailable-id') {
+        peer.destroy();
+        createRoom().then(resolve).catch(reject);
+      } else {
+        reject(err);
+      }
+    });
+
+    setTimeout(() => reject(new Error('PeerJS connection timeout')), 15000);
+  });
 }
 
 /**
@@ -17,8 +55,36 @@ export async function createRoom() {
  * @returns {Promise<{ peer: object, hostConnection: object }>}
  */
 export async function joinRoom(roomCode) {
-  // TODO: Implement in Phase 3
-  throw new Error('PeerManager.joinRoom not yet implemented');
+  const { Peer } = await import('peerjs');
+  return new Promise((resolve, reject) => {
+    const peer = new Peer(undefined, {
+      debug: 0,
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+        ],
+      },
+    });
+
+    peer.on('open', () => {
+      const hostConnection = peer.connect(roomCode, { reliable: true });
+
+      hostConnection.on('open', () => {
+        resolve({ peer, hostConnection });
+      });
+
+      hostConnection.on('error', err => {
+        reject(err);
+      });
+
+      setTimeout(() => reject(new Error('Could not connect to room. Check the room code.')), 15000);
+    });
+
+    peer.on('error', err => {
+      reject(err);
+    });
+  });
 }
 
 /**
@@ -27,8 +93,16 @@ export async function joinRoom(roomCode) {
  * @param {object} message
  */
 export function broadcast(connections, message) {
-  // TODO: Implement in Phase 3
-  throw new Error('PeerManager.broadcast not yet implemented');
+  const data = JSON.stringify(message);
+  for (const conn of connections) {
+    if (conn && conn.open) {
+      try {
+        conn.send(data);
+      } catch (err) {
+        console.warn('broadcast: send failed for connection', conn.peer, err);
+      }
+    }
+  }
 }
 
 /**
@@ -37,8 +111,13 @@ export function broadcast(connections, message) {
  * @param {object} message
  */
 export function sendTo(connection, message) {
-  // TODO: Implement in Phase 3
-  throw new Error('PeerManager.sendTo not yet implemented');
+  if (connection && connection.open) {
+    try {
+      connection.send(JSON.stringify(message));
+    } catch (err) {
+      console.warn('sendTo: send failed', err);
+    }
+  }
 }
 
 /**
@@ -46,6 +125,7 @@ export function sendTo(connection, message) {
  * @param {object} peer
  */
 export function destroyPeer(peer) {
-  // TODO: Implement in Phase 3
-  throw new Error('PeerManager.destroyPeer not yet implemented');
+  if (peer && !peer.destroyed) {
+    peer.destroy();
+  }
 }

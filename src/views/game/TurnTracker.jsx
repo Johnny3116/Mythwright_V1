@@ -1,3 +1,10 @@
-export function TurnTracker({ turnOrder, activeEntityId, round }) {
-  return <div className="turn-tracker">Turn Tracker — Coming Soon</div>;
+import { TurnOrderBar } from '@components/TurnOrderBar.jsx';
+import styles from './game.module.css';
+
+export function TurnTracker({ players, boss, activeEntityId, round, phase }) {
+  return (
+    <div className={styles.turnTracker}>
+      <TurnOrderBar players={players} boss={boss} activeEntityId={activeEntityId} />
+    </div>
+  );
 }

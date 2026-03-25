@@ -2,7 +2,37 @@
  * usePeerConnection — React hook wrapping PeerJS connection management
  */
 
-// TODO: Implement in Phase 4
+import { useCallback } from 'react';
+import { useNetworkContext } from '@context/NetworkContext.jsx';
+
 export function usePeerConnection() {
-  throw new Error('usePeerConnection not yet implemented');
+  const {
+    network,
+    hostGame,
+    joinGame,
+    broadcastGameState,
+    sendAction,
+    sendToHost,
+    broadcastMessage,
+    disconnect,
+    setMessageHandler,
+  } = useNetworkContext();
+
+  return {
+    isHost: network.isHost,
+    roomCode: network.roomCode,
+    myPeerId: network.myPeerId,
+    connectedPeers: network.connectedPeers,
+    status: network.status,
+    error: network.error,
+    // Actions
+    hostGame,
+    joinGame,
+    broadcastGameState,
+    sendAction,
+    sendToHost,
+    broadcastMessage,
+    disconnect,
+    setMessageHandler,
+  };
 }

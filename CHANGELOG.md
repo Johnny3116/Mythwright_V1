@@ -37,3 +37,42 @@
 ### Next Steps
 - Phase 1: Asset Pipeline — create SVG icon sets, font loading, D20 dice element, base component styling
 - Phase 2: Game Engine — implement all 12 engine modules in dependency order
+
+## [Phase 5] - 2026-03-25
+
+### Completed
+- Implemented all 12 engine modules: DiceSystem (crypto RNG), CombatResolver, StatusEffects, BlueprintLoader, TurnManager, BehaviorTree, EvolutionSystem, TrapSystem, WildlifeSystem, FloraSystem, RetreatSystem, GameEngine (state machine + reducer)
+- Implemented network layer: PeerManager (PeerJS rooms), StateSync (host-authoritative broadcast), Reconnect (heartbeat + backoff)
+- Implemented GM drivers: HumanDriver (manual control), ScriptedDriver (blueprint behavior trees), AIDriver (LLM with scripted fallback)
+- Implemented GameContext (useReducer state), NetworkContext (PeerJS lifecycle)
+- Implemented all hooks: useGameEngine, useDiceRoll (animated), usePeerConnection, useTurnManager
+- Implemented all shared components: DiceRoller (animated, color-coded), HealthBar, StatCard, ActionButton, NarratorBox (auto-scroll), TurnOrderBar, ZoneCard, Modal, FloatingDamage, EncounterSplash
+- Implemented LobbyView: CampaignUpload (drag-drop + validation), HostEditor (GM mode selector), CreateGame, JoinGame
+- Implemented CharacterSelect: ClassCard (dynamic from blueprint.classes[]), CharacterCustomize, ready-up flow
+- Implemented GameView: ZoneMap (auto-layout, SVG connections, zone popups), ActionPanel (all 6 actions with dice rolls), CharacterSheet (HP/stats/effects), NarratorFeed, TurnTracker
+- Implemented HostView: MonsterPanel, PlayerOverview, GMControls (human/scripted), DriverToggle; scripted driver auto-plays boss turns with 2s delay
+- Full game loop: player turn → boss turn → environment → win check → next round
+- Boss evolution: HP threshold check after each attack, stage transition with narrative splash
+- Save/load: serialize() → JSON download, load from file via GameContext
+- Trap system: all 5 trap types placeable and triggerable on boss zone entry
+- Flora system: spawn at game start, relocate every 3 rounds, searchable
+- Retreat system: zone modifier applied, 4 outcomes (fail/partial/success/perfect)
+- Win/lose condition checking after each action
+- App.jsx wrapped with GameProvider + NetworkProvider
+- Campaign blueprint copied to public/campaigns/ for static serving
+- Production build: 240KB JS (76KB gzipped), builds clean in 1.3s
+
+### Known Issues
+- PeerJS connection requires internet access to STUN servers (expected)
+- AI Driver requires a valid Anthropic API key; falls back gracefully to Scripted
+- Zone map uses simple grid auto-layout; a more sophisticated force-directed layout could be added in Phase 7
+
+### Deviations from Spec
+- FloatingDamage component is present but not yet wired to combat resolution events (Phase 7 improvement)
+- ZoneMap uses SVG lines for connections rather than CSS absolute positioning
+- Boss loseCondition "bossReachesFinalForm" is checked in winConditions logic — reaching stage 5 is a win condition check, not a separate lose trigger per blueprint data
+
+### Next Steps
+- Phase 6: Finalize package.json, production config, deployment
+- Phase 7: Code review — verify engine correctness, network reliability, UI consistency
+- Phase 8: Write unit tests for all engine modules

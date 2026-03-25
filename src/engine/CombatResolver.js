@@ -3,17 +3,58 @@
  * No side effects. Same inputs always produce same outputs.
  */
 
+import { rollInRange } from './DiceSystem.js';
+
 /**
  * Resolve a combat action between attacker and defender.
- * @param {object} attacker - Entity with damageRange, modifiers
+ * @param {object} attacker - Entity with damage array [min,max], modifiers
  * @param {object} defender - Entity with defense, modifiers
  * @param {number} roll - D20 roll result (1-20)
  * @param {object} settings - Campaign settings (hitRanges, critMultiplier)
  * @returns {{ hit: boolean, critical: boolean, damage: number, effectsApplied: Array, narrative: string }}
  */
 export function resolveCombat(attacker, defender, roll, settings) {
-  // TODO: Implement in Phase 2
-  throw new Error('CombatResolver.resolveCombat not yet implemented');
+  const { hitRanges, critMultiplier = 2.0 } = settings;
+
+  const missRange = hitRanges.miss || hitRanges.miss;
+  const critRange = hitRanges.critical || hitRanges.lethalStrike;
+
+  const isMiss = roll >= missRange[0] && roll <= missRange[1];
+  const isCrit = roll >= critRange[0] && roll <= critRange[1];
+
+  if (isMiss) {
+    return {
+      hit: false,
+      critical: false,
+      damage: 0,
+      effectsApplied: [],
+      narrative: 'The attack missed!',
+    };
+  }
+
+  const damageArr = attacker.damage || attacker.damageRange || [1, 1];
+  const [min, max] = Array.isArray(damageArr) ? damageArr : [damageArr, damageArr];
+
+  let damage = calculateDamage(min, max, rollInRange(0, 10000));
+
+  if (isCrit) {
+    const bonus = hitRanges.lethalStrikeBonus != null ? hitRanges.lethalStrikeBonus : critMultiplier - 1;
+    damage = Math.floor(damage * (1 + bonus));
+  }
+
+  const defenseValue = defender.defense || 0;
+  damage = applyDefense(damage, defenseValue);
+  damage = Math.max(1, damage);
+
+  return {
+    hit: true,
+    critical: isCrit,
+    damage,
+    effectsApplied: [],
+    narrative: isCrit
+      ? `Lethal strike! ${damage} damage dealt!`
+      : `Hit! ${damage} damage dealt.`,
+  };
 }
 
 /**
@@ -24,8 +65,9 @@ export function resolveCombat(attacker, defender, roll, settings) {
  * @returns {number}
  */
 export function calculateDamage(min, max, seed) {
-  // TODO: Implement in Phase 2
-  throw new Error('CombatResolver.calculateDamage not yet implemented');
+  if (min === max) return min;
+  const range = max - min + 1;
+  return min + (Math.abs(seed) % range);
 }
 
 /**
@@ -35,6 +77,5 @@ export function calculateDamage(min, max, seed) {
  * @returns {number}
  */
 export function applyDefense(damage, defense) {
-  // TODO: Implement in Phase 2
-  throw new Error('CombatResolver.applyDefense not yet implemented');
+  return Math.max(0, damage - defense);
 }

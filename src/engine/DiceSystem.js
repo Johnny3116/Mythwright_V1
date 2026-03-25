@@ -11,8 +11,13 @@ const rollHistory = [];
  * @returns {{ raw: number, modifier: number, total: number }}
  */
 export function rollD20(modifier = 0) {
-  // TODO: Implement in Phase 2
-  throw new Error('DiceSystem.rollD20 not yet implemented');
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  const raw = (array[0] % 20) + 1;
+  const total = raw + modifier;
+  const result = { raw, modifier, total };
+  rollHistory.push({ ...result, faces: 20, timestamp: Date.now() });
+  return result;
 }
 
 /**
@@ -22,8 +27,13 @@ export function rollD20(modifier = 0) {
  * @returns {{ raw: number, modifier: number, total: number }}
  */
 export function rollDie(faces, modifier = 0) {
-  // TODO: Implement in Phase 2
-  throw new Error('DiceSystem.rollDie not yet implemented');
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  const raw = (array[0] % faces) + 1;
+  const total = raw + modifier;
+  const result = { raw, modifier, total };
+  rollHistory.push({ ...result, faces, timestamp: Date.now() });
+  return result;
 }
 
 /**
@@ -34,8 +44,27 @@ export function rollDie(faces, modifier = 0) {
  * @returns {{ rolls: number[], sum: number, total: number }}
  */
 export function rollMultiple(count, faces, modifier = 0) {
-  // TODO: Implement in Phase 2
-  throw new Error('DiceSystem.rollMultiple not yet implemented');
+  const rolls = [];
+  const array = new Uint32Array(count);
+  crypto.getRandomValues(array);
+  for (let i = 0; i < count; i++) {
+    rolls.push((array[i] % faces) + 1);
+  }
+  const sum = rolls.reduce((acc, r) => acc + r, 0);
+  return { rolls, sum, total: sum + modifier };
+}
+
+/**
+ * Roll a random integer within a range (inclusive).
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
+export function rollInRange(min, max) {
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  const range = max - min + 1;
+  return min + (array[0] % range);
 }
 
 /**

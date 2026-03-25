@@ -1,13 +1,13 @@
-export function Modal({ isOpen, title, children, onClose }) {
+import styles from './components.module.css';
+
+export function Modal({ isOpen, title, children, onClose, actions }) {
   if (!isOpen) return null;
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal__header">
-          <h2 className="modal__title">{title}</h2>
-          <button className="modal__close" onClick={onClose} aria-label="Close">×</button>
-        </div>
-        <div className="modal__body">{children}</div>
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+        {title && <h2 className={styles.modalTitle}>{title}</h2>}
+        <div className={styles.modalBody}>{children}</div>
+        {actions && <div className={styles.modalActions}>{actions}</div>}
       </div>
     </div>
   );

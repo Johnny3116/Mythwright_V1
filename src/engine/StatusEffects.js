@@ -9,8 +9,13 @@
  * @returns {object} Updated entity state
  */
 export function applyEffect(entityState, effect) {
-  // TODO: Implement in Phase 2
-  throw new Error('StatusEffects.applyEffect not yet implemented');
+  const existing = entityState.statusEffects || [];
+  // Replace effect of same type if already present (re-apply resets duration)
+  const filtered = existing.filter(e => e.type !== effect.type);
+  return {
+    ...entityState,
+    statusEffects: [...filtered, { ...effect, remainingDuration: effect.duration }],
+  };
 }
 
 /**
@@ -19,8 +24,42 @@ export function applyEffect(entityState, effect) {
  * @returns {{ entityState: object, expiredEffects: Array, damageDealt: number }}
  */
 export function tickEffects(entityState) {
-  // TODO: Implement in Phase 2
-  throw new Error('StatusEffects.tickEffects not yet implemented');
+  const effects = entityState.statusEffects || [];
+  const expiredEffects = [];
+  let damageDealt = 0;
+  let hpDelta = 0;
+
+  const updatedEffects = effects
+    .map(effect => {
+      let updated = { ...effect, remainingDuration: effect.remainingDuration - 1 };
+
+      // Tick damage-over-time effects
+      if (effect.type === 'poison' || effect.type === 'bleed') {
+        damageDealt += effect.value || 0;
+        hpDelta -= effect.value || 0;
+      }
+
+      return updated;
+    })
+    .filter(effect => {
+      if (effect.remainingDuration <= 0) {
+        expiredEffects.push(effect);
+        return false;
+      }
+      return true;
+    });
+
+  const newHp = Math.max(0, (entityState.hp || 0) + hpDelta);
+
+  return {
+    entityState: {
+      ...entityState,
+      hp: newHp,
+      statusEffects: updatedEffects,
+    },
+    expiredEffects,
+    damageDealt,
+  };
 }
 
 /**
@@ -30,8 +69,10 @@ export function tickEffects(entityState) {
  * @returns {object} Updated entity state
  */
 export function removeEffect(entityState, effectType) {
-  // TODO: Implement in Phase 2
-  throw new Error('StatusEffects.removeEffect not yet implemented');
+  return {
+    ...entityState,
+    statusEffects: (entityState.statusEffects || []).filter(e => e.type !== effectType),
+  };
 }
 
 /**
@@ -40,8 +81,7 @@ export function removeEffect(entityState, effectType) {
  * @returns {Array}
  */
 export function getActiveEffects(entityState) {
-  // TODO: Implement in Phase 2
-  throw new Error('StatusEffects.getActiveEffects not yet implemented');
+  return entityState.statusEffects || [];
 }
 
 /**
@@ -51,6 +91,15 @@ export function getActiveEffects(entityState) {
  * @returns {number}
  */
 export function getEffectModifier(entityState, modifierType) {
-  // TODO: Implement in Phase 2
-  throw new Error('StatusEffects.getEffectModifier not yet implemented');
+  const effects = entityState.statusEffects || [];
+  return effects
+    .filter(e => e.modifierType === modifierType)
+    .reduce((sum, e) => sum + (e.value || 0), 0);
+}
+
+/**
+ * Check if entity has a specific effect.
+ */
+export function hasEffect(entityState, effectType) {
+  return (entityState.statusEffects || []).some(e => e.type === effectType);
 }

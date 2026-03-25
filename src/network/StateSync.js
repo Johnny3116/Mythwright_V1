@@ -3,14 +3,17 @@
  * Host is always authoritative. Players receive and apply full state snapshots.
  */
 
+import { broadcast, sendTo } from './PeerManager.js';
+import { MessageTypes, createMessage } from './MessageTypes.js';
+
 /**
  * Broadcast the full game state to all connected players.
  * @param {object[]} connections
  * @param {object} gameState
  */
 export function broadcastState(connections, gameState) {
-  // TODO: Implement in Phase 3
-  throw new Error('StateSync.broadcastState not yet implemented');
+  const message = createMessage(MessageTypes.HOST_STATE_UPDATE, { state: gameState });
+  broadcast(connections, message);
 }
 
 /**
@@ -19,8 +22,7 @@ export function broadcastState(connections, gameState) {
  * @param {Function} dispatch - Game state dispatch function
  */
 export function applyStateSnapshot(receivedState, dispatch) {
-  // TODO: Implement in Phase 3
-  throw new Error('StateSync.applyStateSnapshot not yet implemented');
+  dispatch({ type: 'LOAD_STATE', payload: receivedState });
 }
 
 /**
@@ -29,6 +31,26 @@ export function applyStateSnapshot(receivedState, dispatch) {
  * @param {object} action - { type, payload }
  */
 export function sendPlayerAction(hostConnection, action) {
-  // TODO: Implement in Phase 3
-  throw new Error('StateSync.sendPlayerAction not yet implemented');
+  const message = createMessage(MessageTypes.PLAYER_ACTION, { action });
+  sendTo(hostConnection, message);
+}
+
+/**
+ * Send a player join message to the host.
+ * @param {object} hostConnection
+ * @param {object} playerInfo - { peerId, playerName }
+ */
+export function sendPlayerJoin(hostConnection, playerInfo) {
+  const message = createMessage(MessageTypes.PLAYER_JOIN, playerInfo);
+  sendTo(hostConnection, message);
+}
+
+/**
+ * Broadcast a dice roll result so all players can see the animation.
+ * @param {object[]} connections
+ * @param {object} rollData - { playerId, roll, result }
+ */
+export function broadcastDiceRoll(connections, rollData) {
+  const message = createMessage(MessageTypes.DICE_ROLL_RESULT, rollData);
+  broadcast(connections, message);
 }
