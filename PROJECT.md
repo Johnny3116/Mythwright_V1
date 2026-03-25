@@ -243,12 +243,12 @@ DICE_ROLL_RESULT     → Animated roll result sync
 - **Upcoming Events**: Next evolution threshold, pending trap triggers, flora spawns
 
 ### Shared Components
-- `DiceRoller` — Large, dramatic center-screen D20 with physics-like tumble animation and color-coded result reveals
-- `FloatingDamage` — Damage/healing numbers that pop up above tokens, float upward, and fade out
-- `EncounterSplash` — Cinematic full-screen transitions (ENCOUNTER, EVOLUTION, VICTORY, DEFEAT) with icon + text reveal
 - `StatCard` — Reusable HP/DMG/DEF display
 - `ZoneCard` — Zone info popup with modifiers and wildlife
 - `NarratorBox` — Scrolling text feed with typewriter effect
+- `DiceRoller` — Large, dramatic center-screen D20 with physics-like tumble animation and color-coded result reveals
+- `FloatingDamage` — Damage/healing numbers that pop up above tokens, float upward, and fade out
+- `EncounterSplash` — Cinematic full-screen transitions (ENCOUNTER, EVOLUTION, VICTORY, DEFEAT) with icon + text reveal
 - `TurnOrderBar` — Horizontal turn tracker with D20-shaped portrait frames, colored borders, and initiative roll numbers
 - `HealthBar` — Animated HP bar with color transitions
 - `ActionButton` — Context-aware action buttons
