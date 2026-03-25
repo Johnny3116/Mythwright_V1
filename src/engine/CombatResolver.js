@@ -16,7 +16,7 @@ import { rollInRange } from './DiceSystem.js';
 export function resolveCombat(attacker, defender, roll, settings) {
   const { hitRanges, critMultiplier = 2.0 } = settings;
 
-  const missRange = hitRanges.miss || hitRanges.miss;
+  const missRange = hitRanges.miss || [1, 5];
   const critRange = hitRanges.critical || hitRanges.lethalStrike;
 
   const isMiss = roll >= missRange[0] && roll <= missRange[1];

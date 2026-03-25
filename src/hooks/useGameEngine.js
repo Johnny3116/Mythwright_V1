@@ -9,13 +9,24 @@ import { useNetworkContext } from '@context/NetworkContext.jsx';
 import { ActionTypes, GameState, TurnPhase, checkWinConditions } from '@engine/GameEngine.js';
 import { rollD20 } from '@engine/DiceSystem.js';
 import { MessageTypes } from '@network/MessageTypes.js';
-import { TurnPhase as TurnPhaseConst } from '@engine/GameEngine.js';
 
 export function useGameEngine() {
   const { state, dispatch } = useGameContext();
-  const { network, broadcastGameState, setMessageHandler } = useNetworkContext();
+  const { network, broadcastGameState, setMessageHandler, sendAction } = useNetworkContext();
 
   const isHost = network.isHost;
+
+  /**
+   * Dispatch a player-originated action. If this tab is the host, apply directly.
+   * If this tab is a player, send the action to the host for validation + broadcast.
+   */
+  const dispatchPlayerAction = useCallback((action) => {
+    if (isHost) {
+      dispatch(action);
+    } else {
+      sendAction(action);
+    }
+  }, [isHost, dispatch, sendAction]);
 
   /**
    * After any state change (host-side), broadcast new state to all players.
@@ -91,37 +102,32 @@ export function useGameEngine() {
   // ── Player Actions ─────────────────────────────────────────────────────────
 
   const playerAttack = useCallback((playerId, roll) => {
-    const action = { type: ActionTypes.PLAYER_ATTACK, payload: { playerId, roll } };
-    dispatch(action);
-  }, [dispatch]);
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_ATTACK, payload: { playerId, roll } });
+  }, [dispatchPlayerAction]);
 
   const playerUseAbility = useCallback((playerId, targetId, roll) => {
-    const action = { type: ActionTypes.PLAYER_USE_ABILITY, payload: { playerId, targetId, roll } };
-    dispatch(action);
-  }, [dispatch]);
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_USE_ABILITY, payload: { playerId, targetId, roll } });
+  }, [dispatchPlayerAction]);
 
   const playerSetTrap = useCallback((playerId, trapTypeId, roll) => {
-    const action = { type: ActionTypes.PLAYER_SET_TRAP, payload: { playerId, trapTypeId, roll } };
-    dispatch(action);
-  }, [dispatch]);
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_SET_TRAP, payload: { playerId, trapTypeId, roll } });
+  }, [dispatchPlayerAction]);
 
   const playerRetreat = useCallback((playerId, roll) => {
-    const action = { type: ActionTypes.PLAYER_RETREAT, payload: { playerId, roll } };
-    dispatch(action);
-  }, [dispatch]);
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_RETREAT, payload: { playerId, roll } });
+  }, [dispatchPlayerAction]);
 
   const playerSearchFlora = useCallback((playerId, roll) => {
-    const action = { type: ActionTypes.PLAYER_SEARCH_FLORA, payload: { playerId, roll } };
-    dispatch(action);
-  }, [dispatch]);
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_SEARCH_FLORA, payload: { playerId, roll } });
+  }, [dispatchPlayerAction]);
 
   const playerMove = useCallback((playerId, targetZoneId) => {
-    dispatch({ type: ActionTypes.PLAYER_MOVE, payload: { playerId, targetZoneId } });
-  }, [dispatch]);
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_MOVE, payload: { playerId, targetZoneId } });
+  }, [dispatchPlayerAction]);
 
   const endPlayerTurn = useCallback(() => {
-    dispatch({ type: ActionTypes.ADVANCE_PHASE, payload: {} });
-  }, [dispatch]);
+    dispatchPlayerAction({ type: ActionTypes.ADVANCE_PHASE, payload: {} });
+  }, [dispatchPlayerAction]);
 
   // ── Boss Actions (host only) ───────────────────────────────────────────────
 

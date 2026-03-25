@@ -40,10 +40,24 @@ export default function HostView() {
       try {
         const bossAction = await selectBossAction(state, blueprint);
         const roll = rollD20();
-        const dispatchAction = bossActionToDispatch(bossAction, roll.raw);
-        dispatch(dispatchAction);
 
-        // After boss attacks, end boss turn
+        // Handle multi_attack: dispatch each hit with a short stagger
+        const attackCount = bossAction.action === 'multi_attack'
+          ? (bossAction.params?.attackCount || 2)
+          : 1;
+
+        for (let i = 0; i < attackCount; i++) {
+          const hitRoll = i === 0 ? roll : rollD20();
+          const dispatchAction = bossActionToDispatch(
+            { ...bossAction, action: i === 0 && bossAction.action !== 'multi_attack' ? bossAction.action : 'attack' },
+            hitRoll.raw,
+          );
+          // Stagger each hit by 400ms so HP bar animations are visible
+          await new Promise(res => setTimeout(res, i * 400));
+          dispatch(dispatchAction);
+        }
+
+        // End boss turn after all hits land
         setTimeout(() => {
           dispatch({ type: ActionTypes.BOSS_END_TURN, payload: {} });
           dispatch({ type: ActionTypes.RUN_ENVIRONMENT, payload: {} });

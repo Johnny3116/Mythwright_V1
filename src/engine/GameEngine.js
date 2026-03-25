@@ -160,11 +160,13 @@ export function createPlayerState(peerId, playerName, classId, blueprint) {
  * Add a narrative entry to the log.
  */
 function addNarrative(state, text) {
+  const arr = new Uint32Array(1);
+  crypto.getRandomValues(arr);
   return {
     ...state,
     narrativeLog: [
       ...state.narrativeLog,
-      { id: Date.now() + Math.random(), text, timestamp: Date.now() },
+      { id: `${Date.now()}-${arr[0]}`, text, timestamp: Date.now() },
     ],
   };
 }

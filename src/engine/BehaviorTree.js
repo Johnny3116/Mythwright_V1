@@ -29,8 +29,8 @@ export function evaluateBehaviorTree(bossStage, gameState, roll) {
     };
   }
 
-  // Dodge attempt (Stage 1)
-  if (behavior.dodgeChance && Math.random() < behavior.dodgeChance) {
+  // Dodge attempt (Stage 1) — use incoming roll for determinism
+  if (behavior.dodgeChance && roll <= Math.floor(behavior.dodgeChance * 20)) {
     return { action: 'dodge', target: null, params: {} };
   }
 
