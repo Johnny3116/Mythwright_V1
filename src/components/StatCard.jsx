@@ -1,9 +1,11 @@
+import styles from './components.module.css';
+
 export function StatCard({ label, value, icon }) {
   return (
-    <div className="stat-card">
-      {icon && <span className="stat-card__icon">{icon}</span>}
-      <span className="stat-card__label">{label}</span>
-      <span className="stat-card__value">{value}</span>
+    <div className={styles.statCard}>
+      {icon && <span className={styles.statCard__icon}>{icon}</span>}
+      <span className={styles.statCard__label}>{label}</span>
+      <span className={styles.statCard__value}>{value}</span>
     </div>
   );
 }
