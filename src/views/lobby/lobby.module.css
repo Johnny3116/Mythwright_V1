@@ -396,7 +396,7 @@
 
 .uploadRetryBtn:hover {
   background: rgba(199, 74, 56, 0.15);
-  color: #e05a48;
+  color: var(--accent-danger);
 }
 
 .uploadSpinner {
@@ -471,11 +471,11 @@
 }
 
 .accordion:hover {
-  border-color: #3a3a48;
+  border-color: var(--border-color);
 }
 
 .accordionOpen {
-  border-color: #3a3a48;
+  border-color: var(--border-color);
 }
 
 .accordionHeader {
@@ -565,7 +565,7 @@
 }
 
 .editableField:hover:not(:focus) {
-  border-color: #3a3a48;
+  border-color: var(--border-color);
 }
 
 .editableTextarea {
@@ -804,7 +804,7 @@
 }
 
 .gmCard:hover {
-  border-color: #3a3a48;
+  border-color: var(--border-color);
   transform: translateY(-1px);
 }
 
@@ -1077,7 +1077,7 @@
 }
 
 .playerItem:hover {
-  border-color: #3a3a48;
+  border-color: var(--border-color);
 }
 
 .playerStatusDot {
@@ -1142,7 +1142,7 @@
 .startButton {
   width: 100%;
   padding: var(--space-5) var(--space-8);
-  background: linear-gradient(135deg, #1a1208, #2a1e08);
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
   border: 2px solid var(--border-color);
   border-radius: var(--border-radius-md);
   color: var(--text-muted);
@@ -1179,7 +1179,7 @@
 .startButtonReady {
   border-color: var(--accent-secondary);
   color: var(--accent-secondary);
-  background: linear-gradient(135deg, #1c1608, #2e2208);
+  background: linear-gradient(135deg, var(--bg-tertiary), color-mix(in srgb, var(--bg-tertiary) 70%, var(--accent-secondary)));
   cursor: pointer;
   animation: pulse 2.5s ease-in-out infinite;
 }
@@ -1190,7 +1190,7 @@
 }
 
 .startButtonReady:hover {
-  background: linear-gradient(135deg, #251c08, #382a0a);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--bg-tertiary) 60%, var(--accent-secondary)), color-mix(in srgb, var(--bg-secondary) 50%, var(--accent-secondary)));
   animation: none;
   box-shadow: var(--shadow-glow-gold);
   transform: translateY(-1px);
@@ -1258,7 +1258,7 @@
 }
 
 .nameInput:hover:not(:focus) {
-  border-color: #3a3a48;
+  border-color: var(--border-color);
 }
 
 .nameInput::placeholder {
@@ -1354,7 +1354,7 @@
 
 .errorBannerText {
   font-size: var(--text-sm);
-  color: #e05a48;
+  color: var(--accent-danger);
   line-height: 1.5;
 }
 

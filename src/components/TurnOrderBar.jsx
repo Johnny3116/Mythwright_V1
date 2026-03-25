@@ -4,7 +4,8 @@ import styles from './components.module.css';
  * TurnOrderBar — Horizontal scrollable bar showing combat initiative order.
  *
  * Props:
- *   entities       {Array}  Array of { id, name, icon, hp, maxHp, isDead, isBoss }.
+ *   entities       {Array}  Array of { id, name, icon, hp, maxHp, isDead, isBoss, initiative }.
+ *                           `initiative` is an optional number shown below the D20 portrait frame.
  *   activeEntityId {string} ID of the entity whose turn it currently is.
  *   round          {number} Current round number. Defaults 1.
  */
@@ -33,15 +34,28 @@ export function TurnOrderBar({ entities = [], activeEntityId, round = 1 }) {
               role="listitem"
               aria-label={`${entity.name}${isActive ? ' — active turn' : ''}${isDead ? ' — dead' : ''}`}
             >
+              {/* D20-shaped portrait frame via clip-path hexagon */}
               <div className={styles.turnOrderPortrait}>
                 <span aria-hidden="true">{entity.icon ?? '?'}</span>
                 {isDead && (
                   <div className={styles.turnOrderDeadOverlay} aria-hidden="true">✕</div>
                 )}
               </div>
+
               <span className={styles.turnOrderName} title={entity.name}>
                 {entity.name}
               </span>
+
+              {/* Initiative roll number shown below the portrait */}
+              {entity.initiative != null && (
+                <span
+                  className={styles.turnOrderInitiative}
+                  title={`Initiative roll: ${entity.initiative}`}
+                  aria-label={`Initiative ${entity.initiative}`}
+                >
+                  {entity.initiative}
+                </span>
+              )}
             </div>
           );
         })}

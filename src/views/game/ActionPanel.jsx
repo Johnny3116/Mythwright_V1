@@ -100,6 +100,7 @@ export function ActionPanel({ availableActions = [], onAction, isMyTurn = false,
           onRollComplete={handleRollComplete}
           modifier={0}
           disabled={!isMyTurn}
+          showOverlay
         />
       </div>
     </div>

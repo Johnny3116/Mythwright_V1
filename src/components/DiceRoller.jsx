@@ -24,8 +24,9 @@ function getResultTier(raw) {
  *   onRollComplete {Function} Called with the result object { raw, modifier, total } after animation.
  *   modifier       {number}   Flat modifier added to the raw roll. Defaults 0.
  *   disabled       {boolean}  Prevents rolling. Defaults false.
+ *   showOverlay    {boolean}  When true, renders a full-screen overlay during rolling. Defaults false.
  */
-export function DiceRoller({ onRollComplete, modifier = 0, disabled = false }) {
+export function DiceRoller({ onRollComplete, modifier = 0, disabled = false, showOverlay = false }) {
   // Flicker number shown during the rolling animation.
   const [flickerNum, setFlickerNum] = useState(null);
   const flickerRef = useRef(null);
@@ -105,8 +106,9 @@ export function DiceRoller({ onRollComplete, modifier = 0, disabled = false }) {
     ? `Roll D20 ${modifier >= 0 ? '+' : ''}${modifier}`
     : 'Roll D20';
 
-  return (
-    <div className={rollerClass}>
+  // The inner dice panel (shared between inline and overlay modes).
+  const dicePanel = (
+    <>
       {/* D20 polygon shape */}
       <div className={styles.diceD20} aria-live="assertive" aria-label={result ? `Rolled ${result.total}` : 'Dice'}>
         <div className={styles.diceShape} aria-hidden="true" />
@@ -140,6 +142,27 @@ export function DiceRoller({ onRollComplete, modifier = 0, disabled = false }) {
       >
         {rollBtnLabel}
       </button>
+    </>
+  );
+
+  // Overlay mode: show full-screen backdrop while rolling or displaying result.
+  if (showOverlay && (isRolling || result)) {
+    return (
+      <>
+        {/* Inline trigger button when idle */}
+        <div className={rollerClass} style={{ visibility: 'hidden', pointerEvents: 'none' }} aria-hidden="true" />
+        <div className={styles.diceRollerOverlay} role="dialog" aria-modal="true" aria-label="Dice Roll">
+          <div className={styles.diceRollerOverlayPanel}>
+            {dicePanel}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <div className={rollerClass}>
+      {dicePanel}
     </div>
   );
 }

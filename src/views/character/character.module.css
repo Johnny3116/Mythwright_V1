@@ -346,7 +346,7 @@
 .selectBtn.active {
   background: var(--accent-secondary);
   border-color: var(--accent-secondary);
-  color: #000;
+  color: var(--text-inverse);
 }
 
 .selectBtn:disabled {
@@ -437,8 +437,8 @@
 }
 
 .colorSwatch.active {
-  border-color: #fff;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px rgba(232, 230, 224, 0.35);
   transform: scale(1.12);
 }
 
@@ -628,7 +628,7 @@
   background: var(--accent-primary);
   border: 1px solid var(--accent-primary);
   border-radius: var(--border-radius-md);
-  color: #fff;
+  color: var(--text-primary);
   font-family: var(--font-display);
   font-size: 0.88rem;
   font-weight: 700;
@@ -640,7 +640,8 @@
 }
 
 .startBtn:hover:not(:disabled) {
-  background: #d85240;
+  background: var(--accent-primary);
+  filter: brightness(1.15);
   box-shadow: 0 4px 22px rgba(199, 74, 56, 0.55);
   transform: translateY(-1px);
 }

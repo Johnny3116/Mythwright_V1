@@ -248,8 +248,9 @@
 }
 
 .actionButton--primary:hover:not(:disabled) {
-  background: #d95a46;
-  border-color: #d95a46;
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  filter: brightness(1.15);
   box-shadow: var(--shadow-glow-red);
 }
 
@@ -599,9 +600,11 @@
 }
 
 .turnOrderPortrait {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  /* D20 hexagonal shape — 6-sided polygon mimicking D20 silhouette */
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  border-radius: 0;
   border: 2px solid var(--border-color);
   background: var(--bg-tertiary);
   display: flex;
@@ -610,6 +613,21 @@
   font-size: 1.2rem;
   position: relative;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline: 2px solid var(--border-color);
+  outline-offset: -2px;
+}
+
+/* Initiative number badge below portrait */
+.turnOrderInitiative {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.turnOrderEntity--active .turnOrderInitiative {
+  color: var(--accent-secondary);
 }
 
 .turnOrderEntity--active .turnOrderPortrait {
@@ -929,6 +947,50 @@
   cursor: not-allowed;
 }
 
+/* DiceRoller full-screen overlay (showOverlay mode) */
+.diceRollerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn var(--transition-fast) ease;
+}
+
+.diceRollerOverlayPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-12) var(--space-16);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-gold);
+  animation: slideUp var(--transition-base) ease;
+}
+
+/* Larger D20 shape in overlay mode */
+.diceRollerOverlayPanel .diceD20 {
+  width: 200px;
+  height: 200px;
+}
+
+.diceRollerOverlayPanel .diceNumber {
+  font-size: 4rem;
+}
+
+.diceRollerOverlayPanel .diceNumber--rolling {
+  font-size: 3rem;
+}
+
+.diceRollerOverlayPanel .diceLabel {
+  font-size: var(--text-lg);
+  letter-spacing: 0.2em;
+}
+
 /* ============================================================
    FloatingDamage
    ============================================================ */
@@ -1009,7 +1071,7 @@
 .encounterSplash--encounter .encounterSplashTitle { color: var(--accent-danger); }
 .encounterSplash--evolution .encounterSplashTitle { color: var(--accent-secondary); }
 .encounterSplash--victory   .encounterSplashTitle { color: var(--accent-success); }
-.encounterSplash--defeat    .encounterSplashTitle { color: #8b1a1a; }
+.encounterSplash--defeat    .encounterSplashTitle { color: var(--accent-danger); filter: brightness(0.75); }
 
 .encounterSplashSubtitle {
   font-family: var(--font-body);

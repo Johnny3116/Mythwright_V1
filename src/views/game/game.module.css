@@ -345,7 +345,7 @@
 }
 
 .playerTokenText {
-  fill: #fff;
+  fill: var(--text-primary);
   font-family: var(--font-body);
   font-size: 8px;
   font-weight: 700;
@@ -372,7 +372,7 @@
 }
 
 .bossTokenText {
-  fill: #fff;
+  fill: var(--text-primary);
   font-size: 14px;
   text-anchor: middle;
   dominant-baseline: central;
@@ -774,4 +774,22 @@
 .charSheet::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: 2px;
+}
+
+/* Demo mode badge */
+.demoBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  background: rgba(212, 168, 67, 0.18);
+  border: 1px solid rgba(212, 168, 67, 0.4);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--accent-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
 }
