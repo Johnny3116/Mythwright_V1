@@ -396,6 +396,7 @@
 
 .uploadRetryBtn:hover {
   background: rgba(199, 74, 56, 0.15);
+  color: var(--accent-danger);
   color: #e05a48;
 }
 
@@ -471,6 +472,11 @@
 }
 
 .accordion:hover {
+  border-color: var(--border-color);
+}
+
+.accordionOpen {
+  border-color: var(--border-color);
   border-color: #3a3a48;
 }
 
@@ -565,6 +571,7 @@
 }
 
 .editableField:hover:not(:focus) {
+  border-color: var(--border-color);
   border-color: #3a3a48;
 }
 
@@ -804,6 +811,7 @@
 }
 
 .gmCard:hover {
+  border-color: var(--border-color);
   border-color: #3a3a48;
   transform: translateY(-1px);
 }
@@ -1077,6 +1085,7 @@
 }
 
 .playerItem:hover {
+  border-color: var(--border-color);
   border-color: #3a3a48;
 }
 
@@ -1142,6 +1151,7 @@
 .startButton {
   width: 100%;
   padding: var(--space-5) var(--space-8);
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
   background: linear-gradient(135deg, #1a1208, #2a1e08);
   border: 2px solid var(--border-color);
   border-radius: var(--border-radius-md);
@@ -1179,6 +1189,7 @@
 .startButtonReady {
   border-color: var(--accent-secondary);
   color: var(--accent-secondary);
+  background: linear-gradient(135deg, var(--bg-tertiary), color-mix(in srgb, var(--bg-tertiary) 70%, var(--accent-secondary)));
   background: linear-gradient(135deg, #1c1608, #2e2208);
   cursor: pointer;
   animation: pulse 2.5s ease-in-out infinite;
@@ -1190,6 +1201,7 @@
 }
 
 .startButtonReady:hover {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--bg-tertiary) 60%, var(--accent-secondary)), color-mix(in srgb, var(--bg-secondary) 50%, var(--accent-secondary)));
   background: linear-gradient(135deg, #251c08, #382a0a);
   animation: none;
   box-shadow: var(--shadow-glow-gold);
@@ -1258,6 +1270,7 @@
 }
 
 .nameInput:hover:not(:focus) {
+  border-color: var(--border-color);
   border-color: #3a3a48;
 }
 
@@ -1354,6 +1367,7 @@
 
 .errorBannerText {
   font-size: var(--text-sm);
+  color: var(--accent-danger);
   color: #e05a48;
   line-height: 1.5;
 }

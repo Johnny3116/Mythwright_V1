@@ -1,3 +1,9 @@
+import { useState, useCallback } from 'react';
+import { useGameEngine } from '@hooks/useGameEngine';
+import { useTurnManager } from '@hooks/useTurnManager';
+import { ZoneCard } from '@components/ZoneCard';
+import { FloatingDamage } from '@components/FloatingDamage';
+import { EncounterSplash } from '@components/EncounterSplash';
 import { useState } from 'react';
 import { useGameEngine } from '@hooks/useGameEngine';
 import { useTurnManager } from '@hooks/useTurnManager';
@@ -29,6 +35,7 @@ const MOCK_GAME_STATE = {
       zoneId: 'verdant-maw',
       effects: [],
       isDead: false,
+      initiative: 17,
     },
     'player-2': {
       id: 'player-2',
@@ -42,6 +49,7 @@ const MOCK_GAME_STATE = {
       zoneId: 'razorback-canopy',
       effects: [{ id: 'e1', type: 'poison', duration: 2 }],
       isDead: false,
+      initiative: 12,
     },
     'player-3': {
       id: 'player-3',
@@ -55,6 +63,7 @@ const MOCK_GAME_STATE = {
       zoneId: 'verdant-maw',
       effects: [],
       isDead: false,
+      initiative: 9,
     },
   },
   boss: {
@@ -66,6 +75,7 @@ const MOCK_GAME_STATE = {
     zoneId: 'shattered-cliffs',
     effects: [],
     isBurrowed: false,
+    initiative: 5,
   },
   zones: {
     'verdant-maw':      { traps: [], hasFlora: true,  floraType: 'lifebloom-orchid' },
@@ -90,6 +100,9 @@ const MOCK_GAME_STATE = {
  *   TurnTracker (top bar, full width)
  *   CharacterSheet | ZoneMap | NarratorFeed
  *   ActionPanel (bottom bar, full width)
+ *
+ * Includes FloatingDamage popups wired to combat events and
+ * EncounterSplash overlays for major game events.
  */
 export default function GameView() {
   const { gameState: liveGameState, blueprint, myPlayerId: livePlayerId } = useGameEngine();
@@ -111,6 +124,26 @@ export default function GameView() {
   const [selectedZoneId, setSelectedZoneId] = useState(null);
   const [zoneCardPos, setZoneCardPos]       = useState({ top: 80, left: 300 });
 
+  // FloatingDamage events — array of { id, amount, type, zoneId }
+  const [floatingEvents, setFloatingEvents] = useState([]);
+
+  // EncounterSplash state
+  const [splash, setSplash] = useState(null); // { type, title, subtitle }
+
+  // Expose a trigger for testing/demo from action handler
+  const triggerFloating = useCallback((amount, type = 'damage') => {
+    const id = `fd-${Date.now()}-${Math.random()}`;
+    setFloatingEvents((prev) => [...prev, { id, amount, type }]);
+  }, []);
+
+  const dismissFloating = useCallback((id) => {
+    setFloatingEvents((prev) => prev.filter((e) => e.id !== id));
+  }, []);
+
+  const triggerSplash = useCallback((type, title, subtitle) => {
+    setSplash({ type, title, subtitle });
+  }, []);
+
   // Derive blueprint zones array for the map.
   const blueprintZones = blueprint?.zones ?? [];
 
@@ -129,6 +162,7 @@ export default function GameView() {
     ? blueprintZones.find((z) => z.id === selectedZoneId) ?? null
     : null;
 
+  // Build a mock blueprint zone for demo mode when no blueprint is loaded.
   // Build a mock blueprint zone for demo mode.
   const demoZone = selectedZoneId && !selectedZone
     ? {
@@ -137,6 +171,7 @@ export default function GameView() {
         subtitle:   'Zone of the Hunt',
         description:'A treacherous region teeming with danger and opportunity for the skilled hunter.',
         retreatModifier: 0,
+        trapBonus:  'None',
         trapBonus:  0,
         connectedZones: [],
       }
@@ -165,6 +200,16 @@ export default function GameView() {
   }
 
   function handleAction(actionType) {
+    if (isDemoMode) {
+      // Demo: simulate a combat event so FloatingDamage / EncounterSplash are testable.
+      if (actionType === 'ATTACK') {
+        triggerFloating(24, 'damage');
+        triggerSplash('encounter', 'ENCOUNTER', 'You engage Tzorath in combat!');
+      } else if (actionType === 'SEARCH_FLORA') {
+        triggerFloating(30, 'heal');
+      }
+    } else {
+      // Phase 5: dispatch player action intent to host via network.
     // In live mode, dispatch the player action intent.
     // This will be wired to the full engine dispatch in Phase 5.
     if (!isDemoMode) {
@@ -172,6 +217,34 @@ export default function GameView() {
       console.debug('[GameView] Player action intent:', actionType); // eslint-disable-line no-console
     }
   }
+
+  const myPlayer    = myPlayerId ? (gameState.players[myPlayerId] ?? null) : null;
+  const timerEnabled = blueprint?.settings?.turnTimer?.enabled ?? false;
+  const timerSeconds = blueprint?.settings?.turnTimer?.defaultSeconds ?? 60;
+
+  return (
+    <div className={styles.gameView} role="main" aria-label="Game view">
+
+      {/* ── EncounterSplash overlay (full-screen, z-index above everything) ── */}
+      {splash && (
+        <EncounterSplash
+          type={splash.type}
+          title={splash.title}
+          subtitle={splash.subtitle}
+          isVisible={Boolean(splash)}
+          onComplete={() => setSplash(null)}
+        />
+      )}
+
+      {/* ── Floating damage popups (positioned in map area) ── */}
+      {floatingEvents.map((evt) => (
+        <FloatingDamage
+          key={evt.id}
+          amount={evt.amount}
+          type={evt.type}
+          onAnimationEnd={() => dismissFloating(evt.id)}
+        />
+      ))}
 
   // Derive myPlayer.
   const myPlayer = myPlayerId ? (gameState.players[myPlayerId] ?? null) : null;
@@ -203,6 +276,7 @@ export default function GameView() {
       </div>
 
       {/* ── Zone map (center) ── */}
+      <div className={styles.mapArea} data-map-area="">
       <div
         className={styles.mapArea}
         data-map-area=""
@@ -231,6 +305,7 @@ export default function GameView() {
 
         {/* Demo mode badge */}
         {isDemoMode && (
+          <div className={styles.demoBadge} aria-hidden="true">
           <div
             style={{
               position: 'absolute',

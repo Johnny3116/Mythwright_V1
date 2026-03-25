@@ -345,6 +345,337 @@
 }
 
 .playerTokenText {
+  fill: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 8px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  letter-spacing: 0;
+}
+
+.bossToken {
+  animation: bossFloat 2.5s ease-in-out infinite;
+  cursor: default;
+}
+
+@keyframes bossFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-3px); }
+}
+
+.bossTokenCircle {
+  fill: rgba(199, 74, 56, 0.85);
+  stroke: rgba(199, 74, 56, 0.4);
+  stroke-width: 2;
+}
+
+.bossTokenText {
+  fill: var(--text-primary);
+  font-size: 14px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.trapIndicator {
+  fill: var(--accent-secondary);
+  opacity: 0.7;
+}
+
+.floraIndicator {
+  fill: var(--accent-success);
+  opacity: 0.7;
+}
+
+/* ── Map legend ──────────────────────────────────────────── */
+
+.mapLegend {
+  position: absolute;
+  bottom: var(--space-4);
+  left: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(18, 18, 26, 0.85);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Character Sheet
+   ============================================================ */
+
+.charSheetPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+}
+
+.charSheetHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+}
+
+.charAvatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: var(--border-radius-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.charHeaderInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.charName {
+  font-family: var(--font-display);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.turnEntity.active .turnEntityPortrait {
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 0 2px rgba(212, 168, 67, 0.3), 0 0 12px rgba(212, 168, 67, 0.2);
+  animation: activePulse 2s ease-in-out infinite;
+}
+
+.turnEntity.boss .turnEntityPortrait {
+  border-color: var(--accent-danger);
+  background: rgba(199, 74, 56, 0.12);
+}
+
+.turnEntity.boss.active .turnEntityPortrait {
+  border-color: var(--accent-danger);
+  box-shadow: 0 0 0 2px rgba(199, 74, 56, 0.3), 0 0 12px rgba(199, 74, 56, 0.2);
+  animation: activePulseDanger 2s ease-in-out infinite;
+}
+
+@keyframes activePulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(212, 168, 67, 0.3), 0 0 12px rgba(212, 168, 67, 0.15); }
+  50%       { box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.5), 0 0 20px rgba(212, 168, 67, 0.35); }
+}
+
+@keyframes activePulseDanger {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(199, 74, 56, 0.3), 0 0 12px rgba(199, 74, 56, 0.15); }
+  50%       { box-shadow: 0 0 0 3px rgba(199, 74, 56, 0.5), 0 0 20px rgba(199, 74, 56, 0.35); }
+}
+
+.turnEntityDeadX {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 50%;
+  font-size: 1rem;
+  color: var(--accent-danger);
+  font-weight: 700;
+}
+
+.turnEntityName {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60px;
+}
+
+.turnEntity.active .turnEntityName {
+  color: var(--accent-secondary);
+  font-weight: 600;
+}
+
+.turnTrackerDivider {
+  width: 1px;
+  height: 40px;
+  background: var(--border-color);
+  flex-shrink: 0;
+  margin: 0 var(--space-2);
+}
+
+.turnTrackerMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.roundBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+}
+
+.roundLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.roundNumber {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent-secondary);
+}
+
+.phaseBadge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.phaseBadge.playerTurn {
+  color: var(--accent-success);
+}
+
+.phaseBadge.bossTurn {
+  color: var(--accent-danger);
+}
+
+/* ── Timer bar ───────────────────────────────────────────── */
+
+.timerBarTrack {
+  height: 3px;
+  background: var(--bg-primary);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.timerBarFill {
+  height: 100%;
+  background: var(--accent-secondary);
+  transition: width 1s linear, background-color 1s;
+}
+
+.timerBarFill.urgent {
+  background: var(--accent-danger);
+}
+
+/* ============================================================
+   Zone Map
+   ============================================================ */
+
+.zoneMap {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.zoneMapSvg {
+  width: 100%;
+  height: 100%;
+}
+
+.connectionLine {
+  stroke: var(--border-color);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  opacity: 0.55;
+}
+
+.zoneCircleOuter {
+  fill: var(--bg-secondary);
+  stroke: var(--border-color);
+  stroke-width: 2;
+  cursor: pointer;
+  transition: stroke 0.15s, fill 0.15s;
+}
+
+.zoneCircleOuter:hover {
+  stroke: rgba(212, 168, 67, 0.7);
+  fill: var(--bg-tertiary);
+}
+
+.zoneCircleOuter.bossZone {
+  stroke: var(--accent-danger);
+  fill: rgba(199, 74, 56, 0.1);
+}
+
+.zoneCircleOuter.myZone {
+  stroke: var(--accent-secondary);
+  fill: rgba(212, 168, 67, 0.06);
+}
+
+.zoneLabel {
+  fill: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 10px;
+  text-anchor: middle;
+  pointer-events: none;
+  letter-spacing: 0.03em;
+}
+
+.zoneLabel.activeLabel {
+  fill: var(--accent-secondary);
+  font-weight: 600;
+}
+
+.playerToken {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.playerToken:hover {
+  opacity: 0.8;
+}
+
+.playerTokenCircle {
+  stroke: var(--bg-primary);
+  stroke-width: 1.5;
+}
+
+.playerTokenText {
   fill: #fff;
   font-family: var(--font-body);
   font-size: 8px;
@@ -774,4 +1105,22 @@
 .charSheet::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: 2px;
+}
+
+/* Demo mode badge */
+.demoBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  background: rgba(212, 168, 67, 0.18);
+  border: 1px solid rgba(212, 168, 67, 0.4);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--accent-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
 }

@@ -346,6 +346,471 @@
 .selectBtn.active {
   background: var(--accent-secondary);
   border-color: var(--accent-secondary);
+  color: var(--text-inverse);
+}
+
+.selectBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+/* ── Customization Panel ─────────────────────────────────── */
+
+.customPanel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-5);
+}
+
+.customPanelTitle {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 var(--space-4) 0;
+}
+
+.customRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.customField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.customFieldLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.nameInput {
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  min-width: 200px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+}
+
+.nameInput:focus {
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 0 2px rgba(212, 168, 67, 0.15);
+}
+
+.nameInput::placeholder {
+  color: var(--text-muted);
+}
+
+.colorPicker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.colorSwatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+  outline: none;
+}
+
+.colorSwatch:hover {
+  transform: scale(1.2);
+}
+
+.colorSwatch.active {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px rgba(232, 230, 224, 0.35);
+  transform: scale(1.12);
+}
+
+/* ── Party Panel ─────────────────────────────────────────── */
+
+.partyPanel {
+  grid-area: party;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
+  padding: var(--space-6) var(--space-5);
+  gap: var(--space-4);
+  overflow-y: auto;
+}
+
+.partyTitle {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.partySlots {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.partySlot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  min-height: 66px;
+  transition: border-color var(--transition-fast);
+}
+
+.partySlot.filled {
+  border-color: rgba(74, 158, 106, 0.45);
+}
+
+.partySlot.waiting {
+  animation: partySlotPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes partySlotPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.partySlotAvatar {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  transition: border-color var(--transition-fast);
+}
+
+.partySlotInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.partySlotName {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.partySlotClass {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.partySlotEmpty {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.readyBadge {
+  padding: 3px 8px;
+  background: rgba(74, 158, 106, 0.18);
+  border: 1px solid rgba(74, 158, 106, 0.5);
+  border-radius: 99px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--accent-success);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.notReadyBadge {
+  padding: 3px 8px;
+  background: rgba(90, 88, 85, 0.18);
+  border: 1px solid rgba(90, 88, 85, 0.4);
+  border-radius: 99px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Party Actions ───────────────────────────────────────── */
+
+.partyActions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-color);
+}
+
+.partyStatus {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.readyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.readyBtn:hover:not(:disabled) {
+  border-color: var(--accent-success);
+  color: var(--accent-success);
+  background: rgba(74, 158, 106, 0.08);
+}
+
+.readyBtn.isReady {
+  background: rgba(74, 158, 106, 0.12);
+  border-color: var(--accent-success);
+  color: var(--accent-success);
+}
+
+.readyBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.startBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-5);
+  background: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.classInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.className {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.06em;
+  margin: 0 0 4px 0;
+}
+
+.classSubtitle {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ── Stat Bars ───────────────────────────────────────────── */
+
+.statBars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.statBar {
+  display: grid;
+  grid-template-columns: 32px 1fr 40px;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.statBarLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.statBarValue {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.statBarTrack {
+  height: 5px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.statBarFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width var(--transition-base);
+}
+
+.statBarFill.hp {
+  background: var(--accent-success);
+}
+
+.statBarFill.dmg {
+  background: var(--accent-primary);
+}
+
+.statBarFill.def {
+  background: var(--accent-info);
+}
+
+/* ── Special Ability ─────────────────────────────────────── */
+
+.abilitySection {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-color);
+}
+
+.abilityLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.abilityName {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent-secondary);
+  margin: 0 0 3px 0;
+}
+
+.abilityDesc {
+  font-size: 0.73rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* ── Taken Overlay ───────────────────────────────────────── */
+
+.takenOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 15, 0.6);
+  border-radius: var(--border-radius-lg);
+  z-index: 2;
+}
+
+.takenBy {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-align: center;
+}
+
+.takenBy strong {
+  color: var(--text-primary);
+  display: block;
+  font-size: 0.86rem;
+}
+
+/* ── Select Button ───────────────────────────────────────── */
+
+.selectBtn {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.selectBtn:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+
+.selectBtn.active {
+  background: var(--accent-secondary);
+  border-color: var(--accent-secondary);
   color: #000;
 }
 
