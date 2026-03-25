@@ -1,40 +1,113 @@
 /**
  * CombatResolver — Pure combat resolution function
- * No side effects. Same inputs always produce same outputs.
+ * No side effects. Same inputs always produce same outputs for deterministic tests.
  */
+
+import { rollInRange, rollBetween } from './DiceSystem.js';
+
+/**
+ * Roll a damage value within [min, max] using a seed integer.
+ * @param {number[]} damageRange - [min, max]
+ * @param {object} modifiers - { multiplier?: number, flatBonus?: number }
+ * @returns {number}
+ */
+export function calculateDamage(damageRange, modifiers = {}) {
+  const [min, max] = damageRange;
+  let base = rollBetween(min, max);
+  if (modifiers.multiplier) base = Math.floor(base * modifiers.multiplier);
+  if (modifiers.flatBonus) base += modifiers.flatBonus;
+  return Math.max(0, base);
+}
+
+/**
+ * Apply defense reduction to a raw damage value, floored at 0.
+ * @param {number} rawDamage
+ * @param {number} defense
+ * @param {number} [shieldReduction=0] - Additional flat reduction from shields
+ * @returns {number}
+ */
+export function applyDefense(rawDamage, defense, shieldReduction = 0) {
+  return Math.max(0, rawDamage - defense - shieldReduction);
+}
 
 /**
  * Resolve a combat action between attacker and defender.
- * @param {object} attacker - Entity with damageRange, modifiers
- * @param {object} defender - Entity with defense, modifiers
- * @param {number} roll - D20 roll result (1-20)
- * @param {object} settings - Campaign settings (hitRanges, critMultiplier)
- * @returns {{ hit: boolean, critical: boolean, damage: number, effectsApplied: Array, narrative: string }}
+ *
+ * @param {object} attacker - { damage: [min,max], modifiers?: { multiplier?, flatBonus? } }
+ * @param {object} defender - { defense: number, shieldReduction?: number, statusEffects?: object[] }
+ * @param {object} roll - Result from rollD20(): { natural, modified, modifier }
+ * @param {object} settings - { hitRanges, critMultiplier, lethalStrikeBonus? }
+ * @returns {{
+ *   hit: boolean,
+ *   critical: boolean,
+ *   damageRoll: number,
+ *   damageDealt: number,
+ *   effectsApplied: string[],
+ *   narrative: string
+ * }}
  */
 export function resolveCombat(attacker, defender, roll, settings) {
-  // TODO: Implement in Phase 2
-  throw new Error('CombatResolver.resolveCombat not yet implemented');
-}
+  const { hitRanges, critMultiplier = 2.0, lethalStrikeBonus = 0 } = settings;
 
-/**
- * Calculate raw damage within a damage range using a seed value.
- * @param {number} min
- * @param {number} max
- * @param {number} seed - A random integer to determine value within range
- * @returns {number}
- */
-export function calculateDamage(min, max, seed) {
-  // TODO: Implement in Phase 2
-  throw new Error('CombatResolver.calculateDamage not yet implemented');
-}
+  // Use the natural roll (unmodified) for hit range lookup unless otherwise noted
+  const rollValue = roll.modified !== undefined ? roll.modified : roll.natural;
+  const rangeKey = rollInRange(rollValue, hitRanges);
 
-/**
- * Apply defense reduction to a damage value.
- * @param {number} damage
- * @param {number} defense
- * @returns {number}
- */
-export function applyDefense(damage, defense) {
-  // TODO: Implement in Phase 2
-  throw new Error('CombatResolver.applyDefense not yet implemented');
+  const isMiss = rangeKey === 'miss' || rangeKey === null;
+  const isCritical = rangeKey === 'critical' || rangeKey === 'lethalStrike';
+  const isHit = !isMiss;
+
+  if (isMiss) {
+    return {
+      hit: false,
+      critical: false,
+      damageRoll: 0,
+      damageDealt: 0,
+      effectsApplied: [],
+      narrative: 'The attack misses.',
+    };
+  }
+
+  // Build damage modifiers
+  const modifiers = { ...(attacker.modifiers || {}) };
+  if (isCritical) {
+    // For lethalStrike apply bonus on top of regular multiplier; for critical use critMultiplier
+    const multiplierBase = modifiers.multiplier || 1;
+    if (rangeKey === 'lethalStrike') {
+      modifiers.multiplier = multiplierBase * (1 + lethalStrikeBonus);
+    } else {
+      modifiers.multiplier = multiplierBase * critMultiplier;
+    }
+  }
+
+  const damageRoll = calculateDamage(attacker.damage, modifiers);
+  const defense = defender.defense || 0;
+  const shieldReduction = defender.shieldReduction || 0;
+  const damageDealt = applyDefense(damageRoll, defense, shieldReduction);
+
+  // Collect applied effects from defender status
+  const effectsApplied = [];
+  if (defender.statusEffects && Array.isArray(defender.statusEffects)) {
+    for (const effect of defender.statusEffects) {
+      if (effect.type === 'damageReduction') {
+        effectsApplied.push('damageReduction');
+      }
+    }
+  }
+
+  let narrative;
+  if (isCritical) {
+    narrative = `Critical strike! ${damageDealt} damage dealt.`;
+  } else {
+    narrative = `Hit! ${damageDealt} damage dealt.`;
+  }
+
+  return {
+    hit: true,
+    critical: isCritical,
+    damageRoll,
+    damageDealt,
+    effectsApplied,
+    narrative,
+  };
 }
