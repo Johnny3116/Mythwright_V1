@@ -5,7 +5,7 @@
   <!-- Iris -->
   <circle cx="24" cy="24" r="8" fill="currentColor"/>
   <!-- Pupil -->
-  <circle cx="24" cy="24" r="4" fill="var(--bg-primary,#0a0a0f)"/>
+  <circle cx="24" cy="24" r="4" fill="#0a0a0f"/>
   <!-- Highlight -->
   <circle cx="27" cy="21" r="2" fill="currentColor"/>
 </svg>

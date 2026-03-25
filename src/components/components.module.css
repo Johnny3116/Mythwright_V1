@@ -573,13 +573,11 @@
 }
 
 .turnOrderEntityPlayer {
-  border-color: var(--accent-info);
-  border-opacity: 0.4;
+  border-color: color-mix(in srgb, var(--accent-info) 40%, transparent);
 }
 
 .turnOrderEntityBoss {
-  border-color: var(--accent-danger);
-  border-opacity: 0.4;
+  border-color: color-mix(in srgb, var(--accent-danger) 40%, transparent);
 }
 
 .turnOrderEntityActive {

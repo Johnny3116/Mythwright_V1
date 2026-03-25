@@ -93,7 +93,9 @@ export function DiceRoller({ rolling, result, onRollComplete, showLabel = true }
       let tick = 0;
       shuffleRef.current = setInterval(() => {
         tick++;
-        setShuffleNum(Math.floor(Math.random() * 20) + 1);
+        const buf = new Uint32Array(1);
+        crypto.getRandomValues(buf);
+        setShuffleNum((buf[0] % 20) + 1);
       }, 80);
     } else if (!rolling && animState === 'rolling' && result !== null) {
       // Rolling stopped — clear shuffle, reveal result
