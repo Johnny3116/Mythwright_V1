@@ -1,27 +1,37 @@
 {
   "name": "mythwright",
+  "version": "1.0.0",
+  "description": "Universal AI-compiled tabletop game engine",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/ --ext .js,.jsx",
+    "format": "prettier --write src/"
   },
   "dependencies": {
+    "peerjs": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0",
-    "peerjs": "^1.5.4"
+    "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^6.0.5",
-    "vitest": "^2.1.8",
-    "@testing-library/react": "^16.1.0",
     "@testing-library/jest-dom": "^6.6.3",
-    "jsdom": "^25.0.1"
+    "@testing-library/react": "^16.1.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^2.1.9",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "jsdom": "^25.0.1",
+    "prettier": "^3.8.1",
+    "terser": "^5.46.1",
+    "vite": "^6.0.5",
+    "vitest": "^2.1.8"
   }
 }

@@ -11,7 +11,6 @@ function TypewriterLine({ text, speed = 30, onComplete }) {
 
   useEffect(() => {
     indexRef.current = 0;
-    setDisplayed('');
 
     function tick() {
       if (indexRef.current < text.length) {
@@ -76,7 +75,7 @@ export function NarratorBox({ messages = [], typewriterSpeed = 25, className = '
             </span>
           )}
           {i === lastIndex ? (
-            <TypewriterLine text={msg.text} speed={typewriterSpeed} />
+            <TypewriterLine key={msg.id ?? i} text={msg.text} speed={typewriterSpeed} />
           ) : (
             <span>{msg.text}</span>
           )}
