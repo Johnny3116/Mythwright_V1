@@ -1,0 +1,494 @@
+{
+  "$schema": "tabletop-engine/campaign-blueprint/v1",
+  "meta": {
+    "title": "Monster Hunt: Tzorath the Ancient",
+    "description": "Hunt an evolving reptilian predator across the hostile jungles of Zarkona",
+    "genre": "monster-hunt",
+    "playerCount": { "min": 3, "max": 4 },
+    "estimatedDuration": "2-3 hours",
+    "author": "JackFrost",
+    "version": "1.0.0",
+    "gmModes": ["human", "scripted", "ai"],
+    "images": {
+      "banner": "assets/banner.png",
+      "map": "assets/verdant-maw-map.png"
+    }
+  },
+
+  "settings": {
+    "diceType": "d20",
+    "turnTimer": { "enabled": false, "defaultSeconds": 60 },
+    "combatSystem": "roll-to-hit",
+    "hitRanges": {
+      "miss": [1, 5],
+      "hit": [6, 15],
+      "critical": [16, 20]
+    },
+    "critMultiplier": 2.0
+  },
+
+  "classes": [
+    {
+      "id": "assault",
+      "name": "Assault",
+      "icon": "🔥",
+      "baseStats": { "hp": 120, "damage": [20, 30], "defense": 10 },
+      "specialAbility": {
+        "name": "Momentum Strike",
+        "description": "Deals +50% damage after 3 consecutive hits",
+        "trigger": "consecutiveHits",
+        "triggerValue": 3,
+        "effect": { "type": "damageMultiplier", "value": 1.5, "duration": 1 }
+      }
+    },
+    {
+      "id": "trapper",
+      "name": "Trapper",
+      "icon": "⚙️",
+      "baseStats": { "hp": 100, "damage": [15, 25], "defense": 15 },
+      "specialAbility": {
+        "name": "Snare",
+        "description": "Can snare the monster for 1 turn, stopping movement",
+        "trigger": "manual",
+        "effect": { "type": "immobilize", "duration": 1, "target": "boss" }
+      }
+    },
+    {
+      "id": "medic",
+      "name": "Medic",
+      "icon": "🩺",
+      "baseStats": { "hp": 90, "damage": [10, 15], "defense": 10 },
+      "specialAbility": {
+        "name": "Field Heal",
+        "description": "Can heal teammates for 25 HP per turn",
+        "trigger": "manual",
+        "effect": { "type": "heal", "value": 25, "target": "ally" }
+      }
+    },
+    {
+      "id": "support",
+      "name": "Support",
+      "icon": "🛡️",
+      "baseStats": { "hp": 110, "damage": [10, 20], "defense": 20 },
+      "specialAbility": {
+        "name": "Deploy Shield",
+        "description": "Reduces incoming damage by 50% for 2 turns",
+        "trigger": "manual",
+        "effect": { "type": "damageReduction", "value": 0.5, "duration": 2, "target": "zone" }
+      }
+    }
+  ],
+
+  "enemies": {
+    "boss": {
+      "id": "tzorath",
+      "name": "Tzorath the Ancient",
+      "title": "Wrath of the Jungle",
+      "description": "An ancient reptilian creature who evolves and reverts back to newborn form to start the cycle again",
+      "image": "assets/tzorath.png",
+      "hitRanges": {
+        "miss": [1, 5],
+        "hit": [6, 15],
+        "lethalStrike": [16, 20]
+      },
+      "lethalStrikeBonus": 0.5,
+      "stages": [
+        {
+          "stage": 1,
+          "name": "Hatchling",
+          "maxHp": 200,
+          "damage": [15, 25],
+          "defense": 10,
+          "retreatThreshold": 100,
+          "retreatRecovery": 50,
+          "specialTraits": ["Quick and evasive", "+10% chance to dodge"],
+          "behavior": {
+            "dodgeChance": 0.10,
+            "retreatAction": "Flees into the jungle",
+            "retreatZone": "verdant-maw"
+          }
+        },
+        {
+          "stage": 2,
+          "name": "Stalker",
+          "maxHp": 300,
+          "damage": [20, 30],
+          "defense": 15,
+          "retreatThreshold": 150,
+          "retreatRecovery": 75,
+          "specialTraits": ["Can burrow", "Becomes untargetable for 1 turn"],
+          "behavior": {
+            "burrowChance": 0.25,
+            "retreatAction": "Burrows underground",
+            "retreatZone": "obsidian-grotto"
+          }
+        },
+        {
+          "stage": 3,
+          "name": "Predator",
+          "maxHp": 400,
+          "damage": [25, 40],
+          "defense": 20,
+          "retreatThreshold": 200,
+          "retreatRecovery": 100,
+          "specialTraits": ["Can grab a player", "Disabling them for 1 turn"],
+          "behavior": {
+            "grabChance": 0.30,
+            "retreatAction": "Climbs to a high vantage point",
+            "retreatZone": "razorback-canopy"
+          }
+        },
+        {
+          "stage": 4,
+          "name": "Enraged",
+          "maxHp": 500,
+          "damage": [30, 50],
+          "defense": 25,
+          "retreatThreshold": 250,
+          "retreatRecovery": 150,
+          "specialTraits": ["Enraged", "Gains an extra attack per turn"],
+          "behavior": {
+            "extraAttacks": 1,
+            "retreatAction": "Enters an ancient lair",
+            "retreatZone": "tzorath-throne"
+          }
+        },
+        {
+          "stage": 5,
+          "name": "Final Form",
+          "maxHp": 700,
+          "damage": [50, 80],
+          "defense": 30,
+          "retreatThreshold": null,
+          "retreatRecovery": null,
+          "specialTraits": ["Apex Predator Mode", "Attacks ALL players at once"],
+          "behavior": {
+            "aoeAttack": true,
+            "retreatAction": null,
+            "retreatZone": null
+          }
+        }
+      ]
+    }
+  },
+
+  "zones": [
+    {
+      "id": "verdant-maw",
+      "name": "Verdant Maw",
+      "subtitle": "Jungle Entrance",
+      "description": "The dense jungle entry into your dangerous world",
+      "image": "assets/zones/verdant-maw.png",
+      "retreatModifier": 2,
+      "trapBonus": "+2 to Snare Vine rolls",
+      "connectedZones": ["razorback-canopy", "shattered-cliffs"],
+      "wildlife": {
+        "creature": "Dusk Stalker",
+        "type": "panther-like",
+        "bossEffect": { "hp": 20, "speed": 5 },
+        "attackChance": [1, 5],
+        "attackDamage": 15
+      },
+      "flora": { "spawnWeight": 1.0 }
+    },
+    {
+      "id": "razorback-canopy",
+      "name": "Razorback Canopy",
+      "subtitle": "Treetops",
+      "description": "Towering treetop jungle where only the most agile dare to travel",
+      "image": "assets/zones/razorback-canopy.png",
+      "retreatModifier": 1,
+      "trapBonus": "Snare Vine lasts 1 extra turn",
+      "connectedZones": ["verdant-maw", "obsidian-grotto", "shattered-cliffs"],
+      "wildlife": {
+        "creature": "Glide Serpent",
+        "type": "winged snake",
+        "bossEffect": { "hp": 10, "nextAttackDamage": 5 },
+        "attackChance": [1, 4],
+        "attackDamage": 10
+      },
+      "flora": { "spawnWeight": 1.0 }
+    },
+    {
+      "id": "shattered-cliffs",
+      "name": "Shattered Cliffs",
+      "subtitle": "Rocky Ground",
+      "description": "A brutal and unforgiving rocky terrain",
+      "image": "assets/zones/shattered-cliffs.png",
+      "retreatModifier": -1,
+      "trapBonus": "Spiked Pit does +10 damage",
+      "connectedZones": ["verdant-maw", "razorback-canopy", "sunken-veil"],
+      "wildlife": {
+        "creature": "Rockhide Boar",
+        "type": "boar",
+        "bossEffect": { "hp": 30, "defense": 5 },
+        "attackChance": [1, 6],
+        "attackDamage": 20
+      },
+      "flora": { "spawnWeight": 1.0 }
+    },
+    {
+      "id": "obsidian-grotto",
+      "name": "Obsidian Grotto",
+      "subtitle": "Dark Caves",
+      "description": "A dark and eerie cave glowing with mysterious fungi",
+      "image": "assets/zones/obsidian-grotto.png",
+      "retreatModifier": -2,
+      "trapBonus": "Poisoned Spikes lasts 1 extra turn",
+      "connectedZones": ["razorback-canopy", "sunken-veil", "echoing-wastes"],
+      "wildlife": {
+        "creature": "Glowspore Lizard",
+        "type": "lizard",
+        "bossEffect": { "hp": 10, "poison": { "damage": 5, "duration": 3 } },
+        "attackChance": [1, 5],
+        "attackDamage": 10
+      },
+      "flora": { "spawnWeight": 1.0 }
+    },
+    {
+      "id": "sunken-veil",
+      "name": "Sunken Veil",
+      "subtitle": "Swamp",
+      "description": "A fog-covered swamp filled with mystery and danger",
+      "image": "assets/zones/sunken-veil.png",
+      "retreatModifier": -1,
+      "trapBonus": "Traps have -2 difficulty to set",
+      "connectedZones": ["shattered-cliffs", "obsidian-grotto", "echoing-wastes"],
+      "wildlife": {
+        "creature": "Mirefang Croc",
+        "type": "crocodile",
+        "bossEffect": { "hp": 40, "defense": 10 },
+        "attackChance": [1, 7],
+        "attackDamage": 25
+      },
+      "flora": { "spawnWeight": 1.0 }
+    },
+    {
+      "id": "echoing-wastes",
+      "name": "Echoing Wastes",
+      "subtitle": "Open Wasteland",
+      "description": "A barren, lifeless expanse marked by footprints of something massive",
+      "image": "assets/zones/echoing-wastes.png",
+      "retreatModifier": 1,
+      "trapBonus": "Explosive Trap does +10 damage",
+      "connectedZones": ["obsidian-grotto", "sunken-veil", "serpents-hollow"],
+      "wildlife": {
+        "creature": "Dread Vulture",
+        "type": "vulture",
+        "bossEffect": { "hp": 15, "seeTraps": true },
+        "attackChance": [1, 6],
+        "attackDamage": 10
+      },
+      "flora": { "spawnWeight": 1.0 }
+    },
+    {
+      "id": "serpents-hollow",
+      "name": "Serpent's Hollow",
+      "subtitle": "Root Maze",
+      "description": "A dark, twisting valley perfect for ambush predators",
+      "image": "assets/zones/serpents-hollow.png",
+      "retreatModifier": -1,
+      "trapBonus": "Shock Net lasts 1 extra turn",
+      "connectedZones": ["echoing-wastes", "devourers-basin"],
+      "wildlife": {
+        "creature": "Rootfang Spider",
+        "type": "spider",
+        "bossEffect": { "hp": 20, "slow": { "speedReduction": 0.5, "duration": 2 } },
+        "attackChance": [1, 8],
+        "attackDamage": 15
+      },
+      "flora": { "spawnWeight": 1.0 }
+    },
+    {
+      "id": "devourers-basin",
+      "name": "Devourer's Basin",
+      "subtitle": "River Valley",
+      "description": "A dangerous river valley filled with quicksand and ancient ruins",
+      "image": "assets/zones/devourers-basin.png",
+      "retreatModifier": 0,
+      "trapBonus": "Traps take 1 less turn to place",
+      "connectedZones": ["serpents-hollow", "howling-crest"],
+      "wildlife": {
+        "creature": "Abyss Eel",
+        "type": "eel",
+        "bossEffect": { "hp": 25, "bleed": { "damage": 10, "duration": 2 } },
+        "attackChance": [1, 7],
+        "attackDamage": 15
+      },
+      "flora": { "spawnWeight": 1.0 }
+    },
+    {
+      "id": "howling-crest",
+      "name": "Howling Crest",
+      "subtitle": "Stormy Ridge",
+      "description": "A storm-ravaged mountain ridge where the winds never rest",
+      "image": "assets/zones/howling-crest.png",
+      "retreatModifier": -2,
+      "trapBonus": "Shock Net has +2 escape difficulty",
+      "connectedZones": ["devourers-basin", "tzorath-throne"],
+      "wildlife": {
+        "creature": "Storm Talon",
+        "type": "raptor",
+        "bossEffect": { "hp": 50, "nextAttackDamage": 10 },
+        "attackChance": [1, 5],
+        "attackDamage": 15
+      },
+      "flora": { "spawnWeight": 1.0 }
+    },
+    {
+      "id": "tzorath-throne",
+      "name": "Tzorath's Throne",
+      "subtitle": "Final Lair",
+      "description": "Ancient untamed jungle — the final battleground",
+      "image": "assets/zones/tzorath-throne.png",
+      "retreatModifier": null,
+      "trapBonus": "No traps allowed — Final Battle Only!",
+      "connectedZones": ["howling-crest"],
+      "wildlife": {
+        "creature": "Elder Behemoth",
+        "type": "apex",
+        "bossEffect": { "hp": 100, "damage": 20, "defense": 10, "finalEvolution": true },
+        "attackChance": [1, 5],
+        "attackDamage": "always hostile"
+      },
+      "flora": { "spawnWeight": 0 }
+    }
+  ],
+
+  "systems": {
+    "traps": {
+      "enabled": true,
+      "setupCost": "1 full turn",
+      "types": [
+        {
+          "id": "spiked-pit",
+          "name": "Spiked Pit",
+          "setupRoll": 10,
+          "effect": "Stops target for 1 turn",
+          "damage": 30,
+          "escapeChance": 15
+        },
+        {
+          "id": "snare-vine",
+          "name": "Snare Vine",
+          "setupRoll": 12,
+          "effect": "Reduces movement for 2 turns (-50% speed)",
+          "damage": 15,
+          "escapeChance": 12
+        },
+        {
+          "id": "poisoned-spikes",
+          "name": "Poisoned Spikes",
+          "setupRoll": 14,
+          "effect": "Deals damage over time (-10 HP per turn for 3 turns)",
+          "damage": 20,
+          "escapeChance": null
+        },
+        {
+          "id": "explosive-trap",
+          "name": "Explosive Trap",
+          "setupRoll": 16,
+          "effect": "High burst damage, knocks target back",
+          "damage": 50,
+          "escapeChance": 18
+        },
+        {
+          "id": "shock-net",
+          "name": "Shock Net",
+          "setupRoll": 18,
+          "effect": "Immobilizes target for 1 turn",
+          "damage": 0,
+          "escapeChance": 16
+        }
+      ]
+    },
+
+    "wildlife": {
+      "enabled": true,
+      "bossHuntRolls": {
+        "fail": [1, 8],
+        "eat": [9, 16],
+        "eatBonus": [17, 20]
+      },
+      "playerIntervention": true
+    },
+
+    "flora": {
+      "enabled": true,
+      "respawnInterval": 3,
+      "searchRolls": {
+        "fail": [1, 10],
+        "found": [11, 19],
+        "supercharged": [20, 20]
+      },
+      "maxPerZone": 1,
+      "plants": [
+        {
+          "id": "lifebloom-orchid",
+          "name": "Lifebloom Orchid",
+          "healAmount": 30,
+          "spawnChance": [1, 7],
+          "additionalEffect": "Has glowing petals, easy to spot"
+        },
+        {
+          "id": "verdant-root",
+          "name": "Verdant Root",
+          "healAmount": 20,
+          "spawnChance": [8, 14],
+          "additionalEffect": "Grants +5 Defense for 2 turns. Hidden — roll 12+ to find"
+        },
+        {
+          "id": "sunfire-blossom",
+          "name": "Sunfire Blossom",
+          "healAmount": 40,
+          "spawnChance": [15, 20],
+          "additionalEffect": "Removes all status effects. Emits faint warmth — +2 bonus next round if missed"
+        }
+      ]
+    },
+
+    "retreat": {
+      "enabled": true,
+      "endsTurn": true,
+      "outcomes": [
+        { "roll": [1, 5], "result": "failed", "description": "Boss gets a free attack before player can run next turn" },
+        { "roll": [6, 10], "result": "partial", "description": "Player retreats but drops an item" },
+        { "roll": [11, 15], "result": "success", "description": "Player safely moves to a different zone" },
+        { "roll": [16, 20], "result": "perfect", "description": "Player moves two zones away and regains 10 HP" }
+      ]
+    }
+  },
+
+  "narrative": {
+    "intro": "Welcome, mercenaries. You didn't sign up for a cushy job, and this sure as hell ain't one. A monstrous, elusive predator is wreaking havoc on this planet — tearing through outposts, slaughtering colonists, and evolving into something far worse with each passing moment. You are the only thing standing between survival and complete annihilation.",
+    "missionBriefing": {
+      "target": "Unknown creature — highly adaptive, extremely lethal",
+      "location": "Hostile alien terrain",
+      "threatLevel": "Escalating"
+    },
+    "objective": "Track. Trap. Terminate. The longer the beast survives, the stronger it gets.",
+    "warnings": [
+      "Do NOT underestimate the target.",
+      "Do NOT engage alone.",
+      "Do NOT waste time."
+    ],
+    "closingLine": "This is your only shot. Gear up, stay sharp, and hunt fast. Welcome to the hunt.",
+    "bossEvolutionNarrative": {
+      "stage1to2": "Tzorath flees into the jungle, regenerating as it evolves into a deadlier form...",
+      "stage2to3": "The ground shakes as Tzorath burrows deep underground, emerging stronger...",
+      "stage3to4": "Tzorath scales the canopy, its body twisting and growing — rage builds...",
+      "stage4toFinal": "The earth splits open as Tzorath enters its ancient lair. When it emerges, it is complete. The apex predator. No retreat. Fight to the death."
+    },
+    "victoryText": "The beast falls. Silence washes over the jungle. You survived. Collect your payday.",
+    "defeatText": "The jungle claims another squad. Tzorath feeds, and the cycle begins anew."
+  },
+
+  "winConditions": [
+    { "type": "bossDefeated", "target": "tzorath", "stage": 5 }
+  ],
+
+  "loseConditions": [
+    { "type": "allPlayersDead" },
+    { "type": "bossReachesFinalForm", "optional": false }
+  ]
+}
