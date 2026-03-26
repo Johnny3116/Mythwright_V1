@@ -1,106 +1,90 @@
-import { ActionButton } from '@components/ActionButton';
-import { DiceRoller } from '@components/DiceRoller';
-import { PLAYER_ACTIONS } from '@utils/constants';
+import { useState } from 'react';
+import { ActionButton } from '@components/ActionButton.jsx';
+import { DiceRoller } from '@components/DiceRoller.jsx';
+import { useDiceRoll } from '@hooks/useDiceRoll.js';
+import { getAvailableTrapTypes } from '@engine/TrapSystem.js';
 import styles from './game.module.css';
 
-// ── Action metadata map ────────────────────────────────────────────────────
+export function ActionPanel({ player, isMyTurn, blueprint, onAttack, onUseAbility, onSetTrap, onRetreat, onSearchFlora, onMove, onEndTurn }) {
+  const { isRolling, lastRoll, roll } = useDiceRoll();
+  const [showTrapMenu, setShowTrapMenu] = useState(false);
 
-const ACTION_META = {
-  [PLAYER_ACTIONS.ATTACK]:       { icon: '⚔️',  label: 'Attack'       },
-  [PLAYER_ACTIONS.USE_ABILITY]:  { icon: '⚡',  label: 'Use Ability'  },
-  [PLAYER_ACTIONS.SET_TRAP]:     { icon: '🪤',  label: 'Set Trap'     },
-  [PLAYER_ACTIONS.USE_ITEM]:     { icon: '🎒',  label: 'Use Item'     },
-  [PLAYER_ACTIONS.MOVE]:         { icon: '👟',  label: 'Move'         },
-  [PLAYER_ACTIONS.RETREAT]:      { icon: '🏃',  label: 'Retreat'      },
-  [PLAYER_ACTIONS.SEARCH_FLORA]: { icon: '🌿',  label: 'Search Flora' },
-  [PLAYER_ACTIONS.END_TURN]:     { icon: '⏰',  label: 'End Turn'     },
-};
+  if (!player) return null;
 
-// Ordered list of actions as they should appear in the panel.
-const ACTION_ORDER = [
-  PLAYER_ACTIONS.ATTACK,
-  PLAYER_ACTIONS.USE_ABILITY,
-  PLAYER_ACTIONS.SET_TRAP,
-  PLAYER_ACTIONS.USE_ITEM,
-  PLAYER_ACTIONS.MOVE,
-  PLAYER_ACTIONS.RETREAT,
-  PLAYER_ACTIONS.SEARCH_FLORA,
-  PLAYER_ACTIONS.END_TURN,
-];
+  const trapTypes = blueprint ? getAvailableTrapTypes(blueprint) : [];
 
-/**
- * ActionPanel — Bottom bar with action buttons and the dice roller.
- *
- * Props:
- *   availableActions {string[]} Array of PLAYER_ACTIONS keys available this turn.
- *   onAction         {Function} Called with (actionType) when a button is clicked.
- *   isMyTurn         {boolean}  Whether it is the local player's turn.
- *   blueprint        {object}   Campaign blueprint (for future context).
- */
-export function ActionPanel({ availableActions = [], onAction, isMyTurn = false, blueprint }) {
-  function handleRollComplete(result) {
-    // Dice roll completed — in a real integration this would trigger
-    // the pending action resolution. For now just log for wiring later.
-    if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.debug('[ActionPanel] Dice rolled:', result);
-    }
+  async function handleAttack() {
+    const result = await roll();
+    onAttack?.(result.raw);
+  }
+
+  async function handleTrap(trapTypeId) {
+    setShowTrapMenu(false);
+    const result = await roll();
+    onSetTrap?.(trapTypeId, result.raw);
+  }
+
+  async function handleRetreat() {
+    const result = await roll();
+    onRetreat?.(result.raw);
+  }
+
+  async function handleSearchFlora() {
+    const result = await roll();
+    onSearchFlora?.(result.raw);
+  }
+
+  async function handleAbility() {
+    const result = await roll();
+    onUseAbility?.(result.raw);
   }
 
   return (
     <div className={styles.actionPanel}>
-      <div className={styles.actionPanelLeft}>
-        <span className={styles.actionPanelLabel}>
-          {isMyTurn ? 'Your Turn — Choose an Action' : 'Actions'}
-        </span>
-
-        <div className={styles.actionGrid} role="group" aria-label="Available actions">
-          {ACTION_ORDER.map((actionType) => {
-            const meta      = ACTION_META[actionType];
-            if (!meta) return null;
-            const isAvailable = availableActions.includes(actionType);
-            const isDisabled  = !isMyTurn || !isAvailable;
-
-            return (
-              <ActionButton
-                key={actionType}
-                label={meta.label}
-                icon={meta.icon}
-                onClick={() => onAction?.(actionType)}
-                disabled={isDisabled}
-                variant={actionType === PLAYER_ACTIONS.ATTACK && isAvailable && isMyTurn
-                  ? 'primary'
-                  : actionType === PLAYER_ACTIONS.END_TURN && isMyTurn
-                    ? 'ghost'
-                    : 'default'}
-                title={
-                  !isMyTurn
-                    ? 'Not your turn'
-                    : !isAvailable
-                      ? 'Not available'
-                      : meta.label
-                }
-              />
-            );
-          })}
-        </div>
-
-        {/* "Not your turn" hint */}
-        {!isMyTurn && (
-          <div className={styles.notYourTurnOverlay} aria-live="polite">
-            <span aria-hidden="true">⏳</span>
-            Waiting for your turn…
+      {isMyTurn ? (
+        <>
+          <span className={styles.turnLabel}>Your Turn</span>
+          <div className={styles.actionGroup}>
+            <ActionButton variant="primary" onClick={handleAttack} disabled={isRolling} icon="⚔️">
+              Attack
+            </ActionButton>
+            <ActionButton onClick={handleAbility} disabled={isRolling} icon="✨">
+              Ability
+            </ActionButton>
+            <ActionButton onClick={handleSearchFlora} disabled={isRolling} icon="🌿">
+              Search Flora
+            </ActionButton>
+            <ActionButton onClick={() => setShowTrapMenu(v => !v)} disabled={isRolling} icon="⚙️">
+              Set Trap
+            </ActionButton>
+            <ActionButton onClick={handleRetreat} disabled={isRolling} icon="💨">
+              Retreat
+            </ActionButton>
+            <ActionButton variant="success" onClick={onEndTurn} disabled={isRolling} icon="→">
+              End Turn
+            </ActionButton>
           </div>
-        )}
-      </div>
 
-      {/* ── Dice roller ── */}
-      <div className={styles.actionPanelRight}>
-        <DiceRoller
-          onRollComplete={handleRollComplete}
-          modifier={0}
-          disabled={!isMyTurn}
-        />
+          {showTrapMenu && trapTypes.length > 0 && (
+            <div className={styles.trapMenu} style={{ position: 'absolute', bottom: '80px', left: '160px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--space-3)', zIndex: 100 }}>
+              {trapTypes.map(trap => (
+                <ActionButton
+                  key={trap.id}
+                  onClick={() => handleTrap(trap.id)}
+                  style={{ display: 'block', marginBottom: 'var(--space-1)' }}
+                >
+                  {trap.name} (Roll {trap.setupRoll}+)
+                </ActionButton>
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
+        <span className={styles.turnLabel} style={{ color: 'var(--text-muted)' }}>Waiting for your turn...</span>
+      )}
+
+      <div className={styles.diceArea}>
+        <DiceRoller isRolling={isRolling} result={lastRoll} label="D20" />
       </div>
     </div>
   );
