@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDiceRoll } from '@hooks/useDiceRoll';
 import styles from './components.module.css';
 
@@ -30,14 +30,16 @@ export function DiceRoller({ onRollComplete, modifier = 0, disabled = false }) {
   const [flickerNum, setFlickerNum] = useState(null);
   const flickerRef = useRef(null);
 
-  const handleRollEnd = useCallback(
-    (resultObj) => {
-      onRollComplete?.(resultObj);
-    },
-    [onRollComplete]
-  );
+  const { roll, isRolling, lastRoll: result } = useDiceRoll();
 
-  const { roll, isRolling, result } = useDiceRoll({ onRollEnd: handleRollEnd });
+  // Notify parent when a roll finishes
+  const prevIsRollingRef = useRef(false);
+  useEffect(() => {
+    if (prevIsRollingRef.current && !isRolling && result) {
+      onRollComplete?.(result);
+    }
+    prevIsRollingRef.current = isRolling;
+  }, [isRolling, result, onRollComplete]);
 
   // Drive the flicker animation while isRolling is true.
   useEffect(() => {
