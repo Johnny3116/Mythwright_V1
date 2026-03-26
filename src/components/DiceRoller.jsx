@@ -141,7 +141,7 @@ export function DiceRoller({ onRollComplete, modifier = 0, disabled = false, sho
       >
         {rollBtnLabel}
       </button>
-    </>
+    </div>
   );
 
   // Overlay mode: show full-screen backdrop while rolling or displaying result.
