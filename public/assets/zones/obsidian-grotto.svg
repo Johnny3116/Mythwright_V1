@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
+  <defs>
+    <linearGradient id="grotto-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#050810"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </linearGradient>
+    <radialGradient id="fungi1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00d4cc" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#004a47" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="fungi2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6a00cc" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#20005a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="fungi3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00cc6a" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#003320" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- Dark cave background -->
+  <rect width="400" height="240" fill="url(#grotto-bg)"/>
+  <!-- Cave wall silhouette -->
+  <path d="M0,0 L0,60 Q30,40 60,70 Q90,50 110,80 Q140,55 160,75 L160,0 Z" fill="#06080f"/>
+  <path d="M400,0 L400,70 Q370,50 340,80 Q310,55 290,75 Q260,60 240,80 L240,0 Z" fill="#06080f"/>
+  <!-- Stalactites from ceiling -->
+  <polygon points="50,0 56,35 44,35"  fill="#0a0d18"/>
+  <polygon points="100,0 108,50 92,50" fill="#0a0d18"/>
+  <polygon points="170,0 177,40 163,40" fill="#0a0d18"/>
+  <polygon points="240,0 247,55 233,55" fill="#0a0d18"/>
+  <polygon points="310,0 317,42 303,42" fill="#0a0d18"/>
+  <polygon points="370,0 376,35 364,35" fill="#0a0d18"/>
+  <!-- Bioluminescent fungi glows -->
+  <ellipse cx="80"  cy="200" rx="40" ry="30" fill="url(#fungi1)"/>
+  <ellipse cx="200" cy="190" rx="35" ry="25" fill="url(#fungi2)"/>
+  <ellipse cx="330" cy="205" rx="38" ry="28" fill="url(#fungi3)"/>
+  <ellipse cx="140" cy="210" rx="25" ry="18" fill="url(#fungi2)" opacity="0.6"/>
+  <ellipse cx="270" cy="195" rx="22" ry="16" fill="url(#fungi1)" opacity="0.7"/>
+  <!-- Fungi stems and caps -->
+  <rect x="76" y="195" width="3" height="15" fill="#00a09a" opacity="0.6"/>
+  <ellipse cx="77" cy="193" rx="8" ry="5" fill="#00d4cc" opacity="0.7"/>
+  <rect x="196" y="188" width="3" height="12" fill="#5000a0" opacity="0.6"/>
+  <ellipse cx="197" cy="186" rx="7" ry="4" fill="#8a00dd" opacity="0.7"/>
+  <rect x="326" y="200" width="3" height="14" fill="#009a44" opacity="0.6"/>
+  <ellipse cx="327" cy="198" rx="8" ry="5" fill="#00cc6a" opacity="0.7"/>
+  <!-- Obsidian ground -->
+  <path d="M0 220 Q80 215 160 222 Q240 215 320 220 Q360 216 400 222 L400 240 L0 240 Z" fill="#04060c"/>
+  <!-- Obsidian shine -->
+  <path d="M50 228 Q80 225 110 228" stroke="#0a0f1e" stroke-width="1.5" fill="none" opacity="0.8"/>
+  <path d="M200 224 Q240 221 280 224" stroke="#0a0f1e" stroke-width="1.5" fill="none" opacity="0.8"/>
+</svg>

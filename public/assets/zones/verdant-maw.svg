@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
+  <defs>
+    <linearGradient id="verdant-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a1a0d"/>
+      <stop offset="60%" stop-color="#0f2a12"/>
+      <stop offset="100%" stop-color="#050e07"/>
+    </linearGradient>
+    <linearGradient id="verdant-fog" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1a3d1e" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#1a3d1e" stop-opacity="0.4"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky/canopy background -->
+  <rect width="400" height="240" fill="url(#verdant-bg)"/>
+  <!-- Light shafts through canopy -->
+  <ellipse cx="120" cy="0" rx="30" ry="120" fill="#2d6b30" opacity="0.12" transform="rotate(-10 120 0)"/>
+  <ellipse cx="240" cy="0" rx="25" ry="150" fill="#2d6b30" opacity="0.10" transform="rotate(5 240 0)"/>
+  <ellipse cx="330" cy="0" rx="20" ry="100" fill="#2d6b30" opacity="0.09" transform="rotate(-5 330 0)"/>
+  <!-- Dense canopy layer at top -->
+  <ellipse cx="50"  cy="30" rx="80" ry="55" fill="#0e2a10"/>
+  <ellipse cx="180" cy="20" rx="90" ry="60" fill="#112e13"/>
+  <ellipse cx="320" cy="35" rx="85" ry="50" fill="#0d2810"/>
+  <ellipse cx="400" cy="25" rx="70" ry="45" fill="#0f2b12"/>
+  <!-- Mid canopy -->
+  <ellipse cx="80"  cy="90" rx="70" ry="45" fill="#0d2510" opacity="0.9"/>
+  <ellipse cx="220" cy="80" rx="75" ry="50" fill="#102812" opacity="0.9"/>
+  <ellipse cx="360" cy="95" rx="65" ry="40" fill="#0c2410" opacity="0.9"/>
+  <!-- Hanging vines -->
+  <path d="M60 0 Q55 60 65 120 Q58 150 62 180" stroke="#1e5522" stroke-width="2" fill="none" opacity="0.7"/>
+  <path d="M150 0 Q155 80 145 140 Q148 170 150 200" stroke="#1a4d1e" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M280 0 Q275 70 285 130 Q278 165 282 190" stroke="#1e5522" stroke-width="2" fill="none" opacity="0.7"/>
+  <path d="M350 0 Q355 50 345 110 Q350 145 348 175" stroke="#1a4d1e" stroke-width="1.5" fill="none" opacity="0.5"/>
+  <!-- Vine leaves -->
+  <ellipse cx="62" cy="80" rx="8" ry="5" fill="#2d6b30" opacity="0.8" transform="rotate(-20 62 80)"/>
+  <ellipse cx="148" cy="100" rx="7" ry="4" fill="#265c29" opacity="0.8" transform="rotate(15 148 100)"/>
+  <ellipse cx="283" cy="90" rx="9" ry="5" fill="#2d6b30" opacity="0.8" transform="rotate(-10 283 90)"/>
+  <!-- Ground fog -->
+  <rect x="0" y="180" width="400" height="60" fill="url(#verdant-fog)"/>
+  <!-- Ground flora silhouettes -->
+  <path d="M0 220 Q40 200 80 215 Q120 200 160 218 Q200 205 240 216 Q280 200 320 215 Q360 202 400 218 L400 240 L0 240 Z" fill="#061508"/>
+</svg>

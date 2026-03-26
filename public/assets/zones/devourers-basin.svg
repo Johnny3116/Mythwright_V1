@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
+  <defs>
+    <linearGradient id="basin-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2a2218"/>
+      <stop offset="100%" stop-color="#1a1410"/>
+    </linearGradient>
+    <linearGradient id="basin-water" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e3042"/>
+      <stop offset="100%" stop-color="#0e1c2a"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="240" fill="url(#basin-sky)"/>
+  <!-- River running through (center valley) -->
+  <path d="M0 160 Q60 150 120 158 Q180 148 240 155 Q300 148 360 155 Q380 152 400 155 L400 200 Q380 196 360 198 Q300 202 240 196 Q180 202 120 196 Q60 202 0 198 Z" fill="url(#basin-water)"/>
+  <!-- River ripples/current -->
+  <path d="M20 175 Q80 170 140 175 Q200 170 260 175 Q320 170 380 175" stroke="#2a4060" stroke-width="1.5" fill="none" opacity="0.5"/>
+  <path d="M40 183 Q100 178 160 183 Q220 178 280 183 Q340 178 400 183" stroke="#2a4060" stroke-width="1" fill="none" opacity="0.4"/>
+  <!-- Muddy riverbanks -->
+  <path d="M0 155 Q80 145 160 152 Q240 144 320 151 Q360 148 400 152 L400 160 Q380 155 360 155 Q300 148 240 155 Q180 148 120 158 Q60 150 0 160 Z" fill="#3a2e20"/>
+  <path d="M0 200 Q80 202 160 198 Q240 202 320 198 Q360 201 400 200 L400 210 Q380 208 360 210 Q300 215 240 210 Q180 215 120 210 Q60 215 0 212 Z" fill="#3a2e20"/>
+  <!-- Quicksand patches -->
+  <ellipse cx="90"  cy="145" rx="30" ry="12" fill="#5a4830" opacity="0.7"/>
+  <ellipse cx="310" cy="148" rx="25" ry="10" fill="#5a4830" opacity="0.7"/>
+  <!-- Ancient ruins -->
+  <rect x="50"  y="100" width="35" height="50" fill="#3a3225" opacity="0.8"/>
+  <rect x="50"  y="95"  width="40" height="8"  fill="#4a4030" opacity="0.9"/>
+  <rect x="58"  y="115" width="8" height="35" fill="#2a2418"/>
+  <rect x="72"  y="115" width="8" height="35" fill="#2a2418"/>
+  <rect x="310" y="95"  width="30" height="55" fill="#3a3225" opacity="0.8"/>
+  <rect x="308" y="90"  width="35" height="8"  fill="#4a4030" opacity="0.9"/>
+  <!-- Columns/pillars -->
+  <rect x="320" y="105" width="7" height="45" fill="#2a2418"/>
+  <!-- Ground terrain -->
+  <path d="M0 215 Q80 210 160 216 Q240 210 320 215 Q360 210 400 214 L400 240 L0 240 Z" fill="#2a2010"/>
+</svg>

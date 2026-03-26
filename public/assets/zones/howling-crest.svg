@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
+  <defs>
+    <linearGradient id="crest-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0e0a1a"/>
+      <stop offset="40%" stop-color="#1a1430"/>
+      <stop offset="100%" stop-color="#2a2040"/>
+    </linearGradient>
+  </defs>
+  <!-- Storm sky -->
+  <rect width="400" height="240" fill="url(#crest-sky)"/>
+  <!-- Storm clouds -->
+  <ellipse cx="100" cy="40"  rx="120" ry="45" fill="#18142a" opacity="0.9"/>
+  <ellipse cx="250" cy="30"  rx="140" ry="50" fill="#1a1630" opacity="0.9"/>
+  <ellipse cx="380" cy="50"  rx="100" ry="40" fill="#16122a" opacity="0.9"/>
+  <ellipse cx="50"  cy="60"  rx="80"  ry="35" fill="#1c1835" opacity="0.8"/>
+  <!-- Lightning bolts -->
+  <polygon points="180,40 175,90 183,90 176,130 190,85 182,85 188,40" fill="#a060f0" opacity="0.7"/>
+  <polygon points="290,30 285,75 292,75 286,108 297,70 290,70 295,30" fill="#8040e0" opacity="0.6"/>
+  <polygon points="80,55 76,95 82,95 77,125 88,90 81,90 86,55" fill="#9050e8" opacity="0.5"/>
+  <!-- Lightning glow halos -->
+  <ellipse cx="183" cy="85"  rx="20" ry="30" fill="#a060f0" opacity="0.12"/>
+  <ellipse cx="291" cy="68"  rx="16" ry="24" fill="#8040e0" opacity="0.10"/>
+  <!-- Mountain ridge peaks -->
+  <polygon points="0,240 0,160 50,90 100,140 150,80 200,130 250,70 300,120 350,85 400,130 400,240" fill="#1e1a28"/>
+  <!-- Mountain highlights (storm-lit edges) -->
+  <path d="M50 90 L100 140" stroke="#4a3a6a" stroke-width="1.5" opacity="0.5"/>
+  <path d="M150 80 L200 130" stroke="#4a3a6a" stroke-width="1.5" opacity="0.5"/>
+  <path d="M250 70 L300 120" stroke="#4a3a6a" stroke-width="1.5" opacity="0.5"/>
+  <path d="M350 85 L400 130" stroke="#4a3a6a" stroke-width="1.5" opacity="0.5"/>
+  <!-- Wind streaks -->
+  <path d="M0 100 Q100 95 200 102 Q300 96 400 100" stroke="#2a2040" stroke-width="2" fill="none" opacity="0.4"/>
+  <path d="M0 115 Q80 110 160 116 Q240 110 320 116 Q360 111 400 114" stroke="#2a2040" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <!-- Rocky ground -->
+  <path d="M0 220 Q80 215 160 222 Q240 215 320 220 Q360 216 400 220 L400 240 L0 240 Z" fill="#140e20"/>
+</svg>

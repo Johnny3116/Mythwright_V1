@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="currentColor">
+  <!-- Boot/move icon -->
+  <!-- Leg/shaft of boot -->
+  <rect x="14" y="6" width="14" height="22" rx="4" fill="currentColor"/>
+  <!-- Foot/toe -->
+  <path d="M14 26 L14 34 Q14 38 18 38 L36 38 Q40 38 40 35 Q40 32 36 32 L28 32 L28 26 Z" fill="currentColor"/>
+  <!-- Toe cap highlight -->
+  <path d="M34 32 Q39 32 39 35 Q39 37.5 36 37.5" fill="none" stroke="currentColor" stroke-width="0" opacity="0.3"/>
+  <!-- Ankle crease detail -->
+  <line x1="14" y1="24" x2="28" y2="24" stroke="var(--bg-primary,#0a0a0f)" stroke-width="1.5" opacity="0.3"/>
+</svg>

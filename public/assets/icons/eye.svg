@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="currentColor">
+  <!-- Eye outline -->
+  <path d="M4 24 Q12 10 24 10 Q36 10 44 24 Q36 38 24 38 Q12 38 4 24 Z" fill="currentColor" opacity="0.2"/>
+  <path d="M4 24 Q12 10 24 10 Q36 10 44 24 Q36 38 24 38 Q12 38 4 24 Z" fill="none" stroke="currentColor" stroke-width="2.5"/>
+  <!-- Iris -->
+  <circle cx="24" cy="24" r="8" fill="currentColor"/>
+  <!-- Pupil -->
+  <circle cx="24" cy="24" r="4" fill="#0a0a0f"/>
+  <!-- Highlight -->
+  <circle cx="27" cy="21" r="2" fill="currentColor"/>
+</svg>
