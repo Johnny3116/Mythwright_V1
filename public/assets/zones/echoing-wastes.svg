@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
+  <defs>
+    <linearGradient id="waste-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3a2e1a"/>
+      <stop offset="60%" stop-color="#2a2010"/>
+      <stop offset="100%" stop-color="#1a1408"/>
+    </linearGradient>
+    <linearGradient id="waste-ground" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4a3e28"/>
+      <stop offset="100%" stop-color="#2a2015"/>
+    </linearGradient>
+  </defs>
+  <!-- Desolate sky -->
+  <rect width="400" height="240" fill="url(#waste-sky)"/>
+  <!-- Distant haze/horizon -->
+  <ellipse cx="200" cy="145" rx="300" ry="30" fill="#5a4a2a" opacity="0.2"/>
+  <!-- Ground -->
+  <path d="M0 145 Q100 140 200 145 Q300 141 400 144 L400 240 L0 240 Z" fill="url(#waste-ground)"/>
+  <!-- Ground cracks -->
+  <path d="M30 160 L60 175 L80 168 L110 185" stroke="#1e1508" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M150 155 L180 170 L200 162 L230 180" stroke="#1e1508" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M270 158 L300 172 L320 165 L350 182" stroke="#1e1508" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <!-- Massive footprints -->
+  <ellipse cx="80"  cy="195" rx="20" ry="14" fill="#1e1508" opacity="0.7"/>
+  <ellipse cx="170" cy="185" rx="22" ry="15" fill="#1e1508" opacity="0.7"/>
+  <ellipse cx="260" cy="200" rx="19" ry="13" fill="#1e1508" opacity="0.7"/>
+  <ellipse cx="340" cy="190" rx="21" ry="14" fill="#1e1508" opacity="0.7"/>
+  <!-- Boulders -->
+  <ellipse cx="50"  cy="148" rx="25" ry="15" fill="#3a3020"/>
+  <ellipse cx="190" cy="148" rx="18" ry="11" fill="#3a3020"/>
+  <ellipse cx="330" cy="147" rx="22" ry="13" fill="#3a3020"/>
+  <!-- Dry, sparse grass tufts -->
+  <path d="M120 145 L118 130 M120 145 L124 128 M120 145 L116 132" stroke="#5a4a1e" stroke-width="1.5" fill="none"/>
+  <path d="M240 143 L238 128 M240 143 L244 126 M240 143 L236 130" stroke="#5a4a1e" stroke-width="1.5" fill="none"/>
+  <path d="M370 144 L368 129 M370 144 L374 127 M370 144 L366 131" stroke="#5a4a1e" stroke-width="1.5" fill="none"/>
+  <!-- Distant dead tree silhouette -->
+  <rect x="320" y="80" width="5" height="65" fill="#2a2010" opacity="0.6"/>
+  <path d="M322 80 Q310 92 305 88" stroke="#2a2010" stroke-width="3" fill="none" opacity="0.6"/>
+  <path d="M322 95 Q334 88 337 93" stroke="#2a2010" stroke-width="2.5" fill="none" opacity="0.6"/>
+</svg>

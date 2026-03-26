@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
+  <defs>
+    <linearGradient id="hollow-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a1505"/>
+      <stop offset="100%" stop-color="#040a02"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="240" fill="url(#hollow-bg)"/>
+  <!-- Massive twisted root structures -->
+  <!-- Root 1 (left arch) -->
+  <path d="M0 240 Q20 180 10 120 Q0 60 30 20 Q50 10 60 30 Q70 50 50 80 Q30 110 40 160 Q50 200 30 240 Z" fill="#1a1208"/>
+  <!-- Root 2 (right arch) -->
+  <path d="M400 240 Q380 180 390 120 Q400 60 370 20 Q350 10 340 30 Q330 50 350 80 Q370 110 360 160 Q350 200 370 240 Z" fill="#1a1208"/>
+  <!-- Horizontal crossing roots -->
+  <path d="M30 100 Q100 85 160 95 Q220 82 280 92 Q340 82 380 90" stroke="#1e1a0a" stroke-width="18" fill="none" stroke-linecap="round"/>
+  <path d="M20 150 Q80 135 140 148 Q200 135 260 145 Q320 132 390 142" stroke="#1a1608" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <!-- Thinner overlapping roots -->
+  <path d="M0 70 Q60 60 120 72 Q180 58 240 70 Q300 58 360 68 Q390 62 400 65" stroke="#221e0e" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M10 200 Q80 188 150 198 Q220 185 290 196 Q350 185 400 194" stroke="#1a1608" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <!-- Web of smaller roots filling gaps -->
+  <path d="M80 0 Q75 50 85 100 Q78 130 80 180" stroke="#1c1809" stroke-width="5" fill="none" opacity="0.7"/>
+  <path d="M200 0 Q195 60 205 110 Q198 145 200 200" stroke="#1c1809" stroke-width="5" fill="none" opacity="0.7"/>
+  <path d="M320 0 Q315 55 325 105 Q318 140 320 190" stroke="#1c1809" stroke-width="5" fill="none" opacity="0.7"/>
+  <!-- Darkness patches (depth) -->
+  <ellipse cx="160" cy="180" rx="60" ry="30" fill="#030601" opacity="0.6"/>
+  <ellipse cx="300" cy="80" rx="50" ry="22" fill="#030601" opacity="0.5"/>
+  <!-- Ground (twisted roots) -->
+  <path d="M0 210 Q60 205 120 212 Q180 206 240 210 Q300 205 360 212 Q380 208 400 210 L400 240 L0 240 Z" fill="#0e0c05"/>
+</svg>
