@@ -38,8 +38,8 @@ describe('MSG', () => {
     expect(unique.size).toBe(values.length);
   });
 
-  it('has exactly 17 message types', () => {
-    expect(Object.keys(MSG).length).toBe(17);
+  it('has exactly 18 message types', () => {
+    expect(Object.keys(MSG).length).toBe(18);
   });
 });
 
