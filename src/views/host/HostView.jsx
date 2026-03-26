@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import styles from './host.module.css';
 import { MonsterPanel } from './MonsterPanel.jsx';
 import { PlayerOverview } from './PlayerOverview.jsx';
@@ -78,6 +78,27 @@ export default function HostView() {
       dispatch({ type: ActionTypes.ADVANCE_PHASE, payload: {} });
     }, 1000);
     return () => clearTimeout(timer);
+  }, [turnPhase]);
+
+  // Narrator guidance — fire once each time the turn phase changes
+  const prevPhaseRef = useRef(null);
+  useEffect(() => {
+    if (!blueprint || !boss) return;
+    if (turnPhase === prevPhaseRef.current) return;
+    prevPhaseRef.current = turnPhase;
+
+    if (turnPhase === TurnPhase.PLAYER_TURN) {
+      const activeId = state.turnState?.order?.[state.turnState?.currentIndex];
+      const player = players[activeId];
+      const name = player?.name || 'Player';
+      addNarrative(`⚔️ ${name}'s turn — choose an action: Attack, Set Trap, Search Flora, Retreat, or End Turn.`);
+    } else if (turnPhase === TurnPhase.BOSS_TURN) {
+      addNarrative(`🦎 ${boss.name} prepares to act — scripted AI is resolving...`);
+    } else if (turnPhase === TurnPhase.ENVIRONMENT) {
+      addNarrative('🌿 Environment phase — wildlife and flora events are resolving.');
+    } else if (turnPhase === TurnPhase.NEXT_ROUND) {
+      addNarrative(`🔄 Round ${(state.round || 0) + 1} begins. New turn order in effect.`);
+    }
   }, [turnPhase]);
 
   const activePlayerId = state.turnState?.order?.[state.turnState?.currentIndex] || (turnPhase === TurnPhase.BOSS_TURN ? 'boss' : null);

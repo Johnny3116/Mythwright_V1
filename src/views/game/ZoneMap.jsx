@@ -99,15 +99,10 @@ export function ZoneMap({ zones = [], players = {}, boss = null, floraState = {}
         <div className={styles.zonePopup} style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 300 }}>
           <ZoneCard
             zone={selectedZone}
+            onClose={() => setSelectedZone(null)}
             traps={placedTraps}
             floraState={floraState}
           />
-          <button
-            onClick={() => setSelectedZone(null)}
-            style={{ display: 'block', width: '100%', marginTop: 'var(--space-3)', padding: 'var(--space-2)', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', cursor: 'pointer', borderRadius: 'var(--border-radius-md)' }}
-          >
-            Close
-          </button>
         </div>
       )}
     </div>
