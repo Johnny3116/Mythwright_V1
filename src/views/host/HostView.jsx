@@ -1,287 +1,185 @@
-import { useCallback } from 'react';
-import { useGameContext } from '@context/GameContext';
-import { useNetworkContext } from '@context/NetworkContext';
-import { useGameEngine } from '@hooks/useGameEngine';
-
-import { ZoneMap } from '@views/game/ZoneMap';
-import { TurnTracker } from '@views/game/TurnTracker';
-import { ActionPanel } from '@views/game/ActionPanel';
-import { CharacterSheet } from '@views/game/CharacterSheet';
-import { NarratorFeed } from '@views/game/NarratorFeed';
-
-import { MonsterPanel } from './MonsterPanel';
-import { PlayerOverview } from './PlayerOverview';
-import { GMControls } from './GMControls';
-import { DriverToggle } from './DriverToggle';
-
+import { useEffect, useCallback } from 'react';
 import styles from './host.module.css';
+import { MonsterPanel } from './MonsterPanel.jsx';
+import { PlayerOverview } from './PlayerOverview.jsx';
+import { GMControls } from './GMControls.jsx';
+import { DriverToggle } from './DriverToggle.jsx';
+import { ZoneMap } from '@views/game/ZoneMap.jsx';
+import { NarratorFeed } from '@views/game/NarratorFeed.jsx';
+import { TurnTracker } from '@views/game/TurnTracker.jsx';
+import { EncounterSplash } from '@components/EncounterSplash.jsx';
+import { useGameEngine } from '@hooks/useGameEngine.js';
+import { useGameContext } from '@context/GameContext.jsx';
+import { TurnPhase, GameState, ActionTypes } from '@engine/GameEngine.js';
+import { selectBossAction, bossActionToDispatch } from '@drivers/ScriptedDriver.js';
+import { rollD20 } from '@engine/DiceSystem.js';
 
-// ---------------------------------------------------------------------------
-// Mock data — used when no real game state is present (demo / development)
-// ---------------------------------------------------------------------------
-
-const MOCK_GAME_STATE = {
-  phase: 'PLAYER_TURN',
-  round: 3,
-  currentTurnEntityId: 'player-1',
-  turnOrder: ['player-1', 'player-2', 'player-3', 'boss'],
-  players: {
-    'player-1': {
-      id: 'player-1', name: 'Zara', classId: 'assault',
-      hp: 85, maxHp: 120, damage: [20, 30], defense: 10,
-      zoneId: 'verdant-maw', effects: [], isDead: false,
-    },
-    'player-2': {
-      id: 'player-2', name: 'Hex', classId: 'trapper',
-      hp: 60, maxHp: 100, damage: [15, 25], defense: 15,
-      zoneId: 'razorback-canopy', effects: ['Poisoned'], isDead: false,
-    },
-    'player-3': {
-      id: 'player-3', name: 'Doc', classId: 'medic',
-      hp: 45, maxHp: 90, damage: [10, 15], defense: 10,
-      zoneId: 'verdant-maw', effects: [], isDead: false,
-    },
-  },
-  boss: {
-    hp: 180, maxHp: 200, stageIndex: 0,
-    name: 'Tzorath', stageName: 'Hatchling',
-    damage: [15, 25], defense: 10,
-    zoneId: 'shattered-cliffs', effects: [], isBurrowed: false,
-  },
-  zones: {
-    'verdant-maw':       { traps: [], hasFlora: true,  floraType: 'lifebloom-orchid' },
-    'razorback-canopy':  { traps: [{ id: 't1', trapTypeId: 'snare-vine', active: true }], hasFlora: false, floraType: null },
-    'shattered-cliffs':  { traps: [], hasFlora: false, floraType: null },
-  },
-  narratorLog: [
-    { id: 1, text: 'The hunt begins. Tzorath stalks the Verdant Maw.', type: 'narrative', timestamp: Date.now() - 120000 },
-    { id: 2, text: 'Zara attacks! Roll: 14 — Hit! Deals 24 damage.', type: 'combat',    timestamp: Date.now() - 90000 },
-    { id: 3, text: 'Tzorath charges toward the Verdant Maw!',         type: 'combat',    timestamp: Date.now() },
-  ],
-};
-
-const MOCK_STAGES = [
-  { stage: 1, name: 'Hatchling', maxHp: 200, damage: [15, 25], defense: 10,  retreatThreshold: 100 },
-  { stage: 2, name: 'Stalker',   maxHp: 300, damage: [20, 30], defense: 15,  retreatThreshold: 150 },
-  { stage: 3, name: 'Predator',  maxHp: 400, damage: [25, 40], defense: 20,  retreatThreshold: 200 },
-  { stage: 4, name: 'Enraged',   maxHp: 500, damage: [30, 50], defense: 25,  retreatThreshold: 250 },
-  { stage: 5, name: 'Final Form',maxHp: 700, damage: [50, 80], defense: 30,  retreatThreshold: null },
-];
-
-// ---------------------------------------------------------------------------
-// HostView — default export
-// ---------------------------------------------------------------------------
-
-/**
- * HostView — The GM / dungeon master control panel view.
- * Renders the full game layout (zones, turn tracker, narrator, character
- * sheet, action bar) augmented with host-only panels on the far right.
- */
 export default function HostView() {
-  const { blueprint, gmMode, setGmMode, gmApiKey, setGmApiKey, addNarratorEntry } = useGameContext();
-  const { players: networkPlayers } = useNetworkContext();
-  const { gameState: liveGameState, myPlayer, boss } = useGameEngine();
+  const { state, dispatch } = useGameContext();
+  const {
+    bossAttack,
+    bossAoeAttack,
+    bossBurrow,
+    endBossTurn,
+    runEnvironment,
+    advancePhase,
+    setGmMode,
+    addNarrative,
+  } = useGameEngine();
+  const { saveGame } = useGameContext();
 
-  // Use live game state when available, otherwise fall back to mock data
-  const gameState = liveGameState ?? MOCK_GAME_STATE;
-  const isMockMode = liveGameState === null;
+  const { blueprint, players, boss, narrativeLog, floraState, placedTraps, turnPhase, round, gameOverResult, gmMode, isEvolving } = state;
 
-  // Resolve boss stages from blueprint, with mock fallback
-  const bossStages = blueprint?.enemies?.boss?.stages ?? MOCK_STAGES;
+  // Auto-resolve scripted boss turn
+  useEffect(() => {
+    if (turnPhase !== TurnPhase.BOSS_TURN) return;
+    if (gmMode !== 'scripted' && gmMode !== 'ai') return;
+    if (!blueprint || !boss) return;
 
-  // -------------------------------------------------------------------------
-  // GM action handlers
-  // -------------------------------------------------------------------------
+    const timer = setTimeout(async () => {
+      try {
+        const bossAction = await selectBossAction(state, blueprint);
+        const roll = rollD20();
 
-  const handleAdvanceStory = useCallback(() => {
-    addNarratorEntry({
-      text: '[GM] Story advanced — the world shifts around the hunters.',
-      type: 'narrative',
-    });
-  }, [addNarratorEntry]);
+        // Handle multi_attack: dispatch each hit with a short stagger
+        const attackCount = bossAction.action === 'multi_attack'
+          ? (bossAction.params?.attackCount || 2)
+          : 1;
 
-  const handleOverrideDice = useCallback((value) => {
-    if (value === null) {
-      addNarratorEntry({ text: '[GM] Dice override cleared — rolls are free again.', type: 'system' });
-    } else {
-      addNarratorEntry({ text: `[GM] Dice override set: next roll will be ${value}.`, type: 'system' });
-    }
-  }, [addNarratorEntry]);
+        for (let i = 0; i < attackCount; i++) {
+          const hitRoll = i === 0 ? roll : rollD20();
+          const dispatchAction = bossActionToDispatch(
+            { ...bossAction, action: i === 0 && bossAction.action !== 'multi_attack' ? bossAction.action : 'attack' },
+            hitRoll.raw,
+          );
+          // Stagger each hit by 400ms so HP bar animations are visible
+          await new Promise(res => setTimeout(res, i * 400));
+          dispatch(dispatchAction);
+        }
 
-  const handleTriggerEvent = useCallback((eventId) => {
-    const labels = {
-      force_evolution: 'Boss forced to evolve!',
-      spawn_wildlife:  'Wildlife spawned in the zone.',
-      spawn_flora:     'Healing flora appeared.',
-      trigger_trap:    'A trap has been triggered!',
-      apply_status:    'Status effect applied.',
-      clear_effects:   'All status effects cleared.',
-      heal_all:        'All hunters restored to full health.',
-      damage_all:      'Environmental hazard — all hunters took damage!',
-    };
-    addNarratorEntry({
-      text: `[GM Event] ${labels[eventId] ?? eventId}`,
-      type: eventId === 'damage_all' || eventId === 'trigger_trap' ? 'combat' : 'narrative',
-    });
-  }, [addNarratorEntry]);
+        // End boss turn after all hits land
+        setTimeout(() => {
+          dispatch({ type: ActionTypes.BOSS_END_TURN, payload: {} });
+          dispatch({ type: ActionTypes.RUN_ENVIRONMENT, payload: {} });
+          dispatch({ type: ActionTypes.ADVANCE_PHASE, payload: {} });
+        }, 1500);
+      } catch (err) {
+        console.error('Boss AI error:', err);
+      }
+    }, 2000);
 
-  const handleSkipTurn = useCallback(() => {
-    addNarratorEntry({ text: '[GM] Turn skipped by the Game Master.', type: 'system' });
-  }, [addNarratorEntry]);
+    return () => clearTimeout(timer);
+  }, [turnPhase, gmMode, boss?.currentStage]);
 
-  const handlePauseGame = useCallback((isPaused) => {
-    addNarratorEntry({
-      text: isPaused ? '[GM] Game paused.' : '[GM] Game resumed.',
-      type: 'system',
-    });
-  }, [addNarratorEntry]);
+  // Auto-advance environment phase
+  useEffect(() => {
+    if (turnPhase !== TurnPhase.ENVIRONMENT) return;
+    const timer = setTimeout(() => {
+      dispatch({ type: ActionTypes.ADVANCE_PHASE, payload: {} });
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [turnPhase]);
 
-  const handleEndGame = useCallback((outcome) => {
-    const text = outcome === 'victory'
-      ? '[GM] The hunt is over — the hunters claim victory! Tzorath is slain.'
-      : '[GM] The hunt ends in darkness — the hunters have fallen.';
-    addNarratorEntry({ text, type: 'narrative' });
-  }, [addNarratorEntry]);
+  const activePlayerId = state.turnState?.order?.[state.turnState?.currentIndex] || (turnPhase === TurnPhase.BOSS_TURN ? 'boss' : null);
 
-  const handleDriverModeChange = useCallback((mode) => {
-    setGmMode(mode);
-    addNarratorEntry({ text: `[GM] Driver switched to: ${mode} mode.`, type: 'system' });
-  }, [setGmMode, addNarratorEntry]);
+  if (state.phase === GameState.LOBBY || !blueprint) {
+    return (
+      <div className={styles.hostView} style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>
+          Waiting for game to start...
+        </div>
+      </div>
+    );
+  }
 
-  const handleApiKeyChange = useCallback((key) => {
-    setGmApiKey(key);
-  }, [setGmApiKey]);
-
-  // -------------------------------------------------------------------------
-  // Derived values for the turn bar
-  // -------------------------------------------------------------------------
-
-  const currentEntityId = gameState.currentTurnEntityId;
-  const isHostTurn = currentEntityId === 'boss' || currentEntityId?.startsWith('boss');
-  const roundNumber = gameState.round ?? 1;
-  const phaseLabel = gameState.phase?.replace(/_/g, ' ') ?? 'WAITING';
-
-  // -------------------------------------------------------------------------
-  // Render
-  // -------------------------------------------------------------------------
+  if (state.phase === GameState.GAME_OVER && gameOverResult) {
+    const isVictory = gameOverResult.winner === 'players';
+    return (
+      <EncounterSplash
+        type={isVictory ? 'VICTORY' : 'DEFEAT'}
+        subtitle={isVictory ? blueprint.narrative?.victoryText : blueprint.narrative?.defeatText}
+        visible={true}
+      />
+    );
+  }
 
   return (
     <div className={styles.hostView}>
-      <div className={styles.mainGrid}>
-
-        {/* ── Turn Bar ───────────────────────────────────────────── */}
-        <div className={styles.turnBar}>
-          <span className={styles.turnBarLabel}>Round</span>
-          <div className={styles.turnBarBadge}>
-            {roundNumber}
-          </div>
-          <span className={styles.turnBarLabel}>Phase</span>
-          <div className={styles.turnBarBadge} style={isHostTurn ? { borderColor: 'var(--accent-secondary)', color: 'var(--accent-secondary)', background: 'rgba(212,168,67,0.1)' } : {}}>
-            {phaseLabel}
-          </div>
-          {isMockMode && (
-            <div className={styles.turnBarBadge} style={{ borderColor: 'var(--accent-info)', color: 'var(--accent-info)', background: 'rgba(74,126,199,0.1)' }}>
-              DEMO MODE
-            </div>
-          )}
-          <div className={styles.turnBarContent}>
-            <TurnTracker
-              turnOrder={gameState.turnOrder}
-              activeEntityId={currentEntityId}
-              round={roundNumber}
-            />
-          </div>
+      {/* Header */}
+      <div className={styles.hostHeader}>
+        <span className={styles.hostTitle}>Host GM Console</span>
+        <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+          <span className={styles.roundBadge}>Round {round}</span>
+          <span className={styles.phaseBadge}>{turnPhase}</span>
+          <TurnTracker players={players} boss={boss} activeEntityId={activePlayerId} round={round} phase={turnPhase} />
         </div>
+        <DriverToggle currentDriver={gmMode} onSwitch={setGmMode} />
+      </div>
 
-        {/* ── Character Sheet ─────────────────────────────────────── */}
-        <div className={styles.charSheet}>
-          <CharacterSheet player={myPlayer} />
-        </div>
+      {/* Left — Monster Panel */}
+      <div className={styles.hostLeft}>
+        <div className={styles.sectionTitle}>Boss</div>
+        <MonsterPanel bossState={boss} blueprint={blueprint} />
+      </div>
 
-        {/* ── Zone Map ────────────────────────────────────────────── */}
-        <div className={styles.mapArea}>
-          <ZoneMap
-            zones={gameState.zones}
-            playerPositions={
-              Object.values(gameState.players).reduce((acc, p) => {
-                acc[p.id] = p.zoneId;
-                return acc;
-              }, {})
-            }
-            bossPosition={gameState.boss?.zoneId ?? null}
-          />
-        </div>
-
-        {/* ── Narrator Feed ───────────────────────────────────────── */}
+      {/* Main */}
+      <div className={styles.hostMain}>
         <div className={styles.narratorArea}>
-          <NarratorFeed entries={gameState.narratorLog ?? []} />
+          <NarratorFeed entries={narrativeLog} />
         </div>
-
-        {/* ── Action Bar ──────────────────────────────────────────── */}
-        <div className={styles.actionBar}>
-          <ActionPanel
-            actions={[]}
-            onAction={() => {}}
+        <div className={styles.zoneMapArea}>
+          <ZoneMap
+            zones={blueprint.zones}
+            players={players}
+            boss={boss}
+            floraState={floraState}
+            placedTraps={placedTraps}
           />
-          <div style={{ marginLeft: 'auto', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
-            HOST VIEW
-          </div>
-        </div>
-
-        {/* ── Host Panel (far right, spans content + action rows) ─── */}
-        <div className={styles.hostPanel}>
-
-          {/* GM Identity badge */}
-          <div className={styles.gmBadge}>
-            <span className={styles.gmBadgeTitle}>Game Master</span>
-            <div className={styles.gmBadgePips}>
-              <span className={styles.gmBadgePip} />
-              <span className={styles.gmBadgePip} />
-              <span className={styles.gmBadgePip} />
-            </div>
-          </div>
-
-          {/* Monster Panel */}
-          <div className={styles.hostPanelSection}>
-            <MonsterPanel
-              boss={gameState.boss}
-              stages={bossStages}
-              blueprint={blueprint}
-            />
-          </div>
-
-          {/* Player Overview */}
-          <div className={styles.hostPanelSection}>
-            <PlayerOverview
-              players={gameState.players}
-              blueprint={blueprint}
-            />
-          </div>
-
-          {/* GM Controls */}
-          <div className={styles.hostPanelSection}>
-            <GMControls
-              onAdvanceStory={handleAdvanceStory}
-              onOverrideDice={handleOverrideDice}
-              onTriggerEvent={handleTriggerEvent}
-              onSkipTurn={handleSkipTurn}
-              onPauseGame={handlePauseGame}
-              onEndGame={handleEndGame}
-            />
-          </div>
-
-          {/* Driver Toggle */}
-          <div className={styles.hostPanelSection}>
-            <DriverToggle
-              currentMode={gmMode}
-              onModeChange={handleDriverModeChange}
-              apiKey={gmApiKey}
-              onApiKeyChange={handleApiKeyChange}
-            />
-          </div>
-
         </div>
       </div>
+
+      {/* Right — Player Overview */}
+      <div className={styles.hostRight}>
+        <div className={styles.sectionTitle}>Players</div>
+        <PlayerOverview players={players} />
+      </div>
+
+      {/* Footer — GM Controls */}
+      <div className={styles.hostFooter}>
+        <GMControls
+          isBossTurn={turnPhase === TurnPhase.BOSS_TURN}
+          isEnvironmentPhase={turnPhase === TurnPhase.ENVIRONMENT}
+          gmMode={gmMode}
+          players={players}
+          onBossAttack={(targetId, roll) => {
+            dispatch({ type: ActionTypes.BOSS_ATTACK, payload: { targetId, roll } });
+          }}
+          onBossAoe={(roll) => {
+            dispatch({ type: ActionTypes.BOSS_AOE_ATTACK, payload: { roll } });
+          }}
+          onBossBurrow={() => dispatch({ type: ActionTypes.BOSS_BURROW, payload: {} })}
+          onEndBossTurn={() => {
+            dispatch({ type: ActionTypes.BOSS_END_TURN, payload: {} });
+            dispatch({ type: ActionTypes.RUN_ENVIRONMENT, payload: {} });
+            dispatch({ type: ActionTypes.ADVANCE_PHASE, payload: {} });
+          }}
+          onRunEnvironment={() => {
+            dispatch({ type: ActionTypes.RUN_ENVIRONMENT, payload: {} });
+            dispatch({ type: ActionTypes.ADVANCE_PHASE, payload: {} });
+          }}
+          onAdvancePhase={advancePhase}
+          onSaveGame={saveGame}
+        />
+      </div>
+
+      {/* Evolution splash */}
+      {isEvolving && boss && (
+        <EncounterSplash
+          type="EVOLUTION"
+          subtitle={`${boss.name} evolves to Stage ${boss.currentStage + 1}!`}
+          visible={isEvolving}
+        />
+      )}
     </div>
   );
 }

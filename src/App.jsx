@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { GameProvider } from '@context/GameContext';
-import { NetworkProvider } from '@context/NetworkContext';
+import { GameProvider } from '@context/GameContext.jsx';
+import { NetworkProvider } from '@context/NetworkContext.jsx';
 import LobbyView from '@views/lobby/LobbyView.jsx';
 import CharacterSelect from '@views/character/CharacterSelect.jsx';
 import GameView from '@views/game/GameView.jsx';

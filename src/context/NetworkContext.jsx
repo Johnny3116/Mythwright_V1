@@ -1,189 +1,230 @@
-import { createContext, useCallback, useContext, useReducer } from 'react';
+import { createContext, useContext, useReducer, useRef, useCallback } from 'react';
+import { createRoom, joinRoom, broadcast, sendTo, destroyPeer } from '@network/PeerManager.js';
+import { broadcastState, sendPlayerAction, sendPlayerJoin } from '@network/StateSync.js';
+import { MessageTypes, createMessage } from '@network/MessageTypes.js';
 
-// ---------------------------------------------------------------------------
-// Action type constants
-// ---------------------------------------------------------------------------
+const NetworkContext = createContext(null);
 
-export const NetworkActions = {
-  SET_ROOM_CODE: 'SET_ROOM_CODE',
-  SET_CONNECTED: 'SET_CONNECTED',
-  SET_IS_HOST: 'SET_IS_HOST',
-  ADD_PLAYER: 'ADD_PLAYER',
-  REMOVE_PLAYER: 'REMOVE_PLAYER',
-  UPDATE_PLAYER: 'UPDATE_PLAYER',
-  SET_LATENCY: 'SET_LATENCY',
-  SET_ERROR: 'SET_ERROR',
-  RESET: 'RESET',
-};
-
-// ---------------------------------------------------------------------------
-// Initial state
-// ---------------------------------------------------------------------------
-
-const initialState = {
-  connected: false,
-  roomCode: null,
-  players: [],
-  latency: 0,
+const initialNetworkState = {
   isHost: false,
-  connectionStatus: 'disconnected',
-  errorMessage: null,
+  roomCode: null,
+  peer: null,
+  hostConnection: null,  // player-side: connection to host
+  connections: [],       // host-side: connections to all players
+  connectedPeers: [],    // array of peerId strings
+  status: 'idle',        // 'idle' | 'connecting' | 'connected' | 'error'
+  error: null,
+  myPeerId: null,
 };
-
-// ---------------------------------------------------------------------------
-// Reducer
-// ---------------------------------------------------------------------------
 
 function networkReducer(state, action) {
   switch (action.type) {
-    case NetworkActions.SET_ROOM_CODE:
-      return { ...state, roomCode: action.payload };
-
-    case NetworkActions.SET_CONNECTED:
+    case 'SET_STATUS':
+      return { ...state, status: action.payload };
+    case 'SET_ERROR':
+      return { ...state, error: action.payload, status: 'error' };
+    case 'HOST_CONNECTED':
       return {
         ...state,
-        connected: action.payload,
-        connectionStatus: action.payload ? 'connected' : 'disconnected',
-        errorMessage: action.payload ? null : state.errorMessage,
+        isHost: true,
+        roomCode: action.payload.roomCode,
+        peer: action.payload.peer,
+        myPeerId: action.payload.roomCode,
+        status: 'connected',
+        error: null,
       };
-
-    case NetworkActions.SET_IS_HOST:
-      return { ...state, isHost: action.payload };
-
-    case NetworkActions.ADD_PLAYER: {
-      // Prevent duplicate entries by id
-      const exists = state.players.some((p) => p.id === action.payload.id);
-      if (exists) {
-        return {
-          ...state,
-          players: state.players.map((p) =>
-            p.id === action.payload.id ? { ...p, ...action.payload } : p
-          ),
-        };
-      }
-      return { ...state, players: [...state.players, action.payload] };
-    }
-
-    case NetworkActions.REMOVE_PLAYER:
+    case 'PLAYER_CONNECTED':
       return {
         ...state,
-        players: state.players.filter((p) => p.id !== action.payload),
+        isHost: false,
+        roomCode: action.payload.roomCode,
+        peer: action.payload.peer,
+        hostConnection: action.payload.hostConnection,
+        myPeerId: action.payload.peer?.id || null,
+        status: 'connected',
+        error: null,
       };
-
-    case NetworkActions.UPDATE_PLAYER:
+    case 'PEER_JOINED':
       return {
         ...state,
-        players: state.players.map((p) =>
-          p.id === action.payload.id ? { ...p, ...action.payload.updates } : p
-        ),
+        connections: [...state.connections, action.payload.connection],
+        connectedPeers: [...state.connectedPeers, action.payload.peerId],
       };
-
-    case NetworkActions.SET_LATENCY:
-      return { ...state, latency: action.payload };
-
-    case NetworkActions.SET_ERROR:
+    case 'PEER_LEFT':
       return {
         ...state,
-        connectionStatus: 'error',
-        errorMessage: action.payload,
-        connected: false,
+        connections: state.connections.filter(c => c.peer !== action.payload.peerId),
+        connectedPeers: state.connectedPeers.filter(id => id !== action.payload.peerId),
       };
-
-    case NetworkActions.RESET:
-      return { ...initialState };
-
+    case 'RESET':
+      return { ...initialNetworkState };
     default:
       return state;
   }
 }
 
-// ---------------------------------------------------------------------------
-// Context
-// ---------------------------------------------------------------------------
-
-export const NetworkContext = createContext(null);
-
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
-
 export function NetworkProvider({ children }) {
-  const [state, dispatch] = useReducer(networkReducer, initialState);
+  const [network, dispatch] = useReducer(networkReducer, initialNetworkState);
+  const connectionsRef = useRef([]);
+  const onMessageRef = useRef(null);
 
-  // Convenience methods
-  const setRoomCode = useCallback(
-    (code) => dispatch({ type: NetworkActions.SET_ROOM_CODE, payload: code }),
-    []
-  );
+  /**
+   * Set a callback to be invoked when any message is received.
+   * @param {Function} handler - (message, fromPeerId) => void
+   */
+  const setMessageHandler = useCallback((handler) => {
+    onMessageRef.current = handler;
+  }, []);
 
-  const setConnected = useCallback(
-    (connected) => dispatch({ type: NetworkActions.SET_CONNECTED, payload: connected }),
-    []
-  );
+  /**
+   * Create a game room as host.
+   */
+  const hostGame = useCallback(async () => {
+    dispatch({ type: 'SET_STATUS', payload: 'connecting' });
+    try {
+      const { peer, roomCode } = await createRoom();
 
-  const setIsHost = useCallback(
-    (isHost) => dispatch({ type: NetworkActions.SET_IS_HOST, payload: isHost }),
-    []
-  );
+      peer.on('connection', (conn) => {
+        conn.on('open', () => {
+          connectionsRef.current = [...connectionsRef.current, conn];
+          dispatch({ type: 'PEER_JOINED', payload: { connection: conn, peerId: conn.peer } });
 
-  const addPlayer = useCallback(
-    (player) => dispatch({ type: NetworkActions.ADD_PLAYER, payload: player }),
-    []
-  );
+          conn.on('data', (rawData) => {
+            try {
+              const msg = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+              if (onMessageRef.current) {
+                onMessageRef.current(msg, conn.peer);
+              }
+            } catch (err) {
+              console.warn('Invalid message from', conn.peer, err);
+            }
+          });
 
-  const removePlayer = useCallback(
-    (playerId) => dispatch({ type: NetworkActions.REMOVE_PLAYER, payload: playerId }),
-    []
-  );
+          conn.on('close', () => {
+            connectionsRef.current = connectionsRef.current.filter(c => c.peer !== conn.peer);
+            dispatch({ type: 'PEER_LEFT', payload: { peerId: conn.peer } });
+          });
+        });
+      });
 
-  const updatePlayer = useCallback(
-    ({ id, updates }) =>
-      dispatch({ type: NetworkActions.UPDATE_PLAYER, payload: { id, updates } }),
-    []
-  );
+      peer.on('error', (err) => {
+        dispatch({ type: 'SET_ERROR', payload: err.message });
+      });
 
-  const setLatency = useCallback(
-    (latency) => dispatch({ type: NetworkActions.SET_LATENCY, payload: latency }),
-    []
-  );
+      dispatch({ type: 'HOST_CONNECTED', payload: { peer, roomCode } });
+      return roomCode;
+    } catch (err) {
+      dispatch({ type: 'SET_ERROR', payload: err.message });
+      throw err;
+    }
+  }, []);
 
-  const setError = useCallback(
-    (message) => dispatch({ type: NetworkActions.SET_ERROR, payload: message }),
-    []
-  );
+  /**
+   * Join a game room as a player.
+   * @param {string} roomCode
+   */
+  const joinGame = useCallback(async (roomCode) => {
+    dispatch({ type: 'SET_STATUS', payload: 'connecting' });
+    try {
+      const { peer, hostConnection } = await joinRoom(roomCode);
 
-  const reset = useCallback(
-    () => dispatch({ type: NetworkActions.RESET }),
-    []
-  );
+      hostConnection.on('data', (rawData) => {
+        try {
+          const msg = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+          if (onMessageRef.current) {
+            onMessageRef.current(msg, roomCode);
+          }
+        } catch (err) {
+          console.warn('Invalid message from host', err);
+        }
+      });
+
+      hostConnection.on('close', () => {
+        dispatch({ type: 'SET_STATUS', payload: 'idle' });
+      });
+
+      peer.on('error', (err) => {
+        dispatch({ type: 'SET_ERROR', payload: err.message });
+      });
+
+      dispatch({ type: 'PLAYER_CONNECTED', payload: { peer, hostConnection, roomCode } });
+      return { peer, hostConnection };
+    } catch (err) {
+      dispatch({ type: 'SET_ERROR', payload: err.message });
+      throw err;
+    }
+  }, []);
+
+  /**
+   * Broadcast game state to all connected players (host only).
+   * @param {object} gameState
+   */
+  const broadcastGameState = useCallback((gameState) => {
+    broadcastState(connectionsRef.current, gameState);
+  }, []);
+
+  /**
+   * Send a player action to the host.
+   * @param {object} action
+   */
+  const sendAction = useCallback((action) => {
+    if (network.hostConnection) {
+      sendPlayerAction(network.hostConnection, action);
+    }
+  }, [network.hostConnection]);
+
+  /**
+   * Send a message directly to the host.
+   * @param {object} message
+   */
+  const sendToHost = useCallback((message) => {
+    if (network.hostConnection) {
+      sendTo(network.hostConnection, message);
+    }
+  }, [network.hostConnection]);
+
+  /**
+   * Broadcast a custom message to all players.
+   * @param {object} message
+   */
+  const broadcastMessage = useCallback((message) => {
+    broadcast(connectionsRef.current, message);
+  }, []);
+
+  /**
+   * Disconnect and clean up.
+   */
+  const disconnect = useCallback(() => {
+    if (network.peer) {
+      destroyPeer(network.peer);
+    }
+    connectionsRef.current = [];
+    dispatch({ type: 'RESET' });
+  }, [network.peer]);
 
   const value = {
-    // State
-    ...state,
-    // Raw dispatch for advanced use
-    dispatch,
-    // Convenience methods
-    setRoomCode,
-    setConnected,
-    setIsHost,
-    addPlayer,
-    removePlayer,
-    updatePlayer,
-    setLatency,
-    setError,
-    reset,
+    network,
+    connectionsRef,
+    setMessageHandler,
+    hostGame,
+    joinGame,
+    broadcastGameState,
+    sendAction,
+    sendToHost,
+    broadcastMessage,
+    disconnect,
   };
 
-  return <NetworkContext.Provider value={value}>{children}</NetworkContext.Provider>;
+  return (
+    <NetworkContext.Provider value={value}>
+      {children}
+    </NetworkContext.Provider>
+  );
 }
-
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
 
 export function useNetworkContext() {
   const context = useContext(NetworkContext);
-  if (context === null) {
+  if (context === undefined || context === null) {
     throw new Error('useNetworkContext must be used within a NetworkProvider');
   }
   return context;

@@ -1,90 +1,67 @@
-import { useCallback, useRef, useState } from 'react';
-import { DICE_FACES } from '@utils/constants';
+/**
+ * useDiceRoll — React hook for animated dice rolling
+ */
 
-/** Animation duration in milliseconds before the result is committed. */
-const ROLL_ANIMATION_MS = 1500;
+import { useState, useCallback } from 'react';
+import { rollD20 } from '@engine/DiceSystem.js';
+
+const ANIMATION_DURATION_MS = 1500;
 
 /**
- * rollD20 — Produce a cryptographically random integer in [1, DICE_FACES].
- * Never uses Math.random().
- *
- * @returns {number} Integer between 1 and 20 inclusive.
+ * Hook for triggering D20 rolls with animation state.
+ * @returns {{ isRolling: boolean, lastRoll: object|null, roll: Function }}
  */
-function rollD20() {
-  const buf = new Uint32Array(1);
-  crypto.getRandomValues(buf);
-  // Rejection-sample to avoid modulo bias on the full 32-bit range.
-  // The accepted range is the largest multiple of DICE_FACES that fits
-  // in 32 bits: floor(2^32 / DICE_FACES) * DICE_FACES.
-  const max = Math.floor(0x100000000 / DICE_FACES) * DICE_FACES;
-  let value = buf[0];
-  while (value >= max) {
-    crypto.getRandomValues(buf);
-    value = buf[0];
-  }
-  return (value % DICE_FACES) + 1;
-}
-
-/**
- * useDiceRoll — Animated D20 dice rolling hook.
- *
- * @param {object}   [callbacks]            - Optional lifecycle callbacks.
- * @param {Function} [callbacks.onRollStart] - Called immediately when rolling begins.
- * @param {Function} [callbacks.onRollEnd]   - Called with the result object after animation.
- *
- * @returns {{
- *   roll: (modifier?: number) => { raw: number, modifier: number, total: number },
- *   isRolling: boolean,
- *   result: { raw: number, modifier: number, total: number } | null,
- *   reset: () => void,
- * }}
- */
-export function useDiceRoll({ onRollStart, onRollEnd } = {}) {
+export function useDiceRoll() {
   const [isRolling, setIsRolling] = useState(false);
-  const [result, setResult] = useState(null);
+  const [lastRoll, setLastRoll] = useState(null);
+  const [animationRolls, setAnimationRolls] = useState([]);
 
-  // Keep a ref to the animation timeout so we can cancel on unmount.
-  const timerRef = useRef(null);
-
-  const roll = useCallback(
-    (modifier = 0) => {
-      // Compute the real result immediately (deterministic, synchronous).
-      const raw = rollD20();
-      const total = raw + modifier;
-      const resultObj = { raw, modifier, total };
-
-      // Fire the start callback and update rolling state.
+  /**
+   * Trigger a D20 roll with animation.
+   * @param {number} modifier
+   * @returns {Promise<{ raw: number, modifier: number, total: number }>}
+   */
+  const roll = useCallback((modifier = 0) => {
+    return new Promise((resolve) => {
       setIsRolling(true);
-      setResult(null);
-      onRollStart?.();
 
-      // Clear any previous pending timer.
-      if (timerRef.current !== null) {
-        clearTimeout(timerRef.current);
-      }
+      // Generate random intermediate values for animation
+      const intermediates = Array.from({ length: 8 }, () => {
+        const arr = new Uint32Array(1);
+        crypto.getRandomValues(arr);
+        return (arr[0] % 20) + 1;
+      });
+      setAnimationRolls(intermediates);
 
-      // Commit the result to state after the animation delay.
-      timerRef.current = setTimeout(() => {
-        timerRef.current = null;
+      // The actual roll
+      const result = rollD20(modifier);
+
+      // Resolve after animation completes
+      setTimeout(() => {
+        setLastRoll(result);
         setIsRolling(false);
-        setResult(resultObj);
-        onRollEnd?.(resultObj);
-      }, ROLL_ANIMATION_MS);
-
-      // Return the result immediately so callers can use it without waiting.
-      return resultObj;
-    },
-    [onRollStart, onRollEnd]
-  );
-
-  const reset = useCallback(() => {
-    if (timerRef.current !== null) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    setIsRolling(false);
-    setResult(null);
+        setAnimationRolls([]);
+        resolve(result);
+      }, ANIMATION_DURATION_MS);
+    });
   }, []);
 
-  return { roll, isRolling, result, reset };
+  /**
+   * Roll immediately without animation (for automated/scripted actions).
+   * @param {number} modifier
+   * @returns {{ raw: number, modifier: number, total: number }}
+   */
+  const rollImmediate = useCallback((modifier = 0) => {
+    const result = rollD20(modifier);
+    setLastRoll(result);
+    return result;
+  }, []);
+
+  return {
+    isRolling,
+    lastRoll,
+    animationRolls,
+    roll,
+    rollImmediate,
+  };
 }

@@ -167,3 +167,22 @@ export function checkTrapTrigger(zoneId, gameState, roll) {
 export function getZoneTraps(zoneId, gameState) {
   return getPlacedTraps(gameState, zoneId);
 }
+
+/**
+ * Deactivate a placed trap by ID.
+ * @param {object[]} placedTraps
+ * @param {string} trapId
+ * @returns {object[]} Updated traps array
+ */
+export function deactivateTrap(placedTraps, trapId) {
+  return placedTraps.map((t) => (t.id === trapId ? { ...t, active: false } : t));
+}
+
+/**
+ * Alias for getAvailableTraps — get all available trap types from the blueprint.
+ * @param {object} blueprint
+ * @returns {object[]}
+ */
+export function getAvailableTrapTypes(blueprint) {
+  return getAvailableTraps(blueprint);
+}

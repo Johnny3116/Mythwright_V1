@@ -1,1092 +1,222 @@
-/* ============================================================
-   Host View Styles — Mythwright GM Control Panel
-   CSS Modules: All selectors are locally scoped.
-   Desktop-first: 1280px+
-   ============================================================ */
-
-/* ============================================================
-   Keyframe Animations
-   ============================================================ */
-
-@keyframes hostFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes redGlowPulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(199, 74, 56, 0.4); }
-  50%       { box-shadow: 0 0 24px rgba(199, 74, 56, 0.7), 0 0 40px rgba(199, 74, 56, 0.25); }
-}
-
-@keyframes goldGlowPulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(212, 168, 67, 0.4); }
-  50%       { box-shadow: 0 0 24px rgba(212, 168, 67, 0.7), 0 0 40px rgba(212, 168, 67, 0.25); }
-}
-
-@keyframes stageDotPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50%       { transform: scale(1.3); opacity: 0.8; }
-}
-
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(16px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes confirmExpand {
-  from { opacity: 0; max-height: 0; }
-  to   { opacity: 1; max-height: 200px; }
-}
-
-@keyframes dangerBlink {
-  0%, 100% { border-color: var(--accent-danger); }
-  50%       { border-color: rgba(199, 74, 56, 0.3); }
-}
-
-/* ============================================================
-   Host View — Root Container
-   ============================================================ */
-
+/* ── Host View ──────────────────────────────────────────────── */
 .hostView {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-body);
-  display: flex;
-  flex-direction: column;
-  animation: hostFadeIn var(--transition-base) ease;
-}
-
-/* ============================================================
-   Main Layout Grid
-   4 columns: CharSheet | Map | Narrator | HostPanel
-   3 rows: TurnBar | Main | ActionBar
-   ============================================================ */
-
-.mainGrid {
-  flex: 1;
   display: grid;
-  grid-template-columns: 280px 1fr 300px 320px;
   grid-template-rows: auto 1fr auto;
+  grid-template-columns: 300px 1fr 280px;
   grid-template-areas:
-    "turnbar  turnbar  turnbar  turnbar"
-    "charsheet  map  narrator  hostpanel"
-    "actionbar  actionbar  actionbar  hostpanel";
-  overflow: hidden;
-  min-height: 0;
+    "header header header"
+    "left   main   right"
+    "footer footer footer";
 }
 
-/* ============================================================
-   Turn Bar
-   ============================================================ */
-
-.turnBar {
-  grid-area: turnbar;
+/* ── Header ──────────────────────────────────────────────── */
+.hostHeader {
+  grid-area: header;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-6);
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  flex-shrink: 0;
-  min-height: 64px;
-  z-index: var(--z-sticky);
-}
-
-.turnBarLabel {
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.turnBarBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
-  background: rgba(199, 74, 56, 0.1);
-  border: 1px solid var(--accent-danger);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--text-xs);
-  font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--accent-danger);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.turnBarContent {
-  flex: 1;
-  min-width: 0;
-}
-
-/* ============================================================
-   Character Sheet Column (left)
-   ============================================================ */
-
-.charSheet {
-  grid-area: charsheet;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
-  overflow-y: auto;
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   gap: var(--space-4);
 }
 
-/* ============================================================
-   Map Area (center)
-   ============================================================ */
-
-.mapArea {
-  grid-area: map;
-  background: var(--bg-primary);
-  overflow: hidden;
-  position: relative;
+.hostTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--accent-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-/* ============================================================
-   Narrator Area
-   ============================================================ */
-
-.narratorArea {
-  grid-area: narrator;
-  background: var(--bg-secondary);
-  border-left: 1px solid var(--border-color);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ============================================================
-   Action Bar (bottom, spans char+map+narrator)
-   ============================================================ */
-
-.actionBar {
-  grid-area: actionbar;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
-  padding: var(--space-3) var(--space-4);
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: 72px;
-  flex-shrink: 0;
-}
-
-/* ============================================================
-   Host Panel — Far Right Column (spans all rows)
-   ============================================================ */
-
-.hostPanel {
-  grid-area: hostpanel;
-  grid-row: 2 / 4;
-  background: var(--bg-secondary);
-  border-left: 2px solid rgba(199, 74, 56, 0.3);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  position: relative;
-}
-
-/* Subtle red glow on the left border of the host panel */
-.hostPanel::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -1px;
-  width: 1px;
-  height: 100%;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(199, 74, 56, 0.6) 20%,
-    rgba(199, 74, 56, 0.6) 80%,
-    transparent
-  );
-  pointer-events: none;
-}
-
-.hostPanelSection {
-  border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0;
-}
-
-.hostPanelSection:last-child {
-  border-bottom: none;
-  flex: 1;
-}
-
-/* ============================================================
-   Section Headers (reusable inside host panel sections)
-   ============================================================ */
-
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+.roundBadge {
   background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-color);
-  cursor: default;
-  user-select: none;
-}
-
-.sectionHeaderIcon {
-  font-size: 0.9rem;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.sectionHeaderTitle {
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-secondary);
-  flex: 1;
-}
-
-.sectionHeaderTitle.red {
-  color: var(--accent-danger);
-}
-
-.sectionHeaderTitle.gold {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
   color: var(--accent-secondary);
 }
 
-/* ============================================================
-   Monster Panel
-   ============================================================ */
+.phaseBadge {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
 
-.monsterPanel {
+/* ── Left Panel — Monster ─────────────────────────────────── */
+.hostLeft {
+  grid-area: left;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
   padding: var(--space-4);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  animation: slideInRight var(--transition-base) ease;
 }
 
-.monsterIdentity {
+/* ── Main Area ─────────────────────────────────────────────── */
+.hostMain {
+  grid-area: main;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  overflow: hidden;
 }
 
+.narratorArea {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.zoneMapArea {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Right Panel — Players ────────────────────────────────── */
+.hostRight {
+  grid-area: right;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
+  padding: var(--space-4);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ── Footer — GM Controls ─────────────────────────────────── */
+.hostFooter {
+  grid-area: footer;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ── Section ─────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-1);
+}
+
+/* ── Monster Panel ───────────────────────────────────────── */
 .monsterName {
   font-family: var(--font-display);
   font-size: var(--text-xl);
-  font-weight: 700;
   color: var(--accent-danger);
-  letter-spacing: 0.04em;
-  line-height: 1.1;
-  text-shadow: 0 0 20px rgba(199, 74, 56, 0.4);
-}
-
-.monsterTitle {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  font-style: italic;
-  letter-spacing: 0.04em;
+  margin-bottom: var(--space-1);
 }
 
 .stageBadge {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: 2px var(--space-2);
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
   background: rgba(199, 74, 56, 0.15);
   border: 1px solid var(--accent-danger);
   border-radius: var(--border-radius-sm);
-  font-size: 10px;
-  font-family: var(--font-display);
-  font-weight: 700;
+  font-size: var(--text-xs);
   color: var(--accent-danger);
+  font-family: var(--font-display);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  width: fit-content;
+  margin-bottom: var(--space-3);
 }
 
-.stageIndicators {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.stageIndicatorsLabel {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-  margin-right: var(--space-1);
-}
-
-.stageDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  transition: all var(--transition-fast);
-  flex-shrink: 0;
-}
-
-.stageDot.active {
-  background: var(--accent-danger);
-  border-color: var(--accent-danger);
-  animation: stageDotPulse 2s ease-in-out infinite, redGlowPulse 2s ease-in-out infinite;
-}
-
-.stageDot.completed {
-  background: rgba(199, 74, 56, 0.25);
-  border-color: rgba(199, 74, 56, 0.35);
-}
-
-.bossHpSection {
+.monsterStats {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-}
-
-.bossHpBar {
-  /* Uses HealthBar component, this wrapper adds context */
-}
-
-.bossEvolutionThreshold {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--text-muted);
-}
-
-.bossEvolutionThresholdValue {
+  font-size: var(--text-sm);
   font-family: var(--font-mono);
-  color: var(--accent-warning);
-  font-weight: 600;
-}
-
-.monsterStatsRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-2);
-}
-
-.behaviorQueue {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.behaviorQueueLabel {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-}
-
-.behaviorItem {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--text-xs);
   color: var(--text-secondary);
-  line-height: 1.4;
 }
 
-.behaviorItemIcon {
-  font-size: 0.85rem;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.behaviorItemLabel {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.behaviorItemDesc {
-  font-size: 10px;
-  color: var(--text-muted);
-}
-
-.traitsList {
+.monsterStatRow {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
+  justify-content: space-between;
 }
 
-.traitsLabel {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-  width: 100%;
-}
-
-.traitBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 2px var(--space-2);
-  background: rgba(212, 168, 67, 0.08);
-  border: 1px solid rgba(212, 168, 67, 0.25);
-  border-radius: var(--border-radius-sm);
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--accent-secondary);
-  white-space: nowrap;
-}
-
-.monsterBurrowedBadge {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background: rgba(90, 88, 85, 0.15);
-  border: 1px solid var(--text-muted);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* Skeleton loading state */
-.skeletonLine {
-  height: 12px;
-  background: var(--bg-tertiary);
-  border-radius: var(--border-radius-sm);
-  animation: skeletonShimmer 1.5s ease-in-out infinite;
-}
-
-.skeletonLine.wide  { width: 80%; }
-.skeletonLine.med   { width: 55%; }
-.skeletonLine.short { width: 35%; }
-
-@keyframes skeletonShimmer {
-  0%, 100% { opacity: 0.4; }
-  50%       { opacity: 0.8; }
-}
-
-.skeletonBlock {
-  height: 48px;
-  background: var(--bg-tertiary);
-  border-radius: var(--border-radius-sm);
-  animation: skeletonShimmer 1.5s ease-in-out infinite;
-}
-
-/* ============================================================
-   Player Overview
-   ============================================================ */
-
-.playerOverview {
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.playerGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-}
-
+/* ── Player Overview ─────────────────────────────────────── */
 .playerCard {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--bg-primary);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
-  transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
-  overflow: hidden;
-  animation: hostFadeIn var(--transition-base) ease;
-}
-
-.playerCard:hover {
-  border-color: var(--text-muted);
-}
-
-.playerCard.danger {
-  border-color: var(--accent-danger);
-  box-shadow: 0 0 12px rgba(199, 74, 56, 0.15);
-  animation: dangerBlink 2s ease-in-out infinite;
-}
-
-.playerCard.dead {
-  opacity: 0.55;
-  border-color: var(--text-muted);
-  filter: grayscale(0.7);
-}
-
-.playerDeadOverlay {
-  position: absolute;
-  inset: 0;
+  padding: var(--space-3);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(10, 10, 15, 0.6);
-  font-size: 1.5rem;
-  border-radius: var(--border-radius-md);
-  z-index: 1;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .playerCardHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
-.playerName {
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: 0.02em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.playerCardIcon { font-size: var(--text-xl); }
+.playerCardName { font-family: var(--font-display); font-size: var(--text-sm); }
+.playerCardZone { font-size: var(--text-xs); color: var(--text-muted); }
 
-.playerClass {
-  display: inline-flex;
+/* ── GM Controls ─────────────────────────────────────────── */
+.gmControls {
+  display: flex;
+  gap: var(--space-3);
   align-items: center;
-  padding: 1px var(--space-2);
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.gmLabel {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.playerZone {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: 10px;
-  color: var(--text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.playerZoneIcon {
-  flex-shrink: 0;
-  font-size: 0.7rem;
-}
-
-.playerEffects {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  min-height: 16px;
-}
-
-.playerEffectBadge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0 var(--space-1);
-  background: rgba(74, 126, 199, 0.12);
-  border: 1px solid rgba(74, 126, 199, 0.3);
-  border-radius: 2px;
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--accent-info);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-}
-
-.noPlayers {
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  text-align: center;
-  padding: var(--space-6) 0;
-  font-style: italic;
-}
-
-/* ============================================================
-   GM Controls
-   ============================================================ */
-
-.gmControls {
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.controlGroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.controlGroupLabel {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
-}
-
-.controlRow {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.controlBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
   color: var(--text-secondary);
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    border-color var(--transition-fast),
-    color var(--transition-fast),
-    background-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
-  white-space: nowrap;
-  user-select: none;
 }
 
-.controlBtn:hover:not(:disabled) {
-  border-color: var(--text-muted);
-  color: var(--text-primary);
-  transform: scale(1.02);
-}
-
-.controlBtn:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.controlBtn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-.controlBtn.primary {
-  background: rgba(212, 168, 67, 0.1);
-  border-color: rgba(212, 168, 67, 0.4);
-  color: var(--accent-secondary);
-}
-
-.controlBtn.primary:hover:not(:disabled) {
-  background: rgba(212, 168, 67, 0.2);
-  border-color: var(--accent-secondary);
-  box-shadow: var(--shadow-glow-gold);
-}
-
-.controlBtn.warning {
-  background: rgba(212, 168, 67, 0.08);
-  border-color: rgba(212, 168, 67, 0.3);
-  color: var(--accent-warning);
-}
-
-.controlBtn.warning:hover:not(:disabled) {
-  background: rgba(212, 168, 67, 0.18);
-  border-color: var(--accent-warning);
-  box-shadow: var(--shadow-glow-gold);
-}
-
-.controlBtn.danger {
-  background: rgba(199, 74, 56, 0.08);
-  border-color: rgba(199, 74, 56, 0.3);
-  color: var(--accent-danger);
-}
-
-.controlBtn.danger:hover:not(:disabled) {
-  background: rgba(199, 74, 56, 0.2);
-  border-color: var(--accent-danger);
-  box-shadow: var(--shadow-glow-red);
-  color: var(--text-primary);
-}
-
-.overrideDiceRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.overrideDiceInput {
-  width: 64px;
-  padding: var(--space-2) var(--space-2);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  text-align: center;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-  -moz-appearance: textfield;
-}
-
-.overrideDiceInput::-webkit-inner-spin-button,
-.overrideDiceInput::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.overrideDiceInput:focus {
-  outline: none;
-  border-color: var(--accent-secondary);
-  box-shadow: 0 0 8px rgba(212, 168, 67, 0.2);
-}
-
-.overrideDiceInput::placeholder {
-  color: var(--text-muted);
-  font-size: var(--text-xs);
-}
-
-.overrideActiveTag {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 1px var(--space-2);
-  background: rgba(212, 168, 67, 0.15);
-  border: 1px solid var(--accent-secondary);
-  border-radius: var(--border-radius-sm);
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--accent-secondary);
-  animation: goldGlowPulse 2s ease-in-out infinite;
-}
-
-.eventDropdown {
-  flex: 1;
-  padding: var(--space-2) var(--space-3);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  transition: border-color var(--transition-fast);
-  cursor: pointer;
-}
-
-.eventDropdown:focus {
-  outline: none;
-  border-color: var(--text-muted);
-}
-
-.eventDropdown option {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-/* End Game inline confirm */
-.endGameConfirm {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: rgba(199, 74, 56, 0.06);
-  border: 1px solid rgba(199, 74, 56, 0.3);
-  border-radius: var(--border-radius-md);
-  animation: confirmExpand var(--transition-base) ease forwards;
-}
-
-.endGameConfirmLabel {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.endGameConfirmRow {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.controlSeparator {
-  height: 1px;
-  background: var(--border-color);
-  margin: var(--space-1) 0;
-}
-
-/* ============================================================
-   Driver Toggle
-   ============================================================ */
-
+/* ── Driver Toggle ───────────────────────────────────────── */
 .driverToggle {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-}
-
-.driverButtons {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
   gap: var(--space-2);
+  align-items: center;
 }
 
 .driverBtn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-1);
-  background: var(--bg-primary);
+  padding: var(--space-1) var(--space-3);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
-  color: var(--text-muted);
-  font-family: var(--font-body);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
   cursor: pointer;
-  transition:
-    border-color var(--transition-fast),
-    color var(--transition-fast),
-    background-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
-  user-select: none;
+  transition: all var(--transition-fast);
 }
 
-.driverBtn:hover:not(.active) {
-  border-color: var(--text-muted);
-  color: var(--text-secondary);
-  transform: scale(1.02);
-}
-
-.driverBtn:active {
-  transform: scale(0.98);
-}
-
-.driverBtn.active {
-  border-color: var(--accent-secondary);
-  background: rgba(212, 168, 67, 0.08);
-  color: var(--accent-secondary);
-  box-shadow: 0 0 12px rgba(212, 168, 67, 0.2), inset 0 0 8px rgba(212, 168, 67, 0.05);
-  animation: goldGlowPulse 3s ease-in-out infinite;
-}
-
-.driverBtnIcon {
-  font-size: 1.1rem;
-  line-height: 1;
-}
-
-.driverBtnLabel {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  line-height: 1;
-}
-
-.driverConfirmDialog {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  background: rgba(212, 168, 67, 0.05);
-  border: 1px solid rgba(212, 168, 67, 0.25);
-  border-radius: var(--border-radius-md);
-  animation: confirmExpand var(--transition-base) ease forwards;
-}
-
-.driverConfirmTitle {
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
-  color: var(--accent-secondary);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.driverConfirmDesc {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.driverConfirmRow {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.driverApiInput {
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.driverApiInput:focus {
-  outline: none;
-  border-color: var(--accent-secondary);
-  box-shadow: 0 0 8px rgba(212, 168, 67, 0.2);
-}
-
-.driverApiInput::placeholder {
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.driverApiLabel {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-  margin-bottom: var(--space-1);
-}
-
-.currentModeDisplay {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.currentModeDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-secondary);
-  animation: goldGlowPulse 2s ease-in-out infinite;
-  flex-shrink: 0;
-}
-
-.currentModeLabel {
-  font-family: var(--font-mono);
-  color: var(--accent-secondary);
-  font-weight: 700;
-  font-size: var(--text-xs);
-}
-
-/* ============================================================
-   Host Panel — GM Badge (top of panel)
-   ============================================================ */
-
-.gmBadge {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-2) var(--space-4);
-  background: linear-gradient(135deg, rgba(199, 74, 56, 0.12) 0%, rgba(10, 10, 15, 0) 100%);
-  border-bottom: 1px solid rgba(199, 74, 56, 0.2);
-  flex-shrink: 0;
-}
-
-.gmBadgeTitle {
-  font-family: var(--font-display);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--accent-danger);
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-}
-
-.gmBadgePips {
-  display: flex;
-  gap: var(--space-1);
-}
-
-.gmBadgePip {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--accent-danger);
-  opacity: 0.6;
-}
-
-.gmBadgePip:nth-child(2) { opacity: 0.4; }
-.gmBadgePip:nth-child(3) { opacity: 0.2; }
-
-/* ============================================================
-   Status Bar (bottom of host view, optional)
-   ============================================================ */
-
-.statusBar {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-2) var(--space-4);
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
-  font-size: 10px;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.statusItem {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.statusDot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.statusDot.green { background: var(--accent-success); }
-.statusDot.red   { background: var(--accent-danger); }
-.statusDot.gold  { background: var(--accent-secondary); }
-
-.statusSpacer {
-  flex: 1;
-}
-
-/* ============================================================
-   Responsive guard — host view is desktop-only
-   ============================================================ */
-
-@media (max-width: 1279px) {
-  .mainGrid {
-    grid-template-columns: 240px 1fr 260px 280px;
-  }
-}
+.driverBtn:hover { border-color: var(--accent-secondary); color: var(--text-primary); }
+.driverBtnActive { border-color: var(--accent-secondary); color: var(--accent-secondary); background: var(--bg-secondary); }
