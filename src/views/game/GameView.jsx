@@ -4,10 +4,6 @@ import { useTurnManager } from '@hooks/useTurnManager';
 import { ZoneCard } from '@components/ZoneCard';
 import { FloatingDamage } from '@components/FloatingDamage';
 import { EncounterSplash } from '@components/EncounterSplash';
-import { useState } from 'react';
-import { useGameEngine } from '@hooks/useGameEngine';
-import { useTurnManager } from '@hooks/useTurnManager';
-import { ZoneCard } from '@components/ZoneCard';
 import { TurnTracker } from './TurnTracker';
 import { CharacterSheet } from './CharacterSheet';
 import { ZoneMap } from './ZoneMap';
@@ -163,17 +159,15 @@ export default function GameView() {
     : null;
 
   // Build a mock blueprint zone for demo mode when no blueprint is loaded.
-  // Build a mock blueprint zone for demo mode.
   const demoZone = selectedZoneId && !selectedZone
     ? {
-        id:         selectedZoneId,
-        name:       selectedZoneId.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-        subtitle:   'Zone of the Hunt',
-        description:'A treacherous region teeming with danger and opportunity for the skilled hunter.',
+        id:              selectedZoneId,
+        name:            selectedZoneId.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        subtitle:        'Zone of the Hunt',
+        description:     'A treacherous region teeming with danger and opportunity for the skilled hunter.',
         retreatModifier: 0,
-        trapBonus:  'None',
-        trapBonus:  0,
-        connectedZones: [],
+        trapBonus:       0,
+        connectedZones:  [],
       }
     : null;
 
@@ -209,16 +203,12 @@ export default function GameView() {
         triggerFloating(30, 'heal');
       }
     } else {
-      // Phase 5: dispatch player action intent to host via network.
-    // In live mode, dispatch the player action intent.
-    // This will be wired to the full engine dispatch in Phase 5.
-    if (!isDemoMode) {
       // TODO (Phase 5): dispatch player action intent to host via network.
       console.debug('[GameView] Player action intent:', actionType); // eslint-disable-line no-console
     }
   }
 
-  const myPlayer    = myPlayerId ? (gameState.players[myPlayerId] ?? null) : null;
+  const myPlayer     = myPlayerId ? (gameState.players[myPlayerId] ?? null) : null;
   const timerEnabled = blueprint?.settings?.turnTimer?.enabled ?? false;
   const timerSeconds = blueprint?.settings?.turnTimer?.defaultSeconds ?? 60;
 
@@ -246,15 +236,6 @@ export default function GameView() {
         />
       ))}
 
-  // Derive myPlayer.
-  const myPlayer = myPlayerId ? (gameState.players[myPlayerId] ?? null) : null;
-
-  // Turn tracker timer config.
-  const timerEnabled   = blueprint?.settings?.turnTimer?.enabled ?? false;
-  const timerSeconds   = blueprint?.settings?.turnTimer?.defaultSeconds ?? 60;
-
-  return (
-    <div className={styles.gameView} role="main" aria-label="Game view">
       {/* ── Turn tracker (top bar) ── */}
       <div className={styles.turnBar}>
         <TurnTracker
@@ -277,10 +258,6 @@ export default function GameView() {
 
       {/* ── Zone map (center) ── */}
       <div className={styles.mapArea} data-map-area="">
-      <div
-        className={styles.mapArea}
-        data-map-area=""
-      >
         <ZoneMap
           zones={enrichedZones}
           players={gameState.players}
@@ -305,7 +282,6 @@ export default function GameView() {
 
         {/* Demo mode badge */}
         {isDemoMode && (
-          <div className={styles.demoBadge} aria-hidden="true">
           <div
             style={{
               position: 'absolute',

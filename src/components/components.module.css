@@ -184,8 +184,6 @@
   text-align: center;
 }
 
-}
-
 /* ============================================================
    StatCard
    ============================================================ */
@@ -344,8 +342,6 @@
   background: rgba(255, 255, 255, 0.05);
   border-color: var(--border-color);
   color: var(--text-primary);
-}
-
 }
 
 .actionButton--danger:hover:not(:disabled) {
@@ -878,8 +874,6 @@
   border-radius: var(--border-radius-sm);
   color: var(--text-secondary);
   white-space: nowrap;
-}
-
 }
 
 .zoneCardSectionValue {
