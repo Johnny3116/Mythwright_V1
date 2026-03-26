@@ -20,6 +20,15 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    // Engine and network tests use Node built-ins (fs, path) — run in node env.
+    // Component/view tests keep jsdom for DOM APIs.
+    environmentMatchGlobs: [
+      ['tests/engine/**', 'node'],
+      ['tests/network/**', 'node'],
+    ],
+    env: {
+      NODE_ENV: 'test',
+    },
     setupFiles: ['./tests/setup.js'],
     passWithNoTests: true,
     coverage: {
