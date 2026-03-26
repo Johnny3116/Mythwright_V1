@@ -13,7 +13,7 @@ export function CampaignUpload({ onBlueprintLoaded }) {
       setErrors(['Please upload a .json campaign file.']);
       return;
     }
-    const { blueprint, errors: errs } = await loadBlueprintFromFile(file);
+    const { data: blueprint, errors: errs } = await loadBlueprintFromFile(file);
     if (errs.length > 0) {
       setErrors(errs);
       setLoaded(null);
@@ -25,7 +25,7 @@ export function CampaignUpload({ onBlueprintLoaded }) {
   }
 
   async function loadDefault() {
-    const { blueprint, errors: errs } = await loadDefaultBlueprint();
+    const { data: blueprint, errors: errs } = await loadDefaultBlueprint();
     if (errs.length > 0) {
       setErrors(errs);
     } else {
