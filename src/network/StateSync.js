@@ -283,3 +283,43 @@ export function createStateSync(peerManager, gameEngine = null) {
 
   return sync;
 }
+
+// ── Standalone functional API (for NetworkContext compatibility) ──────────────
+
+/**
+ * Broadcast game state to an array of raw PeerJS DataConnections.
+ * Wraps state in a HOST_STATE_UPDATE message.
+ * @param {object[]} connections
+ * @param {object} gameState
+ */
+export function broadcastState(connections, gameState) {
+  const msg = createMessage(MSG.HOST_STATE_UPDATE, {
+    state: gameState,
+    version: Date.now(),
+  });
+  connections.forEach(conn => {
+    if (conn?.open) conn.send(msg);
+  });
+}
+
+/**
+ * Send a player action to the host via a raw PeerJS DataConnection.
+ * @param {object} hostConnection
+ * @param {object} action
+ */
+export function sendPlayerAction(hostConnection, action) {
+  if (hostConnection?.open) {
+    hostConnection.send(createMessage(MSG.PLAYER_ACTION, { action }));
+  }
+}
+
+/**
+ * Send a player join message to the host via a raw PeerJS DataConnection.
+ * @param {object} hostConnection
+ * @param {object} data
+ */
+export function sendPlayerJoin(hostConnection, data) {
+  if (hostConnection?.open) {
+    hostConnection.send(createMessage(MSG.PLAYER_JOIN, data));
+  }
+}
