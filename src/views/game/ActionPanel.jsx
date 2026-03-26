@@ -41,7 +41,7 @@ export function ActionPanel({ availableActions = [], onAction, isMyTurn = false,
   function handleRollComplete(result) {
     // Dice roll completed — in a real integration this would trigger
     // the pending action resolution. For now just log for wiring later.
-    if (process.env.NODE_ENV !== 'production') {
+    if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
       console.debug('[ActionPanel] Dice rolled:', result);
     }

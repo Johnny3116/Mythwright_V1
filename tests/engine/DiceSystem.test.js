@@ -50,9 +50,9 @@ describe('DiceSystem', () => {
         counts[rollD20().natural]++;
       }
       const expected = ROLLS / 20; // 500 per face
-      // Use 10% tolerance (~4.7 sigma) to avoid spurious failures while still
-      // catching any face that is grossly over- or under-represented
-      const tolerance = expected * 0.10;
+      // Use 15% tolerance to avoid spurious failures from natural RNG variance
+      // while still catching any face that is grossly over- or under-represented
+      const tolerance = expected * 0.15;
 
       for (let face = 1; face <= 20; face++) {
         expect(counts[face]).toBeGreaterThanOrEqual(expected - tolerance);

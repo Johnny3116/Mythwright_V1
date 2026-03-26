@@ -31,15 +31,11 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          peer: ['peerjs'],
-          engine: [
-            'src/engine/GameEngine.js',
-            'src/engine/CombatResolver.js',
-            'src/engine/DiceSystem.js',
-            'src/engine/BehaviorTree.js',
-          ],
+        // Use function form so Rollup can match against resolved absolute module IDs
+        manualChunks(id) {
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) return 'vendor';
+          if (id.includes('node_modules/peerjs') || id.includes('node_modules/webrtc-adapter')) return 'peer';
+          if (id.includes('/src/engine/')) return 'engine';
         },
       },
     },
