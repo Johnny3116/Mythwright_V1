@@ -31,7 +31,14 @@ export const MSG = {
   HEARTBEAT: 'HEARTBEAT',                   // Connection alive check
   RECONNECT_REQUEST: 'RECONNECT_REQUEST',   // Player requesting state catch-up
   RECONNECT_RESPONSE: 'RECONNECT_RESPONSE', // Host sends current state
+  STATE_REQUEST: 'STATE_REQUEST',           // Player requests full state resync
 };
+
+/**
+ * Alias for MSG — for compatibility with imports expecting `MessageTypes`.
+ * @type {typeof MSG}
+ */
+export const MessageTypes = MSG;
 
 /** Set of valid type strings for O(1) lookup. */
 const VALID_TYPES = new Set(Object.values(MSG));

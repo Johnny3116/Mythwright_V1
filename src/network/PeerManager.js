@@ -447,3 +447,67 @@ export function createPeerManager(options = {}) {
 
   return manager;
 }
+
+// ── Standalone functional API (for NetworkContext / Reconnect compatibility) ──
+
+/**
+ * Create a host room using a raw PeerJS Peer.
+ * Returns the Peer instance and the 6-character room code.
+ * @returns {Promise<{ peer: import('peerjs').Peer, roomCode: string }>}
+ */
+export function createRoom() {
+  const roomCode = generateRoomCode();
+  const peerId = toPeerId(roomCode);
+  return new Promise((resolve, reject) => {
+    const peer = new Peer(peerId, { debug: 0 });
+    peer.on('open', () => resolve({ peer, roomCode }));
+    peer.on('error', reject);
+  });
+}
+
+/**
+ * Join a room by its 6-character code using a raw PeerJS Peer.
+ * Returns the Peer instance and the DataConnection to the host.
+ * @param {string} code
+ * @returns {Promise<{ peer: import('peerjs').Peer, hostConnection: object }>}
+ */
+export function joinRoom(code) {
+  const roomCode = code.toUpperCase();
+  return new Promise((resolve, reject) => {
+    const peer = new Peer({ debug: 0 });
+    peer.on('open', () => {
+      const hostConnection = peer.connect(toPeerId(roomCode), { reliable: true });
+      hostConnection.on('open', () => resolve({ peer, hostConnection }));
+      hostConnection.on('error', reject);
+    });
+    peer.on('error', reject);
+  });
+}
+
+/**
+ * Broadcast a message to an array of raw PeerJS DataConnections.
+ * @param {object[]} connections
+ * @param {object} message
+ */
+export function broadcast(connections, message) {
+  connections.forEach(conn => {
+    if (conn?.open) conn.send(message);
+  });
+}
+
+/**
+ * Send a message to a single raw PeerJS DataConnection.
+ * @param {object} connection
+ * @param {object} message
+ */
+export function sendTo(connection, message) {
+  if (connection?.open) connection.send(message);
+}
+
+/**
+ * Destroy a raw PeerJS Peer instance.
+ * @param {import('peerjs').Peer} peer
+ */
+export function destroyPeer(peer) {
+  if (peer && !peer.destroyed) peer.destroy();
+}
