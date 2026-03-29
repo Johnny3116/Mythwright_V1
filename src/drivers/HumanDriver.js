@@ -12,18 +12,24 @@ import { ActionTypes } from '@engine/GameEngine.js';
  * @returns {object} Driver instance
  */
 export function createHumanDriver() {
-  let pendingResolve = null;
-
   const driver = {
     _pendingResolve: null,
+    _pendingReject: null,
+    _cancelled: false,
 
     /**
      * Wait for the host to manually select a boss action.
-     * Returns a promise that resolves when triggerManualAction is called.
+     * Returns a promise that resolves when triggerAction is called.
+     * Rejects immediately if the driver has been destroyed.
      */
     selectBossAction: async (gameState, blueprint) => {
-      return new Promise(resolve => {
+      return new Promise((resolve, reject) => {
+        if (driver._cancelled) {
+          reject(new Error('Driver destroyed'));
+          return;
+        }
         driver._pendingResolve = resolve;
+        driver._pendingReject = reject;
       });
     },
 
@@ -47,10 +53,23 @@ export function createHumanDriver() {
       if (driver._pendingResolve) {
         driver._pendingResolve({ action, target: targetId, params });
         driver._pendingResolve = null;
+        driver._pendingReject = null;
       }
     },
 
     isWaiting: () => driver._pendingResolve !== null,
+
+    /**
+     * Cancel any pending selectBossAction promise and prevent new ones from hanging.
+     */
+    destroy: () => {
+      driver._cancelled = true;
+      if (driver._pendingReject) {
+        driver._pendingReject(new Error('Driver destroyed'));
+        driver._pendingResolve = null;
+        driver._pendingReject = null;
+      }
+    },
   };
 
   return driver;

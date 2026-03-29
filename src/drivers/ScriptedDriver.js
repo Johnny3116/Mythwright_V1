@@ -58,9 +58,10 @@ export async function getNarrative(trigger, gameState, blueprint) {
       return `${gameState.boss?.name || 'The boss'} attacks!`;
     case 'evolution': {
       const stageIndex = gameState.boss?.currentStage || 0;
-      const keys = ['stage1to2', 'stage2to3', 'stage3to4', 'stage4toFinal'];
-      const evoNarrative = narrative.bossEvolutionNarrative;
-      return evoNarrative?.[keys[stageIndex - 1]] || `The boss evolves to stage ${stageIndex + 1}!`;
+      const evoNarrative = narrative.bossEvolutionNarrative || {};
+      const keys = Object.keys(evoNarrative);
+      return (keys[stageIndex - 1] ? evoNarrative[keys[stageIndex - 1]] : null)
+        || `The boss evolves to stage ${stageIndex + 1}!`;
     }
     default:
       return '';

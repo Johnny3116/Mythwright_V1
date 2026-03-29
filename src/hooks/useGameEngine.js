@@ -3,11 +3,11 @@
  * Provides convenient action dispatchers and derived state selectors.
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useGameContext } from '@context/GameContext.jsx';
 import { useNetworkContext } from '@context/NetworkContext.jsx';
 import { ActionTypes, GameState, TurnPhase, checkWinConditions } from '@engine/GameEngine.js';
-import { rollD20 } from '@engine/DiceSystem.js';
+import { rollD20, clearRollHistory } from '@engine/DiceSystem.js';
 import { MessageTypes } from '@network/MessageTypes.js';
 
 export function useGameEngine() {
@@ -30,11 +30,16 @@ export function useGameEngine() {
 
   /**
    * After any state change (host-side), broadcast new state to all players.
+   * Debounced 75ms so rapid boss multi-attack dispatches coalesce into one broadcast.
    */
+  const broadcastTimerRef = useRef(null);
   useEffect(() => {
-    if (isHost && state.phase !== GameState.LOBBY) {
+    if (!isHost || state.phase === GameState.LOBBY) return;
+    clearTimeout(broadcastTimerRef.current);
+    broadcastTimerRef.current = setTimeout(() => {
       broadcastGameState(state);
-    }
+    }, 75);
+    return () => clearTimeout(broadcastTimerRef.current);
   }, [state, isHost, broadcastGameState]);
 
   /**
@@ -178,6 +183,7 @@ export function useGameEngine() {
   }, [dispatch]);
 
   const startGame = useCallback(() => {
+    clearRollHistory(); // m1: reset roll history on new game
     dispatch({ type: ActionTypes.START_GAME, payload: {} });
   }, [dispatch]);
 

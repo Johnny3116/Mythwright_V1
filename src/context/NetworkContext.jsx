@@ -128,6 +128,11 @@ export function NetworkProvider({ children }) {
     try {
       const { peer, hostConnection } = await joinRoom(roomCode);
 
+      // Register error handler FIRST — before data/close — so no errors slip through
+      hostConnection.on('error', (err) => {
+        dispatch({ type: 'SET_ERROR', payload: err.message });
+      });
+
       hostConnection.on('data', (rawData) => {
         try {
           const msg = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;

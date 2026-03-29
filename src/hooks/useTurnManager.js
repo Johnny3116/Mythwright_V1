@@ -11,7 +11,8 @@ export function useTurnManager() {
   const { state, dispatch } = useGameContext();
   const { turnState, turnPhase, round, players } = state;
 
-  const activeEntity = turnState ? getActiveEntity(turnState) : null;
+  const bossId = state.boss?.id || 'boss';
+  const activeEntity = turnState ? getActiveEntity(turnState, bossId) : null;
   const currentPlayerId = turnPhase === TurnPhase.PLAYER_TURN ? activeEntity : null;
   const currentPlayer = currentPlayerId ? players[currentPlayerId] : null;
 

@@ -841,5 +841,15 @@ export function serializeState(state) {
  * @returns {object}
  */
 export function deserializeState(json) {
-  return JSON.parse(json);
+  const data = JSON.parse(json);
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid save file: not an object');
+  }
+  if (!data._version) {
+    throw new Error('Invalid save file: missing version — file may be corrupted or from an incompatible build');
+  }
+  if (!data.phase || !data.players || !data.turnState) {
+    throw new Error('Invalid save file: missing required fields (phase, players, turnState)');
+  }
+  return data;
 }
