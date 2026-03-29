@@ -72,9 +72,9 @@ describe('TrapSystem', () => {
     });
 
     it('returns only active traps', () => {
-      const trap1 = { id: 't1', typeId: 'spiked-pit', active: true, damage: 30 };
-      const trap2 = { id: 't2', typeId: 'snare-vine', active: false, damage: 15 };
-      const gameState = { traps: { 'verdant-maw': [trap1, trap2] } };
+      const trap1 = { id: 't1', typeId: 'spiked-pit', active: true, damage: 30, zoneId: 'verdant-maw' };
+      const trap2 = { id: 't2', typeId: 'snare-vine', active: false, damage: 15, zoneId: 'verdant-maw' };
+      const gameState = { placedTraps: [trap1, trap2] };
       const active = getPlacedTraps(gameState, 'verdant-maw');
       expect(active).toHaveLength(1);
       expect(active[0].id).toBe('t1');
@@ -82,8 +82,8 @@ describe('TrapSystem', () => {
   });
 
   describe('triggerTraps', () => {
-    const trap = { id: 't1', typeId: 'spiked-pit', active: true, damage: 30, escapeChance: 15, effect: 'Stops target for 1 turn' };
-    const gameState = { traps: { 'verdant-maw': [trap] } };
+    const trap = { id: 't1', typeId: 'spiked-pit', active: true, damage: 30, escapeChance: 15, effect: 'Stops target for 1 turn', zoneId: 'verdant-maw' };
+    const gameState = { placedTraps: [trap] };
     const bossState = { hp: 200, defense: 10 };
 
     it('triggers trap and boss takes damage when escape roll is too low', () => {
@@ -102,14 +102,14 @@ describe('TrapSystem', () => {
     });
 
     it('returns empty results when no traps in zone', () => {
-      const emptyState = { traps: {} };
+      const emptyState = { placedTraps: [] };
       const { results } = triggerTraps('empty-zone', bossState, emptyState, () => ({ natural: 10, modified: 10 }));
       expect(results).toHaveLength(0);
     });
 
     it('trap with null escapeChance cannot be escaped', () => {
-      const poisonTrap = { id: 't2', typeId: 'poisoned-spikes', active: true, damage: 20, escapeChance: null, effect: 'Poison' };
-      const state = { traps: { zone1: [poisonTrap] } };
+      const poisonTrap = { id: 't2', typeId: 'poisoned-spikes', active: true, damage: 20, escapeChance: null, effect: 'Poison', zoneId: 'zone1' };
+      const state = { placedTraps: [poisonTrap] };
       const { results } = triggerTraps('zone1', bossState, state, () => ({ natural: 20, modified: 20 }));
       expect(results[0].escaped).toBe(false);
     });
@@ -151,15 +151,15 @@ describe('TrapSystem', () => {
 
   describe('checkTrapTrigger (legacy API)', () => {
     it('returns triggered=false when zone has no traps', () => {
-      const emptyState = { traps: {} };
+      const emptyState = { placedTraps: [] };
       const roll = { natural: 10, modified: 10 };
       const result = checkTrapTrigger('verdant-maw', emptyState, roll);
       expect(result.triggered).toBe(false);
     });
 
     it('returns triggered=true with trap details', () => {
-      const trap = { id: 't1', active: true, damage: 30, escapeChance: 18, effect: 'Stops' };
-      const state = { traps: { 'verdant-maw': [trap] } };
+      const trap = { id: 't1', active: true, damage: 30, escapeChance: 18, effect: 'Stops', zoneId: 'verdant-maw' };
+      const state = { placedTraps: [trap] };
       const roll = { natural: 5, modified: 5 };
       const result = checkTrapTrigger('verdant-maw', state, roll);
       expect(result.triggered).toBe(true);

@@ -97,25 +97,25 @@ describe('StatusEffects — createEffectTracker', () => {
 
 describe('StatusEffects — functional API', () => {
   it('applyEffect adds effect to entity state', () => {
-    const entity = { id: 'player1', hp: 100, effects: [] };
+    const entity = { id: 'player1', hp: 100, statusEffects: [] };
     const updated = applyEffect(entity, { type: 'poison', value: 5, duration: 3 });
-    expect(updated.effects).toHaveLength(1);
-    expect(updated.effects[0].type).toBe('poison');
+    expect(updated.statusEffects).toHaveLength(1);
+    expect(updated.statusEffects[0].type).toBe('poison');
     // Original unchanged
-    expect(entity.effects).toHaveLength(0);
+    expect(entity.statusEffects).toHaveLength(0);
   });
 
   it('tickEffects decrements durations and removes expired', () => {
     const entity = {
       id: 'player1',
       hp: 100,
-      effects: [
+      statusEffects: [
         { id: 'e1', type: 'slow', value: 0.5, duration: 1 },
         { id: 'e2', type: 'bleed', value: 5, duration: 2 },
       ],
     };
     const { entityState, expiredEffects, damageDealt } = tickEffects(entity);
-    expect(entityState.effects).toHaveLength(1); // slow expired
+    expect(entityState.statusEffects).toHaveLength(1); // slow expired
     expect(expiredEffects).toHaveLength(1);
     expect(damageDealt).toBe(5); // bleed applied
   });
@@ -124,14 +124,14 @@ describe('StatusEffects — functional API', () => {
     const entity = {
       id: 'player1',
       hp: 100,
-      effects: [{ id: 'e1', type: 'slow', value: 0.5, duration: 2 }],
+      statusEffects: [{ id: 'e1', type: 'slow', value: 0.5, duration: 2 }],
     };
     const updated = removeEffect(entity, 'slow');
-    expect(updated.effects).toHaveLength(0);
+    expect(updated.statusEffects).toHaveLength(0);
   });
 
   it('getActiveEffects returns copy of effects', () => {
-    const entity = { id: 'player1', hp: 100, effects: [{ id: 'e1', type: 'poison', value: 5, duration: 2 }] };
+    const entity = { id: 'player1', hp: 100, statusEffects: [{ id: 'e1', type: 'poison', value: 5, duration: 2 }] };
     const effects = getActiveEffects(entity);
     expect(effects).toHaveLength(1);
   });
@@ -140,7 +140,7 @@ describe('StatusEffects — functional API', () => {
     const entity = {
       id: 'player1',
       hp: 100,
-      effects: [
+      statusEffects: [
         { id: 'e1', type: 'damageMultiplier', value: 0.5, duration: 2 },
         { id: 'e2', type: 'damageMultiplier', value: 0.25, duration: 1 },
       ],

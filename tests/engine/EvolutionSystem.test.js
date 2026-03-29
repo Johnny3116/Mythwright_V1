@@ -17,7 +17,7 @@ const blueprint = JSON.parse(
 describe('EvolutionSystem', () => {
   describe('checkEvolution', () => {
     it('triggers evolution when HP equals retreatThreshold for stage 1', () => {
-      const boss = { hp: 100, stage: 1 };
+      const boss = { hp: 100, currentStage: 1 };
       const result = checkEvolution(boss, blueprint);
       expect(result.shouldEvolve).toBe(true);
       expect(result.currentStage).toBe(1);
@@ -25,19 +25,19 @@ describe('EvolutionSystem', () => {
     });
 
     it('triggers when HP is below retreatThreshold', () => {
-      const boss = { hp: 50, stage: 1 };
+      const boss = { hp: 50, currentStage: 1 };
       const result = checkEvolution(boss, blueprint);
       expect(result.shouldEvolve).toBe(true);
     });
 
     it('does not trigger when HP is above retreatThreshold', () => {
-      const boss = { hp: 150, stage: 1 };
+      const boss = { hp: 150, currentStage: 1 };
       const result = checkEvolution(boss, blueprint);
       expect(result.shouldEvolve).toBe(false);
     });
 
     it('does not trigger for final form (stage 5, null threshold)', () => {
-      const boss = { hp: 10, stage: 5 };
+      const boss = { hp: 10, currentStage: 5 };
       const result = checkEvolution(boss, blueprint);
       expect(result.shouldEvolve).toBe(false);
       expect(result.nextStage).toBeNull();
@@ -47,7 +47,7 @@ describe('EvolutionSystem', () => {
       const thresholds = [100, 150, 200, 250, null];
       thresholds.forEach((threshold, i) => {
         const stage = i + 1;
-        const boss = { hp: threshold === null ? 10 : threshold, stage };
+        const boss = { hp: threshold === null ? 10 : threshold, currentStage: stage };
         const result = checkEvolution(boss, blueprint);
         if (threshold === null) {
           expect(result.shouldEvolve).toBe(false);
@@ -60,9 +60,9 @@ describe('EvolutionSystem', () => {
 
   describe('evolve', () => {
     it('transitions boss from stage 1 to stage 2', () => {
-      const boss = { hp: 80, stage: 1, maxHp: 200, currentZoneId: 'verdant-maw', effects: [] };
+      const boss = { hp: 80, currentStage: 1, maxHp: 200, currentZoneId: 'verdant-maw', statusEffects: [] };
       const { newState, narrative, retreatZone } = evolve(boss, blueprint);
-      expect(newState.stage).toBe(2);
+      expect(newState.currentStage).toBe(2);
       expect(newState.maxHp).toBe(300);
       expect(newState.hp).toBeGreaterThan(0);
       expect(typeof narrative).toBe('string');
@@ -70,14 +70,14 @@ describe('EvolutionSystem', () => {
     });
 
     it('applies retreatRecovery HP', () => {
-      const boss = { hp: 80, stage: 1, maxHp: 200, currentZoneId: 'verdant-maw', effects: [] };
+      const boss = { hp: 80, currentStage: 1, maxHp: 200, currentZoneId: 'verdant-maw', statusEffects: [] };
       const { newState } = evolve(boss, blueprint);
       // Stage 2 retreatRecovery is 75, should have significant HP
       expect(newState.hp).toBeGreaterThan(50);
     });
 
     it('updates damage and defense values', () => {
-      const boss = { hp: 80, stage: 1, maxHp: 200, currentZoneId: 'verdant-maw', effects: [] };
+      const boss = { hp: 80, currentStage: 1, maxHp: 200, currentZoneId: 'verdant-maw', statusEffects: [] };
       const { newState } = evolve(boss, blueprint);
       // Stage 2 damage is [20, 30]
       expect(newState.damage).toEqual([20, 30]);
@@ -85,30 +85,30 @@ describe('EvolutionSystem', () => {
     });
 
     it('moves boss to retreat zone', () => {
-      const boss = { hp: 80, stage: 1, maxHp: 200, currentZoneId: 'verdant-maw', effects: [] };
+      const boss = { hp: 80, currentStage: 1, maxHp: 200, currentZoneId: 'verdant-maw', statusEffects: [] };
       const { newState } = evolve(boss, blueprint);
       expect(newState.currentZoneId).toBe('obsidian-grotto');
     });
 
     it('returns current state with message when already at final form', () => {
-      const boss = { hp: 100, stage: 5, maxHp: 700, currentZoneId: 'tzorath-throne', effects: [] };
+      const boss = { hp: 100, currentStage: 5, maxHp: 700, currentZoneId: 'tzorath-throne', statusEffects: [] };
       const { newState, narrative } = evolve(boss, blueprint);
-      expect(newState.stage).toBe(5); // No change
+      expect(newState.currentStage).toBe(5); // No change
       expect(typeof narrative).toBe('string');
     });
   });
 
   describe('isFinalForm', () => {
     it('returns false for stage 1', () => {
-      expect(isFinalForm({ stage: 1 }, blueprint)).toBe(false);
+      expect(isFinalForm({ currentStage: 1 }, blueprint)).toBe(false);
     });
 
     it('returns false for stage 4', () => {
-      expect(isFinalForm({ stage: 4 }, blueprint)).toBe(false);
+      expect(isFinalForm({ currentStage: 4 }, blueprint)).toBe(false);
     });
 
     it('returns true for stage 5', () => {
-      expect(isFinalForm({ stage: 5 }, blueprint)).toBe(true);
+      expect(isFinalForm({ currentStage: 5 }, blueprint)).toBe(true);
     });
   });
 
@@ -132,7 +132,7 @@ describe('EvolutionSystem', () => {
 
   describe('checkEvolutionThreshold (legacy)', () => {
     it('returns shouldEvolve true at threshold', () => {
-      const boss = { hp: 100, stage: 1 };
+      const boss = { hp: 100, currentStage: 1 };
       const { shouldEvolve } = checkEvolutionThreshold(boss, blueprint.enemies.boss.stages);
       expect(shouldEvolve).toBe(true);
     });
@@ -140,10 +140,10 @@ describe('EvolutionSystem', () => {
 
   describe('applyEvolution (legacy)', () => {
     it('applies next stage stats to boss state', () => {
-      const boss = { hp: 80, stage: 1, maxHp: 200, currentZoneId: 'verdant-maw', effects: [] };
+      const boss = { hp: 80, currentStage: 1, maxHp: 200, currentZoneId: 'verdant-maw', statusEffects: [] };
       const nextStage = blueprint.enemies.boss.stages[1]; // stage 2
       const updated = applyEvolution(boss, nextStage);
-      expect(updated.stage).toBe(2);
+      expect(updated.currentStage).toBe(2);
       expect(updated.maxHp).toBe(300);
     });
   });

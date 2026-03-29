@@ -844,7 +844,7 @@ export function deserializeState(json) {
   if (!data._version) {
     throw new Error('Invalid save file: missing version — file may be corrupted or from an incompatible build');
   }
-  if (!data.phase || !data.players || !data.turnState) {
+  if (!data.phase || !data.players || !('turnState' in data)) {
     throw new Error('Invalid save file: missing required fields (phase, players, turnState)');
   }
   return data;
