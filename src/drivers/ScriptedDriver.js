@@ -34,7 +34,7 @@ export async function selectBossAction(gameState, blueprint) {
   if (!currentStage) return { action: 'idle', target: null, params: {} };
 
   const roll = rollD20();
-  return evaluateBehaviorTree(currentStage, gameState, roll.raw);
+  return evaluateBehaviorTree(currentStage, gameState, roll);
 }
 
 /**

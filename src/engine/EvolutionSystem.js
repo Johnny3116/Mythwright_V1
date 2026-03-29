@@ -12,19 +12,19 @@
  */
 export function checkEvolution(bossState, blueprint) {
   const stages = blueprint.enemies.boss.stages;
-  const currentStageData = stages.find((s) => s.stage === bossState.stage);
+  const currentStageData = stages.find((s) => s.stage === bossState.currentStage);
 
-  if (!currentStageData) return { shouldEvolve: false, currentStage: bossState.stage, nextStage: null };
+  if (!currentStageData) return { shouldEvolve: false, currentStage: bossState.currentStage, nextStage: null };
   if (currentStageData.retreatThreshold === null || currentStageData.retreatThreshold === undefined) {
-    return { shouldEvolve: false, currentStage: bossState.stage, nextStage: null };
+    return { shouldEvolve: false, currentStage: bossState.currentStage, nextStage: null };
   }
 
-  const nextStageData = stages.find((s) => s.stage === bossState.stage + 1);
+  const nextStageData = stages.find((s) => s.stage === bossState.currentStage + 1);
   const shouldEvolve = bossState.hp <= currentStageData.retreatThreshold;
 
   return {
     shouldEvolve,
-    currentStage: bossState.stage,
+    currentStage: bossState.currentStage,
     nextStage: shouldEvolve && nextStageData ? nextStageData.stage : null,
   };
 }
@@ -38,7 +38,7 @@ export function checkEvolution(bossState, blueprint) {
  */
 export function evolve(bossState, blueprint) {
   const stages = blueprint.enemies.boss.stages;
-  const nextStageData = stages.find((s) => s.stage === bossState.stage + 1);
+  const nextStageData = stages.find((s) => s.stage === bossState.currentStage + 1);
 
   if (!nextStageData) {
     return { newState: bossState, narrative: 'No further evolution.', retreatZone: null };
@@ -51,7 +51,7 @@ export function evolve(bossState, blueprint) {
 
   const newState = {
     ...bossState,
-    stage: nextStageData.stage,
+    currentStage: nextStageData.stage,
     maxHp: nextStageData.maxHp,
     hp: Math.floor(recoveredHp),
     damage: nextStageData.damage,
@@ -59,7 +59,7 @@ export function evolve(bossState, blueprint) {
     currentZoneId: nextStageData.behavior?.retreatZone ?? bossState.currentZoneId,
   };
 
-  const narrative = getEvolutionNarrative(bossState.stage, blueprint.narrative);
+  const narrative = getEvolutionNarrative(bossState.currentStage, blueprint.narrative);
   const retreatZone = nextStageData.behavior?.retreatZone ?? null;
 
   return { newState, narrative, retreatZone };
@@ -74,7 +74,7 @@ export function evolve(bossState, blueprint) {
  */
 export function isFinalForm(bossState, blueprint) {
   const stages = blueprint.enemies.boss.stages;
-  return bossState.stage === stages[stages.length - 1].stage;
+  return bossState.currentStage === stages[stages.length - 1].stage;
 }
 
 /**
@@ -105,12 +105,12 @@ export function getEvolutionNarrative(fromStage, narrative) {
  * @returns {{ shouldEvolve: boolean, nextStageIndex: number|null }}
  */
 export function checkEvolutionThreshold(bossState, stages) {
-  const currentStageData = stages.find((s) => s.stage === bossState.stage);
+  const currentStageData = stages.find((s) => s.stage === bossState.currentStage);
   if (!currentStageData || currentStageData.retreatThreshold == null) {
     return { shouldEvolve: false, nextStageIndex: null };
   }
   const shouldEvolve = bossState.hp <= currentStageData.retreatThreshold;
-  const nextIdx = shouldEvolve ? stages.findIndex((s) => s.stage === bossState.stage + 1) : null;
+  const nextIdx = shouldEvolve ? stages.findIndex((s) => s.stage === bossState.currentStage + 1) : null;
   return { shouldEvolve, nextStageIndex: nextIdx === -1 ? null : nextIdx };
 }
 
@@ -127,7 +127,7 @@ export function applyEvolution(bossState, nextStage) {
   );
   return {
     ...bossState,
-    stage: nextStage.stage,
+    currentStage: nextStage.stage,
     maxHp: nextStage.maxHp,
     hp: recoveredHp,
     damage: nextStage.damage,

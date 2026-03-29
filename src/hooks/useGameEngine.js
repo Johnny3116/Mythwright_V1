@@ -12,7 +12,7 @@ import { MessageTypes } from '@network/MessageTypes.js';
 
 export function useGameEngine() {
   const { state, dispatch } = useGameContext();
-  const { network, broadcastGameState, setMessageHandler, sendAction } = useNetworkContext();
+  const { network, broadcastGameState, setMessageHandler, sendAction, checkAndUpdateStateVersion } = useNetworkContext();
 
   const isHost = network.isHost;
 
@@ -47,14 +47,23 @@ export function useGameEngine() {
       switch (message.type) {
         case MessageTypes.HOST_STATE_UPDATE:
           if (!isHost && message.payload?.state) {
-            dispatch({ type: ActionTypes.LOAD_STATE, payload: message.payload.state });
+            // Only apply if this version is newer than the last applied version
+            if (checkAndUpdateStateVersion(message.payload.version)) {
+              dispatch({ type: ActionTypes.LOAD_STATE, payload: message.payload.state });
+            }
           }
           break;
 
         case MessageTypes.PLAYER_ACTION:
           if (isHost && message.payload?.action) {
-            // Validate that the action comes from the correct player
             const action = message.payload.action;
+            // Validate the action's playerId matches the sending peer to prevent
+            // spoofing (a player acting as another player).
+            const actionPlayerId = action.payload?.playerId;
+            if (actionPlayerId && actionPlayerId !== fromPeerId) {
+              console.warn(`[Security] Peer ${fromPeerId} tried to submit action for ${actionPlayerId} — rejected.`);
+              break;
+            }
             dispatch(action);
           }
           break;

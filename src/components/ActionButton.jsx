@@ -20,6 +20,7 @@ export function ActionButton({
   variant = 'default',
   title,
   isLoading = false,
+  children,
 }) {
   const effectiveVariant = isLoading ? 'loading' : variant;
   const isDisabled = disabled || isLoading;
@@ -46,6 +47,7 @@ export function ActionButton({
         icon && <span className={styles.actionButtonIcon} aria-hidden="true">{icon}</span>
       )}
       {label && <span>{label}</span>}
+      {children}
     </button>
   );
 }

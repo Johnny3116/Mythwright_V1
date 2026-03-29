@@ -14,6 +14,10 @@ import { processBossHunt } from './WildlifeSystem.js';
 import { spawnFlora, relocateFlora, searchFlora } from './FloraSystem.js';
 import { resolveRetreatLegacy } from './RetreatSystem.js';
 import { evaluateBehaviorTree } from './BehaviorTree.js';
+import { TurnPhase } from '@utils/constants.js';
+
+// Re-export TurnPhase so existing imports from GameEngine still work.
+export { TurnPhase };
 
 export const GameState = {
   LOBBY: 'LOBBY',
@@ -21,14 +25,6 @@ export const GameState = {
   GAME_SETUP: 'GAME_SETUP',
   TURN_LOOP: 'TURN_LOOP',
   GAME_OVER: 'GAME_OVER',
-};
-
-export const TurnPhase = {
-  PLAYER_TURN: 'PLAYER_TURN',
-  BOSS_TURN: 'BOSS_TURN',
-  ENVIRONMENT: 'ENVIRONMENT',
-  CHECK_WIN: 'CHECK_WIN',
-  NEXT_ROUND: 'NEXT_ROUND',
 };
 
 export const ActionTypes = {

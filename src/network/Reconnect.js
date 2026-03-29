@@ -24,7 +24,10 @@ export function startHeartbeat(connectionsRef, onDisconnect) {
 
     for (const conn of connections) {
       if (!conn || !conn.open) continue;
-      const last = lastSeen.get(conn.peer) || now;
+      // Initialize lastSeen on first encounter so the grace period starts from
+      // the first heartbeat tick, not from the current time every iteration.
+      if (!lastSeen.has(conn.peer)) lastSeen.set(conn.peer, now);
+      const last = lastSeen.get(conn.peer);
       if (now - last > GRACE_PERIOD_MS) {
         onDisconnect(conn.peer);
       }
@@ -65,5 +68,8 @@ export async function attemptReconnect(roomCode, joinRoomFn, maxAttempts = 4) {
  * @param {object} hostConnection
  */
 export function requestStateSync(hostConnection) {
-  sendTo(hostConnection, createMessage(MessageTypes.STATE_REQUEST, {}));
+  // Use RECONNECT_REQUEST so the StateSync manager handles it via its
+  // _handleReconnectRequest path, which sends back a RECONNECT_RESPONSE with
+  // the full versioned state snapshot.
+  sendTo(hostConnection, createMessage(MessageTypes.RECONNECT_REQUEST, {}));
 }

@@ -42,14 +42,13 @@ export function attemptSetTrap(trapType, roll, zoneData) {
 /**
  * Get all placed traps in a specific zone from game state.
  *
- * @param {object} gameState - { traps: { [zoneId]: trapData[] } }
+ * @param {object} gameState - { placedTraps: trapData[] }
  * @param {string} zoneId
  * @returns {object[]}
  */
 export function getPlacedTraps(gameState, zoneId) {
-  const traps = gameState.traps?.[zoneId];
-  if (!traps) return [];
-  return traps.filter((t) => t.active);
+  const traps = gameState.placedTraps || [];
+  return traps.filter((t) => t.zoneId === zoneId && t.active);
 }
 
 /**

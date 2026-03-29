@@ -4,11 +4,8 @@
  * Turn order: all players (in join order) → boss → environment phase → next round
  */
 
-export const TurnPhase = {
-  PLAYER_TURN: 'player',
-  BOSS_TURN: 'boss',
-  ENVIRONMENT: 'environment',
-};
+import { TurnPhase } from '@utils/constants.js';
+export { TurnPhase };
 
 /**
  * Create a turn manager for the current game session.
