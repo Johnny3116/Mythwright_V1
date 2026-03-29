@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './character.module.css';
 import { ClassCard } from './ClassCard.jsx';
@@ -6,6 +6,7 @@ import { CharacterCustomize } from './CharacterCustomize.jsx';
 import { useGameEngine } from '@hooks/useGameEngine.js';
 import { usePeerConnection } from '@hooks/usePeerConnection.js';
 import { useGameContext } from '@context/GameContext.jsx';
+import { GameState } from '@engine/GameEngine.js';
 
 export default function CharacterSelect() {
   const navigate = useNavigate();
@@ -20,6 +21,15 @@ export default function CharacterSelect() {
   const classes = blueprint?.classes || [];
   const players = state.players || {};
   const myPlayer = players[myPeerId];
+
+  // Auto-redirect when host starts the game and broadcasts the new phase.
+  // Players receive LOAD_STATE with phase === TURN_LOOP and navigate to /game.
+  // The host navigates explicitly in handleStartGame, so this only fires for players.
+  useEffect(() => {
+    if (!isHost && state.phase === GameState.TURN_LOOP) {
+      navigate('/game');
+    }
+  }, [state.phase, isHost, navigate]);
 
   function handleConfirm() {
     if (!selectedClassId || !playerName.trim() || !myPeerId) return;

@@ -9,6 +9,7 @@ import { useNetworkContext } from '@context/NetworkContext.jsx';
 import { ActionTypes, GameState, TurnPhase, checkWinConditions } from '@engine/GameEngine.js';
 import { rollD20, clearRollHistory } from '@engine/DiceSystem.js';
 import { MessageTypes } from '@network/MessageTypes.js';
+import { soundEvents } from '@hooks/useSoundEvents.js';
 
 export function useGameEngine() {
   const { state, dispatch } = useGameContext();
@@ -41,6 +42,35 @@ export function useGameEngine() {
     }, 75);
     return () => clearTimeout(broadcastTimerRef.current);
   }, [state, isHost, broadcastGameState]);
+
+  // Emit sound events on key state changes.
+  const prevPhaseRef = useRef(null);
+  const prevEvolvingRef = useRef(false);
+  useEffect(() => {
+    if (state.phase === GameState.GAME_OVER && prevPhaseRef.current !== GameState.GAME_OVER) {
+      const event = state.gameOverResult?.winner === 'players' ? 'victory' : 'defeat';
+      soundEvents.emit(event);
+    }
+    prevPhaseRef.current = state.phase;
+
+    if (state.isEvolving && !prevEvolvingRef.current) {
+      soundEvents.emit('evolution');
+    }
+    prevEvolvingRef.current = state.isEvolving;
+  }, [state.phase, state.gameOverResult, state.isEvolving]);
+
+  // Emit damage/miss sound events from lastRoll
+  const prevRollRef = useRef(null);
+  useEffect(() => {
+    if (!state.lastRoll || state.lastRoll === prevRollRef.current) return;
+    prevRollRef.current = state.lastRoll;
+    const { hit, damageDealt } = state.lastRoll.result ?? {};
+    if (hit && damageDealt > 0) {
+      soundEvents.emit('damage', { amount: damageDealt });
+    } else if (!hit) {
+      soundEvents.emit('miss');
+    }
+  }, [state.lastRoll]);
 
   /**
    * Listen for incoming network messages and handle them.
@@ -116,6 +146,7 @@ export function useGameEngine() {
   // ── Player Actions ─────────────────────────────────────────────────────────
 
   const playerAttack = useCallback((playerId, roll) => {
+    soundEvents.emit('attack');
     dispatchPlayerAction({ type: ActionTypes.PLAYER_ATTACK, payload: { playerId, roll } });
   }, [dispatchPlayerAction]);
 
@@ -124,10 +155,12 @@ export function useGameEngine() {
   }, [dispatchPlayerAction]);
 
   const playerSetTrap = useCallback((playerId, trapTypeId, roll) => {
+    soundEvents.emit('trap_set');
     dispatchPlayerAction({ type: ActionTypes.PLAYER_SET_TRAP, payload: { playerId, trapTypeId, roll } });
   }, [dispatchPlayerAction]);
 
   const playerRetreat = useCallback((playerId, roll) => {
+    soundEvents.emit('retreat');
     dispatchPlayerAction({ type: ActionTypes.PLAYER_RETREAT, payload: { playerId, roll } });
   }, [dispatchPlayerAction]);
 

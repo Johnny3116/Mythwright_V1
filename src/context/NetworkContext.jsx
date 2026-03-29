@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useRef, useCallback, useMemo } from 'react';
+import { createContext, useContext, useReducer, useRef, useCallback } from 'react';
 import { createRoom, joinRoom, broadcast, sendTo, destroyPeer } from '@network/PeerManager.js';
 import { broadcastState, sendPlayerAction, sendPlayerJoin } from '@network/StateSync.js';
 import { MessageTypes, createMessage } from '@network/MessageTypes.js';
@@ -15,6 +15,8 @@ const initialNetworkState = {
   status: 'idle',        // 'idle' | 'connecting' | 'connected' | 'error'
   error: null,
   myPeerId: null,
+  isDisconnected: false, // true when host connection drops mid-game
+  disconnectedPeers: [], // host-side: peers that have disconnected mid-game
 };
 
 function networkReducer(state, action) {
@@ -55,7 +57,12 @@ function networkReducer(state, action) {
         ...state,
         connections: state.connections.filter(c => c.peer !== action.payload.peerId),
         connectedPeers: state.connectedPeers.filter(id => id !== action.payload.peerId),
+        disconnectedPeers: [...state.disconnectedPeers, action.payload.peerId],
       };
+    case 'SET_DISCONNECTED':
+      return { ...state, isDisconnected: true, status: 'error' };
+    case 'CLEAR_DISCONNECTED':
+      return { ...state, isDisconnected: false, disconnectedPeers: [] };
     case 'RESET':
       return { ...initialNetworkState };
     default:
@@ -124,12 +131,22 @@ export function NetworkProvider({ children }) {
 
   /**
    * Join a game room as a player.
+   * Sends PLAYER_JOIN immediately when the connection opens (no setTimeout hack).
    * @param {string} roomCode
+   * @param {string} playerName
    */
-  const joinGame = useCallback(async (roomCode) => {
+  const joinGame = useCallback(async (roomCode, playerName) => {
     dispatch({ type: 'SET_STATUS', payload: 'connecting' });
     try {
+      // joinRoom resolves only after hostConnection.on('open') fires in PeerManager,
+      // so the connection is guaranteed open when this await returns.
       const { peer, hostConnection } = await joinRoom(roomCode);
+
+      // Send PLAYER_JOIN immediately — connection is open at this point.
+      const joinMsg = createMessage(MessageTypes.PLAYER_JOIN, { playerName: playerName || 'Player' });
+      if (hostConnection.open) {
+        hostConnection.send(joinMsg);
+      }
 
       // Register error handler FIRST — before data/close — so no errors slip through
       hostConnection.on('error', (err) => {
@@ -149,6 +166,7 @@ export function NetworkProvider({ children }) {
 
       hostConnection.on('close', () => {
         dispatch({ type: 'SET_STATUS', payload: 'idle' });
+        dispatch({ type: 'SET_DISCONNECTED' });
       });
 
       peer.on('error', (err) => {
@@ -211,6 +229,13 @@ export function NetworkProvider({ children }) {
   }, [network.peer]);
 
   /**
+   * Acknowledge and clear the disconnect notification.
+   */
+  const clearDisconnected = useCallback(() => {
+    dispatch({ type: 'CLEAR_DISCONNECTED' });
+  }, []);
+
+  /**
    * Check if an incoming state version is newer than the last applied version.
    * Returns true and advances the counter if so; false if stale.
    * @param {number|undefined} version
@@ -233,6 +258,7 @@ export function NetworkProvider({ children }) {
     sendToHost,
     broadcastMessage,
     disconnect,
+    clearDisconnected,
     checkAndUpdateStateVersion,
   };
 

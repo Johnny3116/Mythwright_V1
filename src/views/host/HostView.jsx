@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './host.module.css';
 import { MonsterPanel } from './MonsterPanel.jsx';
 import { PlayerOverview } from './PlayerOverview.jsx';
@@ -8,13 +9,16 @@ import { ZoneMap } from '@views/game/ZoneMap.jsx';
 import { NarratorFeed } from '@views/game/NarratorFeed.jsx';
 import { TurnTracker } from '@views/game/TurnTracker.jsx';
 import { EncounterSplash } from '@components/EncounterSplash.jsx';
+import { DisconnectOverlay } from '@components/DisconnectOverlay.jsx';
 import { useGameEngine } from '@hooks/useGameEngine.js';
 import { useGameContext } from '@context/GameContext.jsx';
+import { useNetworkContext } from '@context/NetworkContext.jsx';
 import { TurnPhase, GameState, ActionTypes } from '@engine/GameEngine.js';
 import { selectBossAction, bossActionToDispatch } from '@drivers/ScriptedDriver.js';
 import { rollD20 } from '@engine/DiceSystem.js';
 
 export default function HostView() {
+  const navigate = useNavigate();
   const { state, dispatch } = useGameContext();
   const {
     bossAttack,
@@ -28,6 +32,7 @@ export default function HostView() {
   } = useGameEngine();
   const { saveGame } = useGameContext();
 
+  const { network, clearDisconnected } = useNetworkContext();
   const { blueprint, players, boss, narrativeLog, floraState, placedTraps, turnPhase, round, gameOverResult, gmMode, isEvolving } = state;
 
   // Keep a stable ref to the latest state so async effects can read it
@@ -109,6 +114,22 @@ export default function HostView() {
 
   const activePlayerId = state.turnState?.order?.[state.turnState?.currentIndex] || (turnPhase === TurnPhase.BOSS_TURN ? 'boss' : null);
 
+  function handleReturnToLobby() {
+    dispatch({ type: ActionTypes.RESET_TO_LOBBY });
+    navigate('/');
+  }
+
+  function buildGameOverStats() {
+    const allPlayers = Object.values(players);
+    const totalDamage = allPlayers.reduce((sum, p) => sum + (p.damageDealt || 0), 0);
+    const mvpPlayer = [...allPlayers].sort((a, b) => (b.damageDealt || 0) - (a.damageDealt || 0))[0];
+    return {
+      rounds: round,
+      totalDamage,
+      mvp: mvpPlayer?.name || null,
+    };
+  }
+
   if (state.phase === GameState.LOBBY || !blueprint) {
     return (
       <div className={styles.hostView} style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -126,6 +147,8 @@ export default function HostView() {
         type={isVictory ? 'VICTORY' : 'DEFEAT'}
         subtitle={isVictory ? blueprint.narrative?.victoryText : blueprint.narrative?.defeatText}
         visible={true}
+        onReturnToLobby={handleReturnToLobby}
+        stats={buildGameOverStats()}
       />
     );
   }
@@ -205,6 +228,16 @@ export default function HostView() {
           type="EVOLUTION"
           subtitle={`${boss.name} evolves to Stage ${boss.currentStage + 1}!`}
           visible={isEvolving}
+          onComplete={() => dispatch({ type: ActionTypes.CLEAR_EVOLVING })}
+        />
+      )}
+
+      {/* Disconnect overlay — show when players drop during a session */}
+      {network.disconnectedPeers.length > 0 && (
+        <DisconnectOverlay
+          isHost={true}
+          disconnected={network.disconnectedPeers}
+          onDismiss={clearDisconnected}
         />
       )}
     </div>

@@ -220,3 +220,41 @@
 
 .driverBtn:hover { border-color: var(--accent-secondary); color: var(--text-primary); }
 .driverBtnActive { border-color: var(--accent-secondary); color: var(--accent-secondary); background: var(--bg-secondary); }
+
+
+/* ── Responsive: tablet ──────────────────────────────────── */
+@media (max-width: 1024px) {
+  .hostView {
+    grid-template-columns: 260px 1fr;
+    grid-template-areas:
+      "header header"
+      "left   main"
+      "footer footer";
+  }
+
+  .hostRight { display: none; }
+}
+
+@media (max-width: 768px) {
+  .hostView {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "header"
+      "left"
+      "main"
+      "footer";
+  }
+
+  .hostLeft {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  .hostFooter {
+    overflow-x: auto;
+    padding: var(--space-3);
+  }
+}

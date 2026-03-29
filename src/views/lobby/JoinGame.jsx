@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGameEngine } from '@hooks/useGameEngine.js';
 import { usePeerConnection } from '@hooks/usePeerConnection.js';
-import { useNetworkContext } from '@context/NetworkContext.jsx';
-import { MessageTypes, createMessage } from '@network/MessageTypes.js';
 import { ActionButton } from '@components/ActionButton.jsx';
 import styles from './lobby.module.css';
 
@@ -12,16 +9,13 @@ export function JoinGame() {
   const [roomCode, setRoomCode] = useState('');
   const [playerName, setPlayerName] = useState('');
   const { joinGame, status, error } = usePeerConnection();
-  const { sendToHost } = useNetworkContext();
 
   async function handleJoin() {
     if (!roomCode.trim() || !playerName.trim()) return;
     try {
-      await joinGame(roomCode.trim().toUpperCase());
-      // Send join message to host
-      setTimeout(() => {
-        sendToHost(createMessage(MessageTypes.PLAYER_JOIN, { playerName }));
-      }, 500);
+      // Pass playerName so joinGame sends PLAYER_JOIN as soon as the
+      // connection opens — no more setTimeout race condition.
+      await joinGame(roomCode.trim().toUpperCase(), playerName.trim());
       navigate('/character-select');
     } catch (err) {
       console.error('Join failed:', err);

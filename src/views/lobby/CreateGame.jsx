@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameEngine } from '@hooks/useGameEngine.js';
 import { usePeerConnection } from '@hooks/usePeerConnection.js';
@@ -11,12 +11,13 @@ import styles from './lobby.module.css';
 
 export function CreateGame() {
   const navigate = useNavigate();
-  const { state, dispatch } = useGameContext();
+  const { state, dispatch, loadGame, loadError } = useGameContext();
   const { setBlueprint, setGmMode, registerPlayer, startCharacterSelect } = useGameEngine();
   const { hostGame, roomCode, connectedPeers, status, error } = usePeerConnection();
   const [playerName, setPlayerName] = useState('Host');
   const [apiKey, setApiKey] = useState('');
   const [gameStarted, setGameStarted] = useState(false);
+  const loadInputRef = useRef(null);
 
   async function handleCreateRoom() {
     try {
@@ -111,6 +112,35 @@ export function CreateGame() {
       )}
 
       {error && <div className={styles.errorText}>Error: {error}</div>}
+
+      {/* Load saved game */}
+      {!roomCode && (
+        <div className={styles.actionRow} style={{ justifyContent: 'center', borderTop: '1px solid var(--border-color)', paddingTop: 'var(--space-4)', marginTop: 'var(--space-4)' }}>
+          <input
+            ref={loadInputRef}
+            type="file"
+            accept=".json"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              if (e.target.files?.[0]) {
+                loadGame(e.target.files[0]);
+                e.target.value = '';
+              }
+            }}
+          />
+          <ActionButton
+            onClick={() => loadInputRef.current?.click()}
+          >
+            💾 Load Saved Game
+          </ActionButton>
+        </div>
+      )}
+
+      {loadError && (
+        <div className={styles.errorText} style={{ marginTop: 'var(--space-3)' }}>
+          {loadError}
+        </div>
+      )}
     </div>
   );
 }

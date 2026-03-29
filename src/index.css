@@ -206,3 +206,101 @@ ul, ol {
 .text-mono {
   font-family: var(--font-mono);
 }
+
+/* ============================================================
+   Focus Visible — keyboard accessibility
+   ============================================================ */
+
+:focus-visible {
+  outline: 2px solid var(--accent-secondary);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent-secondary);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Responsive Breakpoints
+   ============================================================ */
+
+/* Tablet — 768px–1024px: single-column game layout */
+@media (max-width: 1024px) {
+  /* Game view: stack sidebar above main content */
+  .gameView {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto 1fr auto !important;
+    grid-template-areas:
+      "header"
+      "sidebar"
+      "main"
+      "actions" !important;
+  }
+
+  .gameSidebar {
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: var(--space-3) var(--space-4) !important;
+  }
+
+  /* Host view: collapse to two columns, hide right panel */
+  .hostView {
+    grid-template-columns: 260px 1fr !important;
+    grid-template-areas:
+      "header header"
+      "left   main"
+      "footer footer" !important;
+  }
+
+  .hostRight {
+    display: none !important;
+  }
+}
+
+/* Mobile — ≤768px: fully vertical layout */
+@media (max-width: 768px) {
+  :root {
+    --text-4xl: 1.75rem;
+    --text-3xl: 1.5rem;
+    --text-2xl: 1.25rem;
+  }
+
+  .gameView,
+  .hostView {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto 1fr auto !important;
+    grid-template-areas:
+      "header"
+      "sidebar"
+      "main"
+      "actions" !important;
+  }
+
+  .gameSidebar,
+  .hostLeft {
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+  }
+
+  .hostRight {
+    display: none !important;
+  }
+
+  /* Actions bar: horizontal scroll on small screens */
+  .gameActions {
+    overflow-x: auto !important;
+    padding: var(--space-3) var(--space-4) !important;
+  }
+
+  .actionGroup {
+    flex-wrap: nowrap !important;
+  }
+
+  .encounterSplashStats {
+    gap: var(--space-4) !important;
+    padding: var(--space-3) var(--space-4) !important;
+  }
+}

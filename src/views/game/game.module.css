@@ -268,3 +268,58 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+/* ── Responsive: tablet ──────────────────────────────────── */
+@media (max-width: 1024px) {
+  .gameView {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "header"
+      "sidebar"
+      "main"
+      "actions";
+  }
+
+  .gameSidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--space-3) var(--space-4);
+    max-height: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .gameActions {
+    overflow-x: auto;
+    padding: var(--space-3);
+  }
+
+  .actionGroup {
+    flex-wrap: nowrap;
+  }
+
+  .diceArea {
+    flex-shrink: 0;
+  }
+}
+
+/* ── Action button hover state ───────────────────────────── */
+.actionPanel button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  transition: transform var(--transition-fast);
+}
+
+.actionPanel button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* ── Turn label pulse when it's your turn ────────────────── */
+@keyframes turnPulse {
+  0%, 100% { color: var(--accent-secondary); }
+  50%       { color: var(--text-primary); text-shadow: 0 0 8px rgba(212, 168, 67, 0.6); }
+}
+
+.turnLabelActive {
+  animation: turnPulse 2s ease-in-out infinite;
+}

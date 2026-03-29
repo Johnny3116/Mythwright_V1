@@ -15,6 +15,7 @@ export function usePeerConnection() {
     sendToHost,
     broadcastMessage,
     disconnect,
+    clearDisconnected,
     setMessageHandler,
   } = useNetworkContext();
 
@@ -23,6 +24,8 @@ export function usePeerConnection() {
     roomCode: network.roomCode,
     myPeerId: network.myPeerId,
     connectedPeers: network.connectedPeers,
+    disconnectedPeers: network.disconnectedPeers,
+    isDisconnected: network.isDisconnected,
     status: network.status,
     error: network.error,
     // Actions
@@ -33,6 +36,7 @@ export function usePeerConnection() {
     sendToHost,
     broadcastMessage,
     disconnect,
+    clearDisconnected,
     setMessageHandler,
   };
 }

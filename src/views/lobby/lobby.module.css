@@ -324,3 +324,28 @@
   padding: var(--space-2) 0;
   text-decoration: underline;
 }
+
+/* ── Responsive lobby ────────────────────────────────────── */
+@media (max-width: 768px) {
+  .panel {
+    padding: var(--space-4);
+  }
+
+  .roomCodeDisplay {
+    font-size: var(--text-2xl);
+    letter-spacing: 0.15em;
+  }
+
+  .actionRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ── Input focus glow ────────────────────────────────────── */
+.formInput:focus,
+.roomCodeInput:focus {
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 0 2px rgba(212, 168, 67, 0.15);
+  outline: none;
+}

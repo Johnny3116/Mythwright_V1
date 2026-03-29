@@ -1188,3 +1188,158 @@
   max-width: 480px;
   line-height: 1.5;
 }
+
+/* ── EncounterSplash stats block (VICTORY / DEFEAT) ─────── */
+
+.encounterSplashStats {
+  display: flex;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+  padding: var(--space-4) var(--space-8);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.encounterSplashStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.encounterSplashStatLabel {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+}
+
+.encounterSplashStatValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  color: var(--accent-secondary);
+  font-weight: 700;
+}
+
+/* ── EncounterSplash return button ──────────────────────── */
+
+.encounterSplashReturn {
+  margin-top: var(--space-8);
+  padding: var(--space-3) var(--space-8);
+  background: transparent;
+  border: 2px solid var(--text-secondary);
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.encounterSplashReturn:hover {
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+  background: rgba(212, 168, 67, 0.08);
+}
+
+/* ── DisconnectOverlay ──────────────────────────────────── */
+
+@keyframes disconnectFadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.disconnectOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(4px);
+  animation: disconnectFadeIn 0.2s ease-out;
+}
+
+.disconnectPanel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-danger);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-8) var(--space-10);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(199, 74, 56, 0.25);
+}
+
+.disconnectIcon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.disconnectTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--accent-danger);
+  margin: 0;
+}
+
+.disconnectMessage {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.disconnectActions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.disconnectBtnPrimary {
+  padding: var(--space-2) var(--space-6);
+  background: var(--accent-danger);
+  border: none;
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.disconnectBtnPrimary:hover { opacity: 0.85; }
+
+.disconnectBtnSecondary {
+  padding: var(--space-2) var(--space-6);
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.disconnectBtnSecondary:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}

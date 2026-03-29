@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useCallback } from 'react';
+import { createContext, useContext, useReducer, useCallback, useState } from 'react';
 import { gameReducer, createInitialState, ActionTypes, GameState } from '@engine/GameEngine.js';
 import { serializeState, deserializeState } from '@engine/GameEngine.js';
 import { SAVE_FILE_PREFIX } from '@utils/constants.js';
@@ -29,6 +29,7 @@ const stubInitialState = {
 
 export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(gameReducer, stubInitialState);
+  const [loadError, setLoadError] = useState(null);
 
   /**
    * Save game state to a JSON file download.
@@ -49,6 +50,7 @@ export function GameProvider({ children }) {
    * Load a game save file and restore state.
    */
   const loadGame = useCallback((file) => {
+    setLoadError(null);
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -56,7 +58,11 @@ export function GameProvider({ children }) {
         dispatch({ type: ActionTypes.LOAD_STATE, payload: savedState });
       } catch (err) {
         console.error('Failed to load save:', err);
+        setLoadError(err.message || 'Failed to load save file — it may be corrupted or from an incompatible version.');
       }
+    };
+    reader.onerror = () => {
+      setLoadError('Could not read file. Please try again.');
     };
     reader.readAsText(file);
   }, []);
@@ -66,6 +72,7 @@ export function GameProvider({ children }) {
     dispatch,
     saveGame,
     loadGame,
+    loadError,
   };
 
   return (

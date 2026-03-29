@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ActionButton } from '@components/ActionButton.jsx';
 import { DiceRoller } from '@components/DiceRoller.jsx';
 import { useDiceRoll } from '@hooks/useDiceRoll.js';
@@ -8,6 +8,19 @@ import styles from './game.module.css';
 export function ActionPanel({ player, isMyTurn, blueprint, onAttack, onUseAbility, onSetTrap, onRetreat, onSearchFlora, onMove, onEndTurn }) {
   const { isRolling, lastRoll, roll } = useDiceRoll();
   const [showTrapMenu, setShowTrapMenu] = useState(false);
+  const trapMenuRef = useRef(null);
+
+  // Close trap menu when clicking outside it
+  useEffect(() => {
+    if (!showTrapMenu) return;
+    function handleClickOutside(e) {
+      if (trapMenuRef.current && !trapMenuRef.current.contains(e.target)) {
+        setShowTrapMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showTrapMenu]);
 
   if (!player) return null;
 
@@ -66,7 +79,7 @@ export function ActionPanel({ player, isMyTurn, blueprint, onAttack, onUseAbilit
           </div>
 
           {showTrapMenu && trapTypes.length > 0 && (
-            <div className={styles.trapMenu} style={{ position: 'absolute', bottom: '80px', left: '160px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--space-3)', zIndex: 100 }}>
+            <div ref={trapMenuRef} className={styles.trapMenu} style={{ position: 'absolute', bottom: '80px', left: '160px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--space-3)', zIndex: 100 }}>
               {trapTypes.map(trap => (
                 <ActionButton
                   key={trap.id}

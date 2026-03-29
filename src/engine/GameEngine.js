@@ -70,6 +70,10 @@ export const ActionTypes = {
 
   // Dice animation
   SET_ROLL_RESULT: 'SET_ROLL_RESULT',
+
+  // UI state
+  CLEAR_EVOLVING: 'CLEAR_EVOLVING',
+  RESET_TO_LOBBY: 'RESET_TO_LOBBY',
 };
 
 /**
@@ -812,6 +816,29 @@ export function gameReducer(state, action) {
         gameOverResult: { winner, condition },
       };
     }
+
+    case ActionTypes.CLEAR_EVOLVING:
+      return { ...state, isEvolving: false };
+
+    case ActionTypes.RESET_TO_LOBBY:
+      return {
+        phase: GameState.LOBBY,
+        turnPhase: null,
+        turnState: null,
+        round: 0,
+        blueprint: state.blueprint, // keep blueprint so host doesn't need to re-upload
+        gmMode: state.gmMode,
+        players: {},
+        playerOrder: [],
+        boss: null,
+        placedTraps: [],
+        floraState: {},
+        narrativeLog: [],
+        lastRoll: null,
+        gameOverResult: null,
+        pendingBossAction: null,
+        isEvolving: false,
+      };
 
     default:
       return state;

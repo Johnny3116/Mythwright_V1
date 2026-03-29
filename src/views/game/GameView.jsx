@@ -8,13 +8,18 @@ import { NarratorFeed } from './NarratorFeed.jsx';
 import { TurnTracker } from './TurnTracker.jsx';
 import { EncounterSplash } from '@components/EncounterSplash.jsx';
 import { FloatingDamage } from '@components/FloatingDamage.jsx';
+import { DisconnectOverlay } from '@components/DisconnectOverlay.jsx';
 import { useGameEngine } from '@hooks/useGameEngine.js';
 import { usePeerConnection } from '@hooks/usePeerConnection.js';
 import { useTurnManager } from '@hooks/useTurnManager.js';
-import { GameState } from '@engine/GameEngine.js';
+import { GameState, ActionTypes } from '@engine/GameEngine.js';
+import { useGameContext } from '@context/GameContext.jsx';
+import { useNetworkContext } from '@context/NetworkContext.jsx';
 
 export default function GameView() {
   const navigate = useNavigate();
+  const { dispatch } = useGameContext();
+  const { network, clearDisconnected } = useNetworkContext();
   const {
     state,
     isHost,
@@ -46,15 +51,31 @@ export default function GameView() {
 
   // Redirect to host view if host
   useEffect(() => {
-    if (isHost) {
-      navigate('/host');
-    }
+    if (isHost) navigate('/host');
   }, [isHost, navigate]);
 
-  // Redirect to game over if done
+  // Redirect to game if phase advances during character-select wait
   useEffect(() => {
-    // Game over is handled inline via state
-  }, [gameOverResult]);
+    if (state.phase === GameState.TURN_LOOP && !isHost) {
+      navigate('/game');
+    }
+  }, [state.phase, isHost, navigate]);
+
+  function handleReturnToLobby() {
+    dispatch({ type: ActionTypes.RESET_TO_LOBBY });
+    navigate('/');
+  }
+
+  function buildGameOverStats() {
+    const allPlayers = Object.values(players);
+    const totalDamage = allPlayers.reduce((sum, p) => sum + (p.damageDealt || 0), 0);
+    const mvpPlayer = allPlayers.sort((a, b) => (b.damageDealt || 0) - (a.damageDealt || 0))[0];
+    return {
+      rounds: round,
+      totalDamage,
+      mvp: mvpPlayer?.name || null,
+    };
+  }
 
   if (state.phase === GameState.LOBBY || !blueprint) {
     return (
@@ -73,6 +94,8 @@ export default function GameView() {
         type={isVictory ? 'VICTORY' : 'DEFEAT'}
         subtitle={isVictory ? blueprint.narrative?.victoryText : blueprint.narrative?.defeatText}
         visible={true}
+        onReturnToLobby={handleReturnToLobby}
+        stats={buildGameOverStats()}
       />
     );
   }
@@ -146,6 +169,19 @@ export default function GameView() {
           type="EVOLUTION"
           subtitle={`${boss?.name} evolves to Stage ${(boss?.currentStage || 0) + 1}!`}
           visible={isEvolving}
+          onComplete={() => dispatch({ type: ActionTypes.CLEAR_EVOLVING })}
+        />
+      )}
+
+      {/* Disconnect overlay (player side — lost connection to host) */}
+      {network.isDisconnected && (
+        <DisconnectOverlay
+          isHost={false}
+          onDismiss={clearDisconnected}
+          onReturnToLobby={() => {
+            dispatch({ type: ActionTypes.RESET_TO_LOBBY });
+            navigate('/');
+          }}
         />
       )}
     </div>
