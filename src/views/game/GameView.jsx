@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './game.module.css';
 import { ZoneMap } from './ZoneMap.jsx';
@@ -7,6 +7,7 @@ import { CharacterSheet } from './CharacterSheet.jsx';
 import { NarratorFeed } from './NarratorFeed.jsx';
 import { TurnTracker } from './TurnTracker.jsx';
 import { EncounterSplash } from '@components/EncounterSplash.jsx';
+import { FloatingDamage } from '@components/FloatingDamage.jsx';
 import { useGameEngine } from '@hooks/useGameEngine.js';
 import { usePeerConnection } from '@hooks/usePeerConnection.js';
 import { useTurnManager } from '@hooks/useTurnManager.js';
@@ -31,6 +32,17 @@ export default function GameView() {
   const { blueprint, players, boss, narrativeLog, floraState, placedTraps, gameOverResult, isEvolving } = state;
   const myPlayer = players[myPeerId];
   const isMyTurn = activePlayerId === myPeerId;
+
+  const [floatEvent, setFloatEvent] = useState(null);
+  useEffect(() => {
+    if (!state.lastRoll?.result) return;
+    const { hit, damageDealt } = state.lastRoll.result;
+    if (hit && damageDealt > 0) {
+      setFloatEvent({ amount: damageDealt, type: 'damage', key: Date.now() });
+    } else if (!hit) {
+      setFloatEvent({ amount: 0, type: 'miss', key: Date.now() });
+    }
+  }, [state.lastRoll]);
 
   // Redirect to host view if host
   useEffect(() => {
@@ -117,6 +129,16 @@ export default function GameView() {
           onEndTurn={endPlayerTurn}
         />
       </div>
+
+      {/* Floating damage number */}
+      {floatEvent && (
+        <FloatingDamage
+          key={floatEvent.key}
+          amount={floatEvent.amount}
+          type={floatEvent.type}
+          onAnimationEnd={() => setFloatEvent(null)}
+        />
+      )}
 
       {/* Evolution splash */}
       {isEvolving && (

@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useRef, useCallback } from 'react';
+import { createContext, useContext, useReducer, useRef, useCallback, useMemo } from 'react';
 import { createRoom, joinRoom, broadcast, sendTo, destroyPeer } from '@network/PeerManager.js';
 import { broadcastState, sendPlayerAction, sendPlayerJoin } from '@network/StateSync.js';
 import { MessageTypes, createMessage } from '@network/MessageTypes.js';
@@ -67,6 +67,9 @@ export function NetworkProvider({ children }) {
   const [network, dispatch] = useReducer(networkReducer, initialNetworkState);
   const connectionsRef = useRef([]);
   const onMessageRef = useRef(null);
+  // Monotonic version counter: only apply incoming state updates with a strictly
+  // higher version than the last one applied, preventing stale overwrites.
+  const lastStateVersionRef = useRef(0);
 
   /**
    * Set a callback to be invoked when any message is received.
@@ -202,6 +205,18 @@ export function NetworkProvider({ children }) {
     dispatch({ type: 'RESET' });
   }, [network.peer]);
 
+  /**
+   * Check if an incoming state version is newer than the last applied version.
+   * Returns true and advances the counter if so; false if stale.
+   * @param {number|undefined} version
+   */
+  const checkAndUpdateStateVersion = useCallback((version) => {
+    if (typeof version !== 'number') return true; // no version attached — allow
+    if (version <= lastStateVersionRef.current) return false; // stale, reject
+    lastStateVersionRef.current = version;
+    return true;
+  }, []);
+
   const value = {
     network,
     connectionsRef,
@@ -213,6 +228,7 @@ export function NetworkProvider({ children }) {
     sendToHost,
     broadcastMessage,
     disconnect,
+    checkAndUpdateStateVersion,
   };
 
   return (

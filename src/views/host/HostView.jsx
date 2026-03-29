@@ -30,6 +30,12 @@ export default function HostView() {
 
   const { blueprint, players, boss, narrativeLog, floraState, placedTraps, turnPhase, round, gameOverResult, gmMode, isEvolving } = state;
 
+  // Keep a stable ref to the latest state so async effects can read it
+  // without adding `state` to their dependency arrays (which would re-run on
+  // every single dispatch).
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
   // Auto-resolve scripted boss turn
   useEffect(() => {
     if (turnPhase !== TurnPhase.BOSS_TURN) return;
@@ -38,7 +44,7 @@ export default function HostView() {
 
     const timer = setTimeout(async () => {
       try {
-        const bossAction = await selectBossAction(state, blueprint);
+        const bossAction = await selectBossAction(stateRef.current, blueprint);
         const roll = rollD20();
 
         // Handle multi_attack: dispatch each hit with a short stagger
@@ -50,7 +56,7 @@ export default function HostView() {
           const hitRoll = i === 0 ? roll : rollD20();
           const dispatchAction = bossActionToDispatch(
             { ...bossAction, action: i === 0 && bossAction.action !== 'multi_attack' ? bossAction.action : 'attack' },
-            hitRoll.raw,
+            hitRoll.modified,
           );
           // Stagger each hit by 400ms so HP bar animations are visible
           await new Promise(res => setTimeout(res, i * 400));
@@ -69,7 +75,7 @@ export default function HostView() {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [turnPhase, gmMode, boss?.currentStage]);
+  }, [turnPhase, gmMode, boss?.currentStage, blueprint, boss, dispatch]);
 
   // Auto-advance environment phase
   useEffect(() => {
@@ -78,7 +84,7 @@ export default function HostView() {
       dispatch({ type: ActionTypes.ADVANCE_PHASE, payload: {} });
     }, 1000);
     return () => clearTimeout(timer);
-  }, [turnPhase]);
+  }, [turnPhase, dispatch]);
 
   // Narrator guidance — fire once each time the turn phase changes
   const prevPhaseRef = useRef(null);
@@ -88,7 +94,7 @@ export default function HostView() {
     prevPhaseRef.current = turnPhase;
 
     if (turnPhase === TurnPhase.PLAYER_TURN) {
-      const activeId = state.turnState?.order?.[state.turnState?.currentIndex];
+      const activeId = stateRef.current.turnState?.order?.[stateRef.current.turnState?.currentIndex];
       const player = players[activeId];
       const name = player?.name || 'Player';
       addNarrative(`⚔️ ${name}'s turn — choose an action: Attack, Set Trap, Search Flora, Retreat, or End Turn.`);
@@ -97,9 +103,9 @@ export default function HostView() {
     } else if (turnPhase === TurnPhase.ENVIRONMENT) {
       addNarrative('🌿 Environment phase — wildlife and flora events are resolving.');
     } else if (turnPhase === TurnPhase.NEXT_ROUND) {
-      addNarrative(`🔄 Round ${(state.round || 0) + 1} begins. New turn order in effect.`);
+      addNarrative(`🔄 Round ${(stateRef.current.round || 0) + 1} begins. New turn order in effect.`);
     }
-  }, [turnPhase]);
+  }, [turnPhase, blueprint, boss, players, addNarrative]);
 
   const activePlayerId = state.turnState?.order?.[state.turnState?.currentIndex] || (turnPhase === TurnPhase.BOSS_TURN ? 'boss' : null);
 

@@ -327,7 +327,7 @@ export function createPeerManager(options = {}) {
           });
 
           hostConn.on('open', () => {
-            emitter.emit('reconnected', {});
+            emitter.emit('connected', {});
             resolve({ success: true });
           });
 
@@ -343,6 +343,13 @@ export function createPeerManager(options = {}) {
             emitter.emit('error', err);
             resolve({ success: false, error: String(err.message ?? err) });
           });
+        });
+
+        peer.on('disconnected', () => {
+          // Signaling server connection dropped — reconnect to restore signaling
+          // without destroying this peer's identity or existing data connections.
+          peer.reconnect();
+          emitter.emit('disconnected', { reason: 'peer server disconnected' });
         });
 
         peer.on('error', (err) => {

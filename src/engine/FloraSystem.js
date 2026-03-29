@@ -63,8 +63,12 @@ export function relocateFlora(currentSpawns, zones, round, interval) {
     newSpawns[zone.id] = null;
   }
 
-  // Shuffle eligible zones and assign plants
-  const shuffled = [...eligibleZones].sort(() => rollBetween(0, 1) - 0.5);
+  // Fisher-Yates shuffle — avoids the statistical bias of sort-based shuffles
+  const shuffled = [...eligibleZones];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = rollBetween(0, i);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
   plants.forEach((plant, i) => {
     if (shuffled[i]) {
       newSpawns[shuffled[i].id] = { ...plant, zoneId: shuffled[i].id, collected: false };

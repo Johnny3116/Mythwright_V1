@@ -5,6 +5,7 @@
  */
 
 import { selectBossAction as scriptedSelectBossAction, getNarrative as scriptedGetNarrative } from './ScriptedDriver.js';
+import { DEFAULT_AI_MODEL } from '@utils/constants.js';
 
 /**
  * Create an AI Driver instance with the given API configuration.
@@ -92,7 +93,7 @@ Write 1-2 sentences of dramatic game master narration for this event. Be vivid a
 
 async function callAI(prompt, config) {
   const endpoint = config.endpoint || 'https://api.anthropic.com/v1/messages';
-  const model = config.model || 'claude-haiku-4-5-20251001';
+  const model = config.model || DEFAULT_AI_MODEL;
 
   const response = await fetch(endpoint, {
     method: 'POST',

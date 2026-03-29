@@ -166,7 +166,7 @@ export function createEffectTracker() {
 
 /**
  * Apply a new status effect to an entity state object.
- * Entity state must have an `effects` array.
+ * Entity state must have a `statusEffects` array.
  * @param {object} entityState
  * @param {object} effect - { type, value?, duration, source? }
  * @returns {object} Updated entity state (immutable copy)
@@ -181,7 +181,7 @@ export function applyEffect(entityState, effect) {
   };
   return {
     ...entityState,
-    effects: [...(entityState.effects || []), entry],
+    statusEffects: [...(entityState.statusEffects || []), entry],
   };
 }
 
@@ -191,7 +191,7 @@ export function applyEffect(entityState, effect) {
  * @returns {{ entityState: object, expiredEffects: object[], damageDealt: number }}
  */
 export function tickEffects(entityState) {
-  const effects = entityState.effects || [];
+  const effects = entityState.statusEffects || [];
   const expiredEffects = [];
   let damageDealt = 0;
 
@@ -213,7 +213,7 @@ export function tickEffects(entityState) {
     .filter((e) => e.duration > 0);
 
   return {
-    entityState: { ...entityState, effects: updatedEffects },
+    entityState: { ...entityState, statusEffects: updatedEffects },
     expiredEffects,
     damageDealt,
   };
@@ -228,7 +228,7 @@ export function tickEffects(entityState) {
 export function removeEffect(entityState, effectType) {
   return {
     ...entityState,
-    effects: (entityState.effects || []).filter((e) => e.type !== effectType),
+    statusEffects: (entityState.statusEffects || []).filter((e) => e.type !== effectType),
   };
 }
 
@@ -238,7 +238,7 @@ export function removeEffect(entityState, effectType) {
  * @returns {object[]}
  */
 export function getActiveEffects(entityState) {
-  return [...(entityState.effects || [])];
+  return [...(entityState.statusEffects || [])];
 }
 
 /**
@@ -248,7 +248,7 @@ export function getActiveEffects(entityState) {
  * @returns {number}
  */
 export function getEffectModifier(entityState, modifierType) {
-  const effects = entityState.effects || [];
+  const effects = entityState.statusEffects || [];
   let combined = 0;
   for (const effect of effects) {
     if (effect.type === `${modifierType}Multiplier` || effect.type === `${modifierType}Boost`) {
