@@ -172,6 +172,25 @@ export function useGameEngine() {
     dispatchPlayerAction({ type: ActionTypes.PLAYER_MOVE, payload: { playerId, targetZoneId } });
   }, [dispatchPlayerAction]);
 
+  // Phase 10 spatial actions
+  const playerAttackMob = useCallback((playerId, roll) => {
+    soundEvents.emit('attack');
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_ATTACK, payload: { playerId, roll, targetType: 'mob' } });
+  }, [dispatchPlayerAction]);
+
+  const playerSearch = useCallback((playerId, roll) => {
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_SEARCH, payload: { playerId, roll } });
+  }, [dispatchPlayerAction]);
+
+  const playerHeal = useCallback((playerId, targetId, roll) => {
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_HEAL, payload: { playerId, targetId, roll } });
+  }, [dispatchPlayerAction]);
+
+  const playerFlee = useCallback((playerId) => {
+    soundEvents.emit('retreat');
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_FLEE, payload: { playerId } });
+  }, [dispatchPlayerAction]);
+
   const endPlayerTurn = useCallback(() => {
     dispatchPlayerAction({ type: ActionTypes.ADVANCE_PHASE, payload: {} });
   }, [dispatchPlayerAction]);
@@ -192,6 +211,10 @@ export function useGameEngine() {
 
   const bossGrab = useCallback((targetId) => {
     dispatch({ type: ActionTypes.BOSS_GRAB, payload: { targetId } });
+  }, [dispatch]);
+
+  const bossMove = useCallback((targetZoneId, roll) => {
+    dispatch({ type: ActionTypes.BOSS_MOVE, payload: { targetZoneId, roll } });
   }, [dispatch]);
 
   const endBossTurn = useCallback(() => {
@@ -253,17 +276,22 @@ export function useGameEngine() {
     blueprint,
     // Player actions
     playerAttack,
+    playerAttackMob,
     playerUseAbility,
     playerSetTrap,
     playerRetreat,
     playerSearchFlora,
+    playerSearch,
+    playerHeal,
     playerMove,
+    playerFlee,
     endPlayerTurn,
     // Boss actions
     bossAttack,
     bossAoeAttack,
     bossBurrow,
     bossGrab,
+    bossMove,
     endBossTurn,
     // Lifecycle
     setBlueprint,

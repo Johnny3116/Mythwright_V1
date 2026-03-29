@@ -85,9 +85,9 @@ describe('EvolutionSystem', () => {
     });
 
     it('moves boss to retreat zone', () => {
-      const boss = { hp: 80, currentStage: 1, maxHp: 200, currentZoneId: 'verdant-maw', statusEffects: [] };
+      const boss = { hp: 80, currentStage: 1, maxHp: 200, zone: 'verdant-maw', statusEffects: [] };
       const { newState } = evolve(boss, blueprint);
-      expect(newState.currentZoneId).toBe('obsidian-grotto');
+      expect(newState.zone).toBe('obsidian-grotto');
     });
 
     it('returns current state with message when already at final form', () => {

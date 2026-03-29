@@ -56,7 +56,7 @@ export function evolve(bossState, blueprint) {
     hp: Math.floor(recoveredHp),
     damage: nextStageData.damage,
     defense: nextStageData.defense,
-    currentZoneId: nextStageData.behavior?.retreatZone ?? bossState.currentZoneId,
+    zone: nextStageData.behavior?.retreatZone ?? bossState.zone,
   };
 
   const narrative = getEvolutionNarrative(bossState.currentStage, blueprint.narrative);
@@ -132,6 +132,6 @@ export function applyEvolution(bossState, nextStage) {
     hp: recoveredHp,
     damage: nextStage.damage,
     defense: nextStage.defense,
-    currentZoneId: nextStage.behavior?.retreatZone ?? bossState.currentZoneId,
+    zone: nextStage.behavior?.retreatZone ?? bossState.zone,
   };
 }

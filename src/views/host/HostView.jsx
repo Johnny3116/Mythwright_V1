@@ -16,6 +16,7 @@ import { useNetworkContext } from '@context/NetworkContext.jsx';
 import { TurnPhase, GameState, ActionTypes } from '@engine/GameEngine.js';
 import { selectBossAction, bossActionToDispatch } from '@drivers/ScriptedDriver.js';
 import { rollD20 } from '@engine/DiceSystem.js';
+import { selectBossMoveZone } from '@engine/SpatialSystem.js';
 
 export default function HostView() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export default function HostView() {
     bossAttack,
     bossAoeAttack,
     bossBurrow,
+    bossMove,
     endBossTurn,
     runEnvironment,
     advancePhase,
@@ -33,7 +35,7 @@ export default function HostView() {
   const { saveGame } = useGameContext();
 
   const { network, clearDisconnected } = useNetworkContext();
-  const { blueprint, players, boss, narrativeLog, floraState, placedTraps, turnPhase, round, gameOverResult, gmMode, isEvolving } = state;
+  const { blueprint, players, boss, narrativeLog, floraState, placedTraps, zoneState, turnPhase, round, gameOverResult, gmMode, isEvolving } = state;
 
   // Keep a stable ref to the latest state so async effects can read it
   // without adding `state` to their dependency arrays (which would re-run on
@@ -49,6 +51,20 @@ export default function HostView() {
 
     const timer = setTimeout(async () => {
       try {
+        // Phase 10: Boss moves first, then acts
+        const currentState = stateRef.current;
+        const allZoneIds = blueprint.zones.map(z => z.id);
+        const targetZoneId = selectBossMoveZone(
+          currentState.boss?.zone,
+          allZoneIds,
+          currentState.zoneState || {}
+        );
+        if (targetZoneId && targetZoneId !== currentState.boss?.zone) {
+          const moveRoll = rollD20();
+          dispatch({ type: ActionTypes.BOSS_MOVE, payload: { targetZoneId, roll: moveRoll } });
+          await new Promise(res => setTimeout(res, 600));
+        }
+
         const bossAction = await selectBossAction(stateRef.current, blueprint);
         const roll = rollD20();
 
@@ -184,6 +200,7 @@ export default function HostView() {
             boss={boss}
             floraState={floraState}
             placedTraps={placedTraps}
+            zoneState={zoneState || {}}
           />
         </div>
       </div>

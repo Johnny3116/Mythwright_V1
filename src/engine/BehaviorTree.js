@@ -170,7 +170,7 @@ export function selectRetreatZone(stageData) {
  */
 export function evaluateBehaviorTree(bossStage, gameState, roll) {
   const players = Object.values(gameState.players || {}).filter((p) => p.hp > 0);
-  const result = selectBossAction(gameState.boss, players, gameState.boss?.currentZoneId, roll, bossStage);
+  const result = selectBossAction(gameState.boss, players, gameState.boss?.zone, roll, bossStage);
   return { action: result.action, target: result.target, params: { damage: result.damage, effects: result.effects } };
 }
 

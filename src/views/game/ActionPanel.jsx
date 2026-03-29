@@ -5,30 +5,107 @@ import { useDiceRoll } from '@hooks/useDiceRoll.js';
 import { getAvailableTrapTypes } from '@engine/TrapSystem.js';
 import styles from './game.module.css';
 
-export function ActionPanel({ player, isMyTurn, blueprint, onAttack, onUseAbility, onSetTrap, onRetreat, onSearchFlora, onMove, onEndTurn }) {
+/**
+ * Context-aware action panel for player turns (Phase 10).
+ *
+ * Props:
+ *   player        — current player state
+ *   isMyTurn      — boolean
+ *   blueprint     — campaign blueprint
+ *   bossInZone    — bool: boss is in same zone (attack boss enabled)
+ *   mobsInZone    — bool: alive mob is in same zone (attack mob enabled)
+ *   alliesInZone  — array of player states in same zone (for heal target)
+ *   adjacentZones — array of { id, name } (for move submenu)
+ *   moveMode      — bool: map is in move-select mode
+ *   onAttackBoss  — (roll) =>
+ *   onAttackMob   — (roll) =>
+ *   onUseAbility  — (roll) =>
+ *   onSearch      — (roll) =>
+ *   onSetTrap     — (trapTypeId, roll) =>
+ *   onHeal        — (targetId, roll) =>
+ *   onMove        — () => (toggle move mode)
+ *   onFlee        — () => (no roll needed)
+ *   onEndTurn     — () =>
+ */
+export function ActionPanel({
+  player,
+  isMyTurn,
+  blueprint,
+  bossInZone = false,
+  mobsInZone = false,
+  alliesInZone = [],
+  adjacentZones = [],
+  moveMode = false,
+  onAttackBoss,
+  onAttackMob,
+  onUseAbility,
+  onSearch,
+  onSetTrap,
+  onHeal,
+  onMove,
+  onFlee,
+  onEndTurn,
+}) {
   const { isRolling, lastRoll, roll } = useDiceRoll();
-  const [showTrapMenu, setShowTrapMenu] = useState(false);
-  const trapMenuRef = useRef(null);
+  const [showTrapMenu,  setShowTrapMenu]  = useState(false);
+  const [showHealMenu,  setShowHealMenu]  = useState(false);
+  const [showAttackMenu, setShowAttackMenu] = useState(false);
+  const trapMenuRef   = useRef(null);
+  const healMenuRef   = useRef(null);
+  const attackMenuRef = useRef(null);
 
-  // Close trap menu when clicking outside it
+  // Close all submenus when clicking outside
   useEffect(() => {
-    if (!showTrapMenu) return;
-    function handleClickOutside(e) {
-      if (trapMenuRef.current && !trapMenuRef.current.contains(e.target)) {
-        setShowTrapMenu(false);
-      }
+    function handleOutside(e) {
+      if (trapMenuRef.current   && !trapMenuRef.current.contains(e.target))   setShowTrapMenu(false);
+      if (healMenuRef.current   && !healMenuRef.current.contains(e.target))   setShowHealMenu(false);
+      if (attackMenuRef.current && !attackMenuRef.current.contains(e.target)) setShowAttackMenu(false);
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showTrapMenu]);
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, []);
 
   if (!player) return null;
 
-  const trapTypes = blueprint ? getAvailableTrapTypes(blueprint) : [];
+  const trapTypes   = blueprint ? getAvailableTrapTypes(blueprint) : [];
+  const canAttackBoss = bossInZone;
+  const canAttackMob  = mobsInZone;
+  const canAttack     = canAttackBoss || canAttackMob;
+  const canHeal       = alliesInZone.length > 0 || player.hp < player.maxHp;
+  const canMove       = adjacentZones.length > 0;
 
-  async function handleAttack() {
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
+  async function handleAttackBoss() {
+    setShowAttackMenu(false);
     const result = await roll();
-    onAttack?.(result.raw);
+    onAttackBoss?.(result.raw);
+  }
+
+  async function handleAttackMob() {
+    setShowAttackMenu(false);
+    const result = await roll();
+    onAttackMob?.(result.raw);
+  }
+
+  function handleAttackClick() {
+    if (canAttackBoss && canAttackMob) {
+      setShowAttackMenu(v => !v);
+    } else if (canAttackBoss) {
+      handleAttackBoss();
+    } else if (canAttackMob) {
+      handleAttackMob();
+    }
+  }
+
+  async function handleAbility() {
+    const result = await roll();
+    onUseAbility?.(result.raw);
+  }
+
+  async function handleSearch() {
+    const result = await roll();
+    onSearch?.(result.raw);
   }
 
   async function handleTrap(trapTypeId) {
@@ -37,63 +114,144 @@ export function ActionPanel({ player, isMyTurn, blueprint, onAttack, onUseAbilit
     onSetTrap?.(trapTypeId, result.raw);
   }
 
-  async function handleRetreat() {
+  async function handleHeal(targetId) {
+    setShowHealMenu(false);
     const result = await roll();
-    onRetreat?.(result.raw);
+    onHeal?.(targetId, result.raw);
   }
 
-  async function handleSearchFlora() {
-    const result = await roll();
-    onSearchFlora?.(result.raw);
+  function handleHealClick() {
+    const healTargets = buildHealTargets();
+    if (healTargets.length === 1) {
+      handleHeal(healTargets[0].id);
+    } else {
+      setShowHealMenu(v => !v);
+    }
   }
 
-  async function handleAbility() {
-    const result = await roll();
-    onUseAbility?.(result.raw);
+  function buildHealTargets() {
+    const targets = [];
+    if (player.hp < player.maxHp) {
+      targets.push({ id: player.id, label: `${player.icon || player.classIcon || '🧑'} Self (${player.hp}/${player.maxHp})` });
+    }
+    for (const ally of alliesInZone) {
+      if (ally.id !== player.id) {
+        targets.push({ id: ally.id, label: `${ally.classIcon || '🧑'} ${ally.name} (${ally.hp}/${ally.maxHp})` });
+      }
+    }
+    return targets;
   }
 
   return (
     <div className={styles.actionPanel}>
       {isMyTurn ? (
         <>
-          <span className={styles.turnLabel}>Your Turn</span>
+          <span className={[styles.turnLabel, styles.turnLabelActive].join(' ')}>Your Turn</span>
+
           <div className={styles.actionGroup}>
-            <ActionButton variant="primary" onClick={handleAttack} disabled={isRolling} icon="⚔️">
-              Attack
-            </ActionButton>
+            {/* ── Movement ── */}
+            <div style={{ position: 'relative' }}>
+              <ActionButton
+                onClick={onMove}
+                disabled={isRolling || !canMove}
+                icon="🚶"
+                variant={moveMode ? 'primary' : undefined}
+                title={canMove ? 'Select a zone to move to' : 'No adjacent zones'}
+              >
+                {moveMode ? 'Cancel Move' : 'Move'}
+              </ActionButton>
+            </div>
+
+            {/* ── Attack ── */}
+            <div style={{ position: 'relative' }} ref={attackMenuRef}>
+              <ActionButton
+                variant="primary"
+                onClick={handleAttackClick}
+                disabled={isRolling || !canAttack}
+                icon="⚔️"
+                title={!canAttack ? 'Nothing to attack in this zone' : canAttackBoss && canAttackMob ? 'Choose attack target' : ''}
+              >
+                Attack
+              </ActionButton>
+              {showAttackMenu && (
+                <div className={styles.subMenu} style={{ bottom: '60px', left: 0 }}>
+                  <ActionButton onClick={handleAttackBoss} disabled={isRolling} icon="🦎">
+                    Attack Boss
+                  </ActionButton>
+                  <ActionButton onClick={handleAttackMob} disabled={isRolling} icon="🐾">
+                    Fight Mob
+                  </ActionButton>
+                </div>
+              )}
+            </div>
+
+            {/* ── Ability ── */}
             <ActionButton onClick={handleAbility} disabled={isRolling} icon="✨">
               Ability
             </ActionButton>
-            <ActionButton onClick={handleSearchFlora} disabled={isRolling} icon="🌿">
-              Search Flora
+
+            {/* ── Search ── */}
+            <ActionButton onClick={handleSearch} disabled={isRolling} icon="🔍" title="Search for boss location or items">
+              Search
             </ActionButton>
-            <ActionButton onClick={() => setShowTrapMenu(v => !v)} disabled={isRolling} icon="⚙️">
-              Set Trap
+
+            {/* ── Heal ── */}
+            <div style={{ position: 'relative' }} ref={healMenuRef}>
+              <ActionButton
+                onClick={handleHealClick}
+                disabled={isRolling || !canHeal}
+                icon="💊"
+                title={!canHeal ? 'No one to heal' : ''}
+              >
+                Heal
+              </ActionButton>
+              {showHealMenu && (
+                <div className={styles.subMenu} style={{ bottom: '60px', left: 0 }}>
+                  {buildHealTargets().map(t => (
+                    <ActionButton key={t.id} onClick={() => handleHeal(t.id)} disabled={isRolling}>
+                      {t.label}
+                    </ActionButton>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── Set Trap ── */}
+            <div style={{ position: 'relative' }} ref={trapMenuRef}>
+              <ActionButton onClick={() => setShowTrapMenu(v => !v)} disabled={isRolling} icon="⚙️">
+                Set Trap
+              </ActionButton>
+              {showTrapMenu && trapTypes.length > 0 && (
+                <div className={styles.subMenu} style={{ bottom: '60px', left: 0 }}>
+                  {trapTypes.map(trap => (
+                    <ActionButton key={trap.id} onClick={() => handleTrap(trap.id)} disabled={isRolling}>
+                      {trap.name} (Roll {trap.setupRoll}+)
+                    </ActionButton>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── Flee ── */}
+            <ActionButton
+              onClick={onFlee}
+              disabled={isRolling}
+              icon="💨"
+              title="Emergency retreat — instantly move to an adjacent zone"
+            >
+              Flee
             </ActionButton>
-            <ActionButton onClick={handleRetreat} disabled={isRolling} icon="💨">
-              Retreat
-            </ActionButton>
+
+            {/* ── End Turn ── */}
             <ActionButton variant="success" onClick={onEndTurn} disabled={isRolling} icon="→">
               End Turn
             </ActionButton>
           </div>
-
-          {showTrapMenu && trapTypes.length > 0 && (
-            <div ref={trapMenuRef} className={styles.trapMenu} style={{ position: 'absolute', bottom: '80px', left: '160px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius-md)', padding: 'var(--space-3)', zIndex: 100 }}>
-              {trapTypes.map(trap => (
-                <ActionButton
-                  key={trap.id}
-                  onClick={() => handleTrap(trap.id)}
-                  style={{ display: 'block', marginBottom: 'var(--space-1)' }}
-                >
-                  {trap.name} (Roll {trap.setupRoll}+)
-                </ActionButton>
-              ))}
-            </div>
-          )}
         </>
       ) : (
-        <span className={styles.turnLabel} style={{ color: 'var(--text-muted)' }}>Waiting for your turn...</span>
+        <span className={styles.turnLabel} style={{ color: 'var(--text-muted)' }}>
+          Waiting for your turn...
+        </span>
       )}
 
       <div className={styles.diceArea}>

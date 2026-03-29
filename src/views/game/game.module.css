@@ -198,10 +198,79 @@
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.zoneNodeWithBoss { border-color: var(--accent-danger); box-shadow: var(--shadow-glow-red); }
+.zoneNodeWithBoss   { border-color: var(--accent-danger);    box-shadow: var(--shadow-glow-red); }
 .zoneNodeWithPlayer { border-color: var(--accent-secondary); box-shadow: var(--shadow-glow-gold); }
-.zoneNodeWithTrap { border-color: var(--accent-warning); }
-.zoneNodeWithFlora { border-color: var(--accent-success); }
+.zoneNodeWithTrap   { border-color: var(--accent-warning); }
+.zoneNodeWithFlora  { border-color: var(--accent-success); }
+.zoneNodeWithMob    { border-color: #c87941; }
+
+/* Phase 10: Spatial state modifiers */
+.zoneNodeMyZone     { border-color: var(--accent-primary, #6cb4f0) !important; box-shadow: 0 0 8px rgba(108, 180, 240, 0.6); }
+.zoneNodeMoveTarget { border-color: #ffa500 !important; animation: moveTargetPulse 1s ease-in-out infinite; cursor: pointer; }
+.zoneNodeFogged     { opacity: 0.32; filter: grayscale(0.7); pointer-events: auto; }
+.zoneNodeClickable  { cursor: pointer; }
+
+.zoneNodeName       {}  /* base already set above */
+.zoneNodeNameActive { color: var(--accent-secondary); font-weight: 600; }
+
+/* Player token stack inside circle */
+.zonePlayerTokens {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1px;
+  max-width: 52px;
+}
+.zonePlayerToken     { font-size: var(--text-sm); line-height: 1; }
+.zonePlayerTokenMe   { filter: drop-shadow(0 0 3px rgba(212, 168, 67, 0.9)); }
+.zoneBossToken       { font-size: var(--text-xl); }
+
+/* Mob indicator badge — top-right corner of circle */
+.zoneMobBadge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 12px;
+  background: rgba(200, 121, 65, 0.9);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* Cleared zone checkmark badge */
+.zonecleared {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 11px;
+  color: var(--accent-success);
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent-success);
+}
+
+/* Player count overlay */
+.zonePlayerCount {
+  font-size: var(--text-xs);
+  color: var(--accent-secondary);
+  font-family: var(--font-mono);
+  margin-top: 1px;
+}
+
+@keyframes moveTargetPulse {
+  0%, 100% { box-shadow: 0 0 4px #ffa500; }
+  50%       { box-shadow: 0 0 14px #ffa500, 0 0 24px rgba(255, 165, 0, 0.4); }
+}
 
 .zoneNodeName {
   font-family: var(--font-display);
@@ -260,6 +329,21 @@
   flex-direction: column;
   gap: var(--space-2);
   min-width: 200px;
+}
+
+/* Shared submenu popup (traps, heal targets, attack targets) */
+.subMenu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 180px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-2);
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 /* ── Character Sheet ─────────────────────────────────────── */

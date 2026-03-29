@@ -13,6 +13,7 @@ import { useGameEngine } from '@hooks/useGameEngine.js';
 import { usePeerConnection } from '@hooks/usePeerConnection.js';
 import { useTurnManager } from '@hooks/useTurnManager.js';
 import { GameState, ActionTypes } from '@engine/GameEngine.js';
+import { isBossVisible, getAdjacentZones, getPlayersInZone } from '@engine/SpatialSystem.js';
 import { useGameContext } from '@context/GameContext.jsx';
 import { useNetworkContext } from '@context/NetworkContext.jsx';
 
@@ -24,37 +25,52 @@ export default function GameView() {
     state,
     isHost,
     playerAttack,
+    playerAttackMob,
     playerUseAbility,
     playerSetTrap,
     playerRetreat,
     playerSearchFlora,
+    playerSearch,
+    playerHeal,
+    playerMove,
+    playerFlee,
     endPlayerTurn,
     activePlayerId,
   } = useGameEngine();
   const { myPeerId } = usePeerConnection();
   const { turnPhase, round } = useTurnManager();
 
-  const { blueprint, players, boss, narrativeLog, floraState, placedTraps, gameOverResult, isEvolving } = state;
+  const { blueprint, players, boss, narrativeLog, floraState, placedTraps, zoneState, gameOverResult, isEvolving } = state;
   const myPlayer = players[myPeerId];
   const isMyTurn = activePlayerId === myPeerId;
 
+  // Floating damage/heal event
   const [floatEvent, setFloatEvent] = useState(null);
   useEffect(() => {
     if (!state.lastRoll?.result) return;
     const { hit, damageDealt } = state.lastRoll.result;
     if (hit && damageDealt > 0) {
       setFloatEvent({ amount: damageDealt, type: 'damage', key: Date.now() });
+    } else if (hit && damageDealt < 0) {
+      setFloatEvent({ amount: Math.abs(damageDealt), type: 'heal', key: Date.now() });
     } else if (!hit) {
       setFloatEvent({ amount: 0, type: 'miss', key: Date.now() });
     }
   }, [state.lastRoll]);
 
-  // Redirect to host view if host
+  // Move mode state (player clicked Move — map enters zone-select mode)
+  const [moveMode, setMoveMode] = useState(false);
+
+  // Reset move mode when turn changes
+  useEffect(() => {
+    setMoveMode(false);
+  }, [activePlayerId]);
+
+  // Redirect host to HostView
   useEffect(() => {
     if (isHost) navigate('/host');
   }, [isHost, navigate]);
 
-  // Redirect to game if phase advances during character-select wait
   useEffect(() => {
     if (state.phase === GameState.TURN_LOOP && !isHost) {
       navigate('/game');
@@ -69,12 +85,36 @@ export default function GameView() {
   function buildGameOverStats() {
     const allPlayers = Object.values(players);
     const totalDamage = allPlayers.reduce((sum, p) => sum + (p.damageDealt || 0), 0);
-    const mvpPlayer = allPlayers.sort((a, b) => (b.damageDealt || 0) - (a.damageDealt || 0))[0];
-    return {
-      rounds: round,
-      totalDamage,
-      mvp: mvpPlayer?.name || null,
-    };
+    const mvpPlayer = [...allPlayers].sort((a, b) => (b.damageDealt || 0) - (a.damageDealt || 0))[0];
+    return { rounds: round, totalDamage, mvp: mvpPlayer?.name || null };
+  }
+
+  // ── Context values for ActionPanel ──────────────────────────────────────────
+
+  const myZoneId      = myPlayer?.zone ?? null;
+  const bossInZone    = blueprint && boss
+    ? isBossVisible(myZoneId, boss) && boss.zone === myZoneId
+    : false;
+  const mobsInZone    = myZoneId ? zoneState?.[myZoneId]?.wildlifeAlive === true : false;
+  const alliesInZone  = blueprint && myZoneId
+    ? getPlayersInZone(myZoneId, players).filter(p => p.id !== myPeerId)
+    : [];
+  const adjacentZones = blueprint && myZoneId
+    ? getAdjacentZones(myZoneId, blueprint).map(id => {
+        const z = blueprint.zones.find(z => z.id === id);
+        return { id, name: z?.name || id };
+      })
+    : [];
+
+  // ── Action handlers ──────────────────────────────────────────────────────────
+
+  function handleMove() {
+    setMoveMode(v => !v);
+  }
+
+  function handleMoveToZone(zoneId) {
+    setMoveMode(false);
+    playerMove(myPeerId, zoneId);
   }
 
   if (state.phase === GameState.LOBBY || !blueprint) {
@@ -107,9 +147,11 @@ export default function GameView() {
         <div className={styles.gameMeta}>
           <span className={styles.roundBadge}>Round {round}</span>
           <span className={styles.phaseBadge}>{turnPhase}</span>
-          {boss && <span style={{ color: 'var(--accent-danger)', fontFamily: 'var(--font-display)', fontSize: 'var(--text-sm)' }}>
-            {boss.name} [{boss.stages?.[boss.currentStage]?.name || `Stage ${boss.currentStage + 1}`}] — {boss.hp}/{boss.maxHp} HP
-          </span>}
+          {boss && (
+            <span style={{ color: 'var(--accent-danger)', fontFamily: 'var(--font-display)', fontSize: 'var(--text-sm)' }}>
+              {boss.name} [{boss.stages?.[boss.currentStage]?.name || `Stage ${boss.currentStage + 1}`}] — {boss.hp}/{boss.maxHp} HP
+            </span>
+          )}
         </div>
         <TurnTracker players={players} boss={boss} activeEntityId={activePlayerId} round={round} phase={turnPhase} />
       </div>
@@ -120,6 +162,25 @@ export default function GameView() {
           <div className={styles.sidebarTitle}>Your Character</div>
           <CharacterSheet player={myPlayer} />
         </div>
+        {/* Zone status */}
+        {myZoneId && blueprint && (
+          <div className={styles.sidebarSection}>
+            <div className={styles.sidebarTitle}>Current Zone</div>
+            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+              {blueprint.zones.find(z => z.id === myZoneId)?.name || myZoneId}
+            </div>
+            {mobsInZone && (
+              <div style={{ fontSize: 'var(--text-xs)', color: '#c87941', marginTop: 'var(--space-1)' }}>
+                🐾 {zoneState[myZoneId]?.creature} prowling nearby
+              </div>
+            )}
+            {bossInZone && (
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--accent-danger)', marginTop: 'var(--space-1)' }}>
+                🦎 Boss is HERE
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Main Content */}
@@ -134,6 +195,10 @@ export default function GameView() {
             boss={boss}
             floraState={floraState}
             placedTraps={placedTraps}
+            zoneState={zoneState || {}}
+            myPlayerId={myPeerId}
+            moveMode={moveMode}
+            onMoveToZone={handleMoveToZone}
           />
         </div>
       </div>
@@ -144,16 +209,24 @@ export default function GameView() {
           player={myPlayer}
           isMyTurn={isMyTurn}
           blueprint={blueprint}
-          onAttack={(roll) => playerAttack(myPeerId, roll)}
+          bossInZone={bossInZone}
+          mobsInZone={mobsInZone}
+          alliesInZone={alliesInZone}
+          adjacentZones={adjacentZones}
+          moveMode={moveMode}
+          onAttackBoss={(roll) => playerAttack(myPeerId, roll)}
+          onAttackMob={(roll) => playerAttackMob(myPeerId, roll)}
           onUseAbility={(roll) => playerUseAbility(myPeerId, null, roll)}
+          onSearch={(roll) => playerSearch(myPeerId, roll)}
           onSetTrap={(trapTypeId, roll) => playerSetTrap(myPeerId, trapTypeId, roll)}
-          onRetreat={(roll) => playerRetreat(myPeerId, roll)}
-          onSearchFlora={(roll) => playerSearchFlora(myPeerId, roll)}
+          onHeal={(targetId, roll) => playerHeal(myPeerId, targetId, roll)}
+          onMove={handleMove}
+          onFlee={() => playerFlee(myPeerId)}
           onEndTurn={endPlayerTurn}
         />
       </div>
 
-      {/* Floating damage number */}
+      {/* Floating damage/heal number */}
       {floatEvent && (
         <FloatingDamage
           key={floatEvent.key}
@@ -173,7 +246,7 @@ export default function GameView() {
         />
       )}
 
-      {/* Disconnect overlay (player side — lost connection to host) */}
+      {/* Disconnect overlay */}
       {network.isDisconnected && (
         <DisconnectOverlay
           isHost={false}
