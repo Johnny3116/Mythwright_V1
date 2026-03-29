@@ -181,3 +181,23 @@
 }
 
 .waitingItemReady { border-color: var(--accent-success); color: var(--text-primary); }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .characterSelect {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .classGrid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 100%;
+  }
+
+  .customizePanel {
+    max-width: 100%;
+  }
+
+  .waitingList {
+    max-width: 100%;
+  }
+}

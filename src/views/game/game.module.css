@@ -262,9 +262,227 @@
   min-width: 200px;
 }
 
+/* ── Responsive — Tablet (≤ 1024px) ─────────────────────── */
+@media (max-width: 1024px) {
+  .gameView {
+    grid-template-columns: 240px 1fr;
+  }
+}
+
+/* ── Responsive — Mobile/Tablet portrait (≤ 768px) ──────── */
+@media (max-width: 768px) {
+  .gameView {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "header"
+      "sidebar"
+      "main"
+      "actions";
+  }
+
+  .gameSidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .gameActions {
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .actionGroup {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .diceArea {
+    margin-left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .roundBadge, .phaseBadge {
+    display: none;
+  }
+}
+
 /* ── Character Sheet ─────────────────────────────────────── */
 .charSheet {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+/* ── Game Over Screen ────────────────────────────────────── */
+.gameOverScreen {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal) + 100);
+  background: rgba(10, 10, 15, 0.97);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.6s ease;
+}
+
+.gameOverContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  max-width: 640px;
+  width: 100%;
+  padding: var(--space-8) var(--space-6);
+}
+
+.gameOverHero {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.gameOverIcon {
+  font-size: 5rem;
+  animation: resultFlash 0.6s ease;
+}
+
+.gameOverTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.gameOverTitleVictory { color: var(--accent-success); text-shadow: 0 0 24px rgba(74, 158, 106, 0.5); }
+.gameOverTitleDefeat  { color: var(--accent-danger);  text-shadow: 0 0 24px rgba(199, 74, 56, 0.5); }
+
+.gameOverFlavour {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: var(--text-base);
+  max-width: 440px;
+  line-height: 1.6;
+}
+
+.gameOverRound {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-1) var(--space-4);
+}
+
+.gameOverStats {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.gameOverStatsTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-2);
+}
+
+.gameOverStatsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.gameOverPlayerCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-3) var(--space-4);
+  transition: border-color var(--transition-fast);
+}
+
+.gameOverPlayerCard:hover { border-color: var(--accent-secondary); }
+.gameOverPlayerCardDead { opacity: 0.5; border-color: var(--accent-danger); }
+
+.gameOverPlayerIcon { font-size: var(--text-2xl); }
+
+.gameOverPlayerInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.gameOverPlayerName { font-family: var(--font-display); font-size: var(--text-base); }
+.gameOverPlayerClass { font-size: var(--text-xs); color: var(--text-muted); }
+
+.gameOverPlayerStats {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.gameOverStatItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 48px;
+}
+
+.gameOverStatLabel {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.gameOverStatValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.gameOverStatDead { color: var(--accent-danger); }
+
+.gameOverTotalDmg {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+}
+
+.gameOverReturnBtn {
+  padding: var(--space-4) var(--space-10);
+  background: var(--accent-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.gameOverReturnBtn:hover {
+  background: #d45743;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-red);
+}
+
+.gameOverReturnBtn:active {
+  transform: translateY(0);
 }

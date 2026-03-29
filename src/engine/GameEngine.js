@@ -70,6 +70,9 @@ export const ActionTypes = {
 
   // Dice animation
   SET_ROLL_RESULT: 'SET_ROLL_RESULT',
+
+  // UI state
+  CLEAR_EVOLVING: 'CLEAR_EVOLVING',
 };
 
 /**
@@ -266,6 +269,9 @@ export function gameReducer(state, action) {
 
     case ActionTypes.SET_ROLL_RESULT:
       return { ...state, lastRoll: action.payload };
+
+    case ActionTypes.CLEAR_EVOLVING:
+      return { ...state, isEvolving: false };
 
     case ActionTypes.START_CHARACTER_SELECT:
       return { ...state, phase: GameState.CHARACTER_SELECT };

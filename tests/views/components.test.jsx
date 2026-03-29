@@ -259,14 +259,14 @@ describe('FloatingDamage', () => {
 describe('EncounterSplash', () => {
   it('renders null when not visible', () => {
     const { container } = render(
-      <EncounterSplash type="encounter" title="Enemy Spotted" subtitle="Tzorath approaches" isVisible={false} onComplete={() => {}} />
+      <EncounterSplash type="encounter" title="Enemy Spotted" subtitle="Tzorath approaches" visible={false} onComplete={() => {}} />
     );
     expect(container.firstChild).toBeNull();
   });
 
   it('renders content when visible', () => {
     render(
-      <EncounterSplash type="encounter" title="Enemy Spotted" subtitle="Tzorath approaches" isVisible onComplete={() => {}} />
+      <EncounterSplash type="encounter" title="Enemy Spotted" subtitle="Tzorath approaches" visible onComplete={() => {}} />
     );
     expect(screen.getByText('Enemy Spotted')).toBeTruthy();
   });

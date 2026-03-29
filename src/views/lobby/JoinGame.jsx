@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGameEngine } from '@hooks/useGameEngine.js';
 import { usePeerConnection } from '@hooks/usePeerConnection.js';
 import { useNetworkContext } from '@context/NetworkContext.jsx';
+import { useToast } from '@context/ToastContext.jsx';
 import { MessageTypes, createMessage } from '@network/MessageTypes.js';
 import { ActionButton } from '@components/ActionButton.jsx';
 import styles from './lobby.module.css';
@@ -13,18 +14,22 @@ export function JoinGame() {
   const [playerName, setPlayerName] = useState('');
   const { joinGame, status, error } = usePeerConnection();
   const { sendToHost } = useNetworkContext();
+  const { addToast } = useToast();
 
   async function handleJoin() {
     if (!roomCode.trim() || !playerName.trim()) return;
     try {
       await joinGame(roomCode.trim().toUpperCase());
-      // Send join message to host
+      // Send join message to host — connection is open at this point, 500ms is defensive buffer
       setTimeout(() => {
         sendToHost(createMessage(MessageTypes.PLAYER_JOIN, { playerName }));
       }, 500);
       navigate('/character-select');
     } catch (err) {
-      console.error('Join failed:', err);
+      addToast(
+        `Could not join room "${roomCode.trim().toUpperCase()}". Check the code and try again.`,
+        'error'
+      );
     }
   }
 

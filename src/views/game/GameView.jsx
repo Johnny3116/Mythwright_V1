@@ -8,6 +8,8 @@ import { NarratorFeed } from './NarratorFeed.jsx';
 import { TurnTracker } from './TurnTracker.jsx';
 import { EncounterSplash } from '@components/EncounterSplash.jsx';
 import { FloatingDamage } from '@components/FloatingDamage.jsx';
+import { DisconnectOverlay } from '@components/DisconnectOverlay.jsx';
+import { GameOver } from './GameOver.jsx';
 import { useGameEngine } from '@hooks/useGameEngine.js';
 import { usePeerConnection } from '@hooks/usePeerConnection.js';
 import { useTurnManager } from '@hooks/useTurnManager.js';
@@ -17,6 +19,7 @@ export default function GameView() {
   const navigate = useNavigate();
   const {
     state,
+    dispatch,
     isHost,
     playerAttack,
     playerUseAbility,
@@ -26,7 +29,7 @@ export default function GameView() {
     endPlayerTurn,
     activePlayerId,
   } = useGameEngine();
-  const { myPeerId } = usePeerConnection();
+  const { myPeerId, status: networkStatus } = usePeerConnection();
   const { turnPhase, round } = useTurnManager();
 
   const { blueprint, players, boss, narrativeLog, floraState, placedTraps, gameOverResult, isEvolving } = state;
@@ -67,12 +70,12 @@ export default function GameView() {
   }
 
   if (state.phase === GameState.GAME_OVER && gameOverResult) {
-    const isVictory = gameOverResult.winner === 'players';
     return (
-      <EncounterSplash
-        type={isVictory ? 'VICTORY' : 'DEFEAT'}
-        subtitle={isVictory ? blueprint.narrative?.victoryText : blueprint.narrative?.defeatText}
-        visible={true}
+      <GameOver
+        result={gameOverResult}
+        players={players}
+        round={round}
+        blueprint={blueprint}
       />
     );
   }
@@ -143,11 +146,20 @@ export default function GameView() {
       {/* Evolution splash */}
       {isEvolving && (
         <EncounterSplash
-          type="EVOLUTION"
+          type="evolution"
+          title="Evolution!"
           subtitle={`${boss?.name} evolves to Stage ${(boss?.currentStage || 0) + 1}!`}
           visible={isEvolving}
+          onComplete={() => dispatch({ type: 'CLEAR_EVOLVING' })}
         />
       )}
+
+      {/* Disconnect overlay — only for non-host players */}
+      <DisconnectOverlay
+        networkStatus={networkStatus}
+        isHost={isHost}
+        gamePhase={state.phase}
+      />
     </div>
   );
 }

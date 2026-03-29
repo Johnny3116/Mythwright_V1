@@ -8,6 +8,7 @@ import { ZoneMap } from '@views/game/ZoneMap.jsx';
 import { NarratorFeed } from '@views/game/NarratorFeed.jsx';
 import { TurnTracker } from '@views/game/TurnTracker.jsx';
 import { EncounterSplash } from '@components/EncounterSplash.jsx';
+import { GameOver } from '@views/game/GameOver.jsx';
 import { useGameEngine } from '@hooks/useGameEngine.js';
 import { useGameContext } from '@context/GameContext.jsx';
 import { TurnPhase, GameState, ActionTypes } from '@engine/GameEngine.js';
@@ -120,12 +121,12 @@ export default function HostView() {
   }
 
   if (state.phase === GameState.GAME_OVER && gameOverResult) {
-    const isVictory = gameOverResult.winner === 'players';
     return (
-      <EncounterSplash
-        type={isVictory ? 'VICTORY' : 'DEFEAT'}
-        subtitle={isVictory ? blueprint.narrative?.victoryText : blueprint.narrative?.defeatText}
-        visible={true}
+      <GameOver
+        result={gameOverResult}
+        players={players}
+        round={round}
+        blueprint={blueprint}
       />
     );
   }
@@ -202,9 +203,11 @@ export default function HostView() {
       {/* Evolution splash */}
       {isEvolving && boss && (
         <EncounterSplash
-          type="EVOLUTION"
+          type="evolution"
+          title="Evolution!"
           subtitle={`${boss.name} evolves to Stage ${boss.currentStage + 1}!`}
           visible={isEvolving}
+          onComplete={() => dispatch({ type: 'CLEAR_EVOLVING' })}
         />
       )}
     </div>

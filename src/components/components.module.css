@@ -1102,7 +1102,10 @@
    ============================================================ */
 
 .floatingDamage {
-  position: absolute;
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
   pointer-events: none;
   z-index: var(--z-toast);
   animation: floatUp 1.5s ease forwards;
@@ -1188,3 +1191,133 @@
   max-width: 480px;
   line-height: 1.5;
 }
+
+/* ============================================================
+   DisconnectOverlay
+   ============================================================ */
+
+.disconnectOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal) + 200);
+  background: rgba(10, 10, 15, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.disconnectBox {
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-danger);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-10) var(--space-12);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-glow-red), var(--shadow-lg);
+}
+
+.disconnectIcon { font-size: 3rem; }
+
+.disconnectTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--accent-danger);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.disconnectMsg {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.disconnectActions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.disconnectBtn {
+  padding: var(--space-3) var(--space-6);
+  background: var(--accent-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.disconnectBtn:hover { background: #d45743; }
+
+/* ============================================================
+   ToastContainer
+   ============================================================ */
+
+.toastContainer {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 360px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-left-width: 4px;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  animation: slideUp 0.25s ease;
+  pointer-events: auto;
+}
+
+.toast--info    { border-left-color: var(--accent-info); }
+.toast--success { border-left-color: var(--accent-success); }
+.toast--error   { border-left-color: var(--accent-danger); }
+.toast--warning { border-left-color: var(--accent-warning); }
+
+.toastIcon {
+  font-size: var(--text-base);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.toastMessage {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.toastClose {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  padding: 0 var(--space-1);
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.toastClose:hover { color: var(--text-primary); }

@@ -18,31 +18,34 @@ const TYPE_ICONS = {
  * Appears with a splashReveal animation and auto-dismisses after 3 seconds.
  *
  * Props:
- *   type       {string}   'encounter' | 'evolution' | 'victory' | 'defeat'.
+ *   type       {string}   'encounter' | 'evolution' | 'victory' | 'defeat' (case-insensitive).
  *   title      {string}   Large heading text.
  *   subtitle   {string}   Secondary description text shown below the title.
- *   isVisible  {boolean}  Controls rendering. When false, nothing is rendered.
+ *   visible    {boolean}  Controls rendering. When false, nothing is rendered.
  *   onComplete {Function} Called after the auto-dismiss delay elapses.
  */
-export function EncounterSplash({ type = 'encounter', title, subtitle, isVisible, onComplete }) {
+export function EncounterSplash({ type = 'encounter', title, subtitle, visible, onComplete }) {
+  // Normalize type to lowercase so callers can pass 'VICTORY', 'victory', etc.
+  const normalizedType = (type || 'encounter').toLowerCase();
+
   // Auto-dismiss after DISMISS_DELAY_MS.
   useEffect(() => {
-    if (!isVisible) return;
+    if (!visible) return;
 
     const timer = setTimeout(() => {
       onComplete?.();
     }, DISMISS_DELAY_MS);
 
     return () => clearTimeout(timer);
-  }, [isVisible, onComplete]);
+  }, [visible, onComplete]);
 
-  if (!isVisible) return null;
+  if (!visible) return null;
 
-  const icon = TYPE_ICONS[type] ?? '⚔️';
+  const icon = TYPE_ICONS[normalizedType] ?? '⚔️';
 
   const overlayClass = [
     styles.encounterSplash,
-    styles[`encounterSplash--${type}`],
+    styles[`encounterSplash--${normalizedType}`],
   ]
     .filter(Boolean)
     .join(' ');
