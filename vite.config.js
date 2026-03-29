@@ -25,6 +25,7 @@ export default defineConfig({
     environmentMatchGlobs: [
       ['tests/engine/**', 'node'],
       ['tests/network/**', 'node'],
+      ['tests/integration/**', 'node'],
     ],
     env: {
       NODE_ENV: 'test',
