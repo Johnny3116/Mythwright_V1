@@ -58,9 +58,15 @@ export async function getNarrative(trigger, gameState, blueprint) {
       return `${gameState.boss?.name || 'The boss'} attacks!`;
     case 'evolution': {
       const stageIndex = gameState.boss?.currentStage || 0;
-      const keys = ['stage1to2', 'stage2to3', 'stage3to4', 'stage4toFinal'];
       const evoNarrative = narrative.bossEvolutionNarrative;
-      return evoNarrative?.[keys[stageIndex - 1]] || `The boss evolves to stage ${stageIndex + 1}!`;
+      // Derive keys from the blueprint's own narrative object so this works
+      // for any number of stages, not just the hardcoded 4-stage Monster Hunt layout.
+      if (evoNarrative) {
+        const keys = Object.keys(evoNarrative);
+        const text = evoNarrative[keys[stageIndex - 1]];
+        if (text) return text;
+      }
+      return `The boss evolves to stage ${stageIndex + 1}!`;
     }
     default:
       return '';

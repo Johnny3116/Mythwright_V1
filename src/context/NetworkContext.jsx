@@ -128,6 +128,13 @@ export function NetworkProvider({ children }) {
     try {
       const { peer, hostConnection } = await joinRoom(roomCode);
 
+      // Register connection-level error handler BEFORE data starts flowing
+      // so errors during late negotiation (e.g. host drops mid-handshake) are
+      // surfaced rather than silently swallowed.
+      hostConnection.on('error', (err) => {
+        dispatch({ type: 'SET_ERROR', payload: err.message || 'Connection to host failed' });
+      });
+
       hostConnection.on('data', (rawData) => {
         try {
           const msg = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;

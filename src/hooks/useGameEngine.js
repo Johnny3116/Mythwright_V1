@@ -3,7 +3,7 @@
  * Provides convenient action dispatchers and derived state selectors.
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useGameContext } from '@context/GameContext.jsx';
 import { useNetworkContext } from '@context/NetworkContext.jsx';
 import { ActionTypes, GameState, TurnPhase, checkWinConditions } from '@engine/GameEngine.js';
@@ -28,13 +28,20 @@ export function useGameEngine() {
     }
   }, [isHost, dispatch, sendAction]);
 
+  const broadcastTimerRef = useRef(null);
+
   /**
    * After any state change (host-side), broadcast new state to all players.
+   * Debounced 50ms so boss multi-attacks batching 4 partial states don't
+   * spray 4 separate snapshots to players in rapid succession.
    */
   useEffect(() => {
-    if (isHost && state.phase !== GameState.LOBBY) {
+    if (!isHost || state.phase === GameState.LOBBY) return;
+    if (broadcastTimerRef.current) clearTimeout(broadcastTimerRef.current);
+    broadcastTimerRef.current = setTimeout(() => {
       broadcastGameState(state);
-    }
+    }, 50);
+    return () => clearTimeout(broadcastTimerRef.current);
   }, [state, isHost, broadcastGameState]);
 
   /**

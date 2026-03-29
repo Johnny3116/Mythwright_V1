@@ -5,7 +5,7 @@
  */
 
 import { resolveCombat } from './CombatResolver.js';
-import { rollD20, rollInRange } from './DiceSystem.js';
+import { rollD20, rollInRange, clearRollHistory } from './DiceSystem.js';
 import { checkEvolutionThreshold, applyEvolution, getEvolutionNarrative } from './EvolutionSystem.js';
 import { initializeTurnOrder, advanceTurn, getActiveEntity } from './TurnManager.js';
 import { applyEffect, tickEffects } from './StatusEffects.js';
@@ -313,6 +313,8 @@ export function gameReducer(state, action) {
     case ActionTypes.START_GAME: {
       const { blueprint } = state;
       if (!blueprint) return state;
+      // Reset dice history so rolls from a previous session don't persist
+      clearRollHistory();
       const playerList = Object.values(state.players);
       const turnState = initializeTurnOrder(playerList.map((p) => p.id));
       const bossState = createBossState(blueprint);
@@ -835,11 +837,39 @@ export function serializeState(state) {
   });
 }
 
+/** Current save format version — must match serializeState's _version. */
+const SAVE_VERSION = '1.0.0';
+
 /**
  * Deserialize a save file string back to game state.
+ * Throws a descriptive Error on version mismatch or missing required fields
+ * so callers can show a user-friendly message instead of silently corrupting state.
  * @param {string} json
  * @returns {object}
  */
 export function deserializeState(json) {
-  return JSON.parse(json);
+  let data;
+  try {
+    data = JSON.parse(json);
+  } catch {
+    throw new Error('Invalid save file: could not parse JSON');
+  }
+
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('Invalid save file: expected a JSON object');
+  }
+
+  if (data._version && data._version !== SAVE_VERSION) {
+    throw new Error(
+      `Save version mismatch: file is v${data._version}, engine expects v${SAVE_VERSION}. Start a new game.`
+    );
+  }
+
+  if (!data.phase || !data.players || !data.boss) {
+    throw new Error(
+      'Invalid save file: missing required fields (phase, players, boss). The file may be corrupt.'
+    );
+  }
+
+  return data;
 }

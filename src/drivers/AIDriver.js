@@ -94,24 +94,35 @@ async function callAI(prompt, config) {
   const endpoint = config.endpoint || 'https://api.anthropic.com/v1/messages';
   const model = config.model || 'claude-haiku-4-5-20251001';
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': config.apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: 256,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-    signal: AbortSignal.timeout(10000),
-  });
+  // AbortSignal.timeout() is not available in all es2020-target browsers.
+  // Use AbortController + setTimeout for broad compatibility.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-  if (!response.ok) throw new Error(`API error: ${response.status}`);
-  const data = await response.json();
-  return data.content?.[0]?.text || '';
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': config.apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 256,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
+    const data = await response.json();
+    return data.content?.[0]?.text || '';
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
 }
 
 function parseActionResponse(text, gameState) {

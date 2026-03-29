@@ -20,10 +20,25 @@ export function createHumanDriver() {
     /**
      * Wait for the host to manually select a boss action.
      * Returns a promise that resolves when triggerManualAction is called.
+     * Accepts an optional AbortSignal so callers can cancel mid-turn (e.g. on
+     * driver swap or component unmount) without leaking the pending Promise.
+     * @param {object} gameState
+     * @param {object} blueprint
+     * @param {AbortSignal} [signal]
      */
-    selectBossAction: async (gameState, blueprint) => {
-      return new Promise(resolve => {
+    selectBossAction: async (gameState, blueprint, signal) => {
+      return new Promise((resolve, reject) => {
+        if (signal?.aborted) {
+          reject(new DOMException('Aborted', 'AbortError'));
+          return;
+        }
         driver._pendingResolve = resolve;
+        if (signal) {
+          signal.addEventListener('abort', () => {
+            driver._pendingResolve = null;
+            reject(new DOMException('Aborted', 'AbortError'));
+          }, { once: true });
+        }
       });
     },
 
@@ -51,6 +66,14 @@ export function createHumanDriver() {
     },
 
     isWaiting: () => driver._pendingResolve !== null,
+
+    /**
+     * Cancel any pending selectBossAction promise and clean up.
+     * Call this when the driver is destroyed or swapped out mid-turn.
+     */
+    destroy: () => {
+      driver._pendingResolve = null;
+    },
   };
 
   return driver;

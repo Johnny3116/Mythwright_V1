@@ -3,16 +3,20 @@ import { ZoneCard } from '@components/ZoneCard.jsx';
 import { Modal } from '@components/Modal.jsx';
 import styles from './game.module.css';
 
-// Auto-layout zones in a rough grid
+// Layout zones using blueprint positions when available, falling back to auto-grid.
 function autoLayoutZones(zones) {
   const positions = {};
   const cols = Math.ceil(Math.sqrt(zones.length));
   const padX = 120, padY = 120, startX = 80, startY = 80;
   zones.forEach((zone, i) => {
-    positions[zone.id] = {
-      x: startX + (i % cols) * padX,
-      y: startY + Math.floor(i / cols) * padY,
-    };
+    if (zone.position?.x !== undefined && zone.position?.y !== undefined) {
+      positions[zone.id] = { x: zone.position.x, y: zone.position.y };
+    } else {
+      positions[zone.id] = {
+        x: startX + (i % cols) * padX,
+        y: startY + Math.floor(i / cols) * padY,
+      };
+    }
   });
   return positions;
 }
@@ -29,6 +33,10 @@ function getZoneIcon(zone, boss, players, floraState, placedTraps) {
 export function ZoneMap({ zones = [], players = {}, boss = null, floraState = {}, placedTraps = [] }) {
   const [selectedZone, setSelectedZone] = useState(null);
   const positions = useMemo(() => autoLayoutZones(zones), [zones]);
+  const popupStyle = useMemo(() => ({
+    position: 'fixed', top: '50%', left: '50%',
+    transform: 'translate(-50%, -50%)', zIndex: 300,
+  }), []);
 
   if (!zones.length) {
     return <div className={styles.zoneMap} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>No zones loaded</div>;
@@ -96,7 +104,7 @@ export function ZoneMap({ zones = [], players = {}, boss = null, floraState = {}
       </div>
 
       {selectedZone && (
-        <div className={styles.zonePopup} style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 300 }}>
+        <div className={styles.zonePopup} style={popupStyle}>
           <ZoneCard
             zone={selectedZone}
             onClose={() => setSelectedZone(null)}

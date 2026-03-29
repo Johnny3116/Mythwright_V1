@@ -9,9 +9,9 @@ import { getActiveEntity } from '@engine/TurnManager.js';
 
 export function useTurnManager() {
   const { state, dispatch } = useGameContext();
-  const { turnState, turnPhase, round, players } = state;
+  const { turnState, turnPhase, round, players, boss } = state;
 
-  const activeEntity = turnState ? getActiveEntity(turnState) : null;
+  const activeEntity = turnState ? getActiveEntity(turnState, boss?.id) : null;
   const currentPlayerId = turnPhase === TurnPhase.PLAYER_TURN ? activeEntity : null;
   const currentPlayer = currentPlayerId ? players[currentPlayerId] : null;
 
