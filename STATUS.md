@@ -100,18 +100,17 @@ Polish:
 
 ### Phase 10: Spatial Gameplay & Action System
 
-New engine module and full spatial gameplay layer:
+- New **SpatialSystem** engine module — zone mob init, boss movement, boss hunt resolution, player search/heal/flee, mob combat
+- **4 new ActionTypes**: `BOSS_MOVE`, `PLAYER_HEAL`, `PLAYER_SEARCH`, `PLAYER_FLEE`
+- Zone state tracking with mob HP/alive/cleared per zone
+- Boss movement: moves to ANY zone, hunts local wildlife for power-ups (HP/damage/evolution boost)
+- Boss visibility system — hidden until searched or same zone; `searchRevealed` clears on boss move
+- 7-action context-aware ActionPanel: Move, Attack, Search, Heal, Set Trap, Ability, Flee, End Turn
+- ZoneMap overhaul: player tokens, boss token (visibility), mob badges, cleared indicators, fog of war, move-mode pulse
+- HostView boss movement before action phase
+- 45 new tests
 
-- **SpatialEngine** (`src/engine/SpatialEngine.js`) — zone-based player positioning, movement validation, fog of war, boss token tracking
-- **4 new ActionTypes** — `MOVE_PLAYER`, `BOSS_MOVE`, `BOSS_HUNT`, `SEARCH_ZONE` added to GameEngine dispatch
-- **Zone state** — each zone tracks present players, mob presence, and boss visibility independently
-- **Boss movement** — boss moves to any zone on its turn (ScriptedDriver wired to spatial decision logic)
-- **Boss mob hunting** — boss kills local wildlife for HP boost, damage boost, and evolution progress
-- **7-action ActionPanel** — Move, Attack, Search Zone, Set Trap, Heal, Use Item, Flee (context-aware enable/disable per turn phase)
-- **ZoneMap overhaul** — player tokens, boss token (visible once searched/encountered), mob indicators, fog-of-war tinting, click-to-move support
-- **45 new tests** in `tests/engine/SpatialEngine.test.js`
-
-**Total: 455 tests passing.**
+**Total: 440 tests passing.**
 
 ---
 
@@ -119,9 +118,9 @@ New engine module and full spatial gameplay layer:
 
 | Suite | Count |
 |---|---|
-| Unit tests | 351 |
+| Unit tests | 336 |
 | Integration tests | 104 |
-| **Total** | **455** |
+| **Total** | **440** |
 
 All tests passing. Build clean (Vite, ~1.3s).
 
