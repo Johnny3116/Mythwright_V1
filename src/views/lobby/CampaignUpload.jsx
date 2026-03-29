@@ -74,7 +74,7 @@ export function CampaignUpload({ onBlueprintLoaded }) {
 
       {errors.length > 0 && (
         <div className={styles.uploadErrors}>
-          {errors.map((e, i) => <div key={i}>{e}</div>)}
+          {errors.map((e) => <div key={e}>{e}</div>)}
         </div>
       )}
 

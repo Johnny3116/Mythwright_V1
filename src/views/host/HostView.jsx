@@ -105,7 +105,7 @@ export default function HostView() {
     } else if (turnPhase === TurnPhase.NEXT_ROUND) {
       addNarrative(`🔄 Round ${(stateRef.current.round || 0) + 1} begins. New turn order in effect.`);
     }
-  }, [turnPhase, blueprint, boss, players, addNarrative]);
+  }, [turnPhase, blueprint, boss, players, state.turnState, state.round, addNarrative]);
 
   const activePlayerId = state.turnState?.order?.[state.turnState?.currentIndex] || (turnPhase === TurnPhase.BOSS_TURN ? 'boss' : null);
 
