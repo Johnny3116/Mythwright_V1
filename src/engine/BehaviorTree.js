@@ -5,6 +5,7 @@
  */
 
 import { rollBetween } from './DiceSystem.js';
+import { selectBossMoveTarget, hasMobsInZone } from './SpatialEngine.js';
 
 /**
  * Select the boss's action for this turn based on stage behavior data and a D20 roll.
@@ -22,9 +23,30 @@ import { rollBetween } from './DiceSystem.js';
  *   narrative: string
  * }}
  */
-export function selectBossAction(bossState, players, currentZoneId, roll, stageData) {
+export function selectBossAction(bossState, players, currentZoneId, roll, stageData, gameState = null) {
   const behavior = stageData.behavior || {};
   const rollVal = roll.natural; // Use natural roll (1-20) for behavior checks
+
+  // Movement: on a very high roll (18-20), boss may move to hunt wildlife or stalk players
+  // Only consider movement if gameState is provided (has blueprint + zoneMobs)
+  if (rollVal >= 18 && gameState?.blueprint) {
+    const hasWildlifeNearby = gameState.blueprint.zones.some(
+      (z) => z.id !== currentZoneId && hasMobsInZone(z.id, gameState)
+    );
+    if (hasWildlifeNearby) {
+      const targetZoneId = selectBossMoveTarget(bossState, gameState, gameState.blueprint, roll);
+      if (targetZoneId && targetZoneId !== currentZoneId) {
+        const targetZone = gameState.blueprint.zones.find((z) => z.id === targetZoneId);
+        return {
+          action: 'move',
+          target: targetZoneId,
+          damage: 0,
+          effects: [],
+          narrative: `${stageData.name} moves toward ${targetZone?.name || targetZoneId}, hunting for prey!`,
+        };
+      }
+    }
+  }
 
   // Check special behaviors in priority order
   // Each chance is a 0-1 probability converted to a 1-20 threshold
@@ -170,7 +192,7 @@ export function selectRetreatZone(stageData) {
  */
 export function evaluateBehaviorTree(bossStage, gameState, roll) {
   const players = Object.values(gameState.players || {}).filter((p) => p.hp > 0);
-  const result = selectBossAction(gameState.boss, players, gameState.boss?.currentZoneId, roll, bossStage);
+  const result = selectBossAction(gameState.boss, players, gameState.boss?.zone ?? gameState.boss?.currentZoneId, roll, bossStage, gameState);
   return { action: result.action, target: result.target, params: { damage: result.damage, effects: result.effects } };
 }
 

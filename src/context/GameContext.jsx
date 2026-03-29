@@ -20,6 +20,8 @@ const stubInitialState = {
   boss: null,
   placedTraps: [],
   floraState: {},
+  zoneMobs: {},
+  searchedZones: [],
   narrativeLog: [],
   lastRoll: null,
   gameOverResult: null,

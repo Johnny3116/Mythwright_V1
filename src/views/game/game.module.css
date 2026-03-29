@@ -262,6 +262,165 @@
   min-width: 200px;
 }
 
+/* ── Spatial / Zone Map enhancements ────────────────────────── */
+
+/* Zone node states */
+.zoneNodeCurrent .zoneNodeCircle {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 12px rgba(99, 176, 255, 0.5);
+}
+
+.zoneNodeMoveable {
+  cursor: pointer;
+}
+
+.zoneNodeMoveable .zoneNodeCircle {
+  border-color: var(--accent-secondary);
+  border-style: dashed;
+  animation: moveableZonePulse 1.5s ease-in-out infinite;
+}
+
+.zoneNodeUnexplored .zoneNodeCircle {
+  opacity: 0.4;
+  filter: grayscale(0.7);
+}
+
+.zoneNodeUnexplored .zoneNodeName {
+  opacity: 0.5;
+}
+
+.zoneNodeWithMobs { border-color: var(--accent-warning); }
+.zoneNodeMobsCleared { border-color: var(--border-color); opacity: 0.7; }
+
+@keyframes moveableZonePulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(212, 168, 67, 0.4); }
+  50%       { box-shadow: 0 0 14px rgba(212, 168, 67, 0.8); }
+}
+
+/* Player tokens stacked in zone */
+.playerTokenStack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playerToken {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Boss token */
+.bossToken {
+  font-size: var(--text-xl);
+  filter: drop-shadow(0 0 4px var(--accent-danger));
+  animation: bossGlow 2s ease-in-out infinite;
+}
+
+@keyframes bossGlow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(199, 74, 56, 0.5)); }
+  50%       { filter: drop-shadow(0 0 10px rgba(199, 74, 56, 0.9)); }
+}
+
+/* Mob indicator */
+.mobIndicator {
+  font-size: var(--text-sm);
+  animation: mobPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes mobPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* Trap badge (corner overlay) */
+.trapBadge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* Status badges below zone name */
+.zoneBadges {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 16px;
+}
+
+.clearedBadge {
+  font-size: 9px;
+  color: var(--accent-success);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dangerBadge {
+  font-size: 9px;
+  color: var(--accent-warning);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.moveHint {
+  font-size: 9px;
+  color: var(--accent-secondary);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  animation: moveHintFade 1.5s ease-in-out infinite;
+}
+
+@keyframes moveHintFade {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
+}
+
+/* ── Action Panel submenu ────────────────────────────────────── */
+.actionWithSubmenu {
+  position: relative;
+}
+
+.actionSubmenu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-3);
+  z-index: 100;
+  min-width: 180px;
+  box-shadow: var(--shadow-lg);
+}
+
+.submenuTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-1);
+}
+
 /* ── Character Sheet ─────────────────────────────────────── */
 .charSheet {
   display: flex;

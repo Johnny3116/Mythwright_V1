@@ -3,10 +3,10 @@
  * Provides convenient action dispatchers and derived state selectors.
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useMemo } from 'react';
 import { useGameContext } from '@context/GameContext.jsx';
 import { useNetworkContext } from '@context/NetworkContext.jsx';
-import { ActionTypes, GameState, TurnPhase, checkWinConditions } from '@engine/GameEngine.js';
+import { ActionTypes, GameState, TurnPhase, checkWinConditions, isBossVisible, getAvailableActions } from '@engine/GameEngine.js';
 import { rollD20, clearRollHistory } from '@engine/DiceSystem.js';
 import { MessageTypes } from '@network/MessageTypes.js';
 import { soundEvents } from '@hooks/useSoundEvents.js';
@@ -172,6 +172,19 @@ export function useGameEngine() {
     dispatchPlayerAction({ type: ActionTypes.PLAYER_MOVE, payload: { playerId, targetZoneId } });
   }, [dispatchPlayerAction]);
 
+  const playerSearch = useCallback((playerId, roll) => {
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_SEARCH, payload: { playerId, roll } });
+  }, [dispatchPlayerAction]);
+
+  const playerHeal = useCallback((healerId, targetId, roll) => {
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_HEAL, payload: { healerId, targetId, roll } });
+  }, [dispatchPlayerAction]);
+
+  const playerFlee = useCallback((playerId, targetZoneId, roll) => {
+    soundEvents.emit('retreat');
+    dispatchPlayerAction({ type: ActionTypes.PLAYER_FLEE, payload: { playerId, targetZoneId, roll } });
+  }, [dispatchPlayerAction]);
+
   const endPlayerTurn = useCallback(() => {
     dispatchPlayerAction({ type: ActionTypes.ADVANCE_PHASE, payload: {} });
   }, [dispatchPlayerAction]);
@@ -192,6 +205,10 @@ export function useGameEngine() {
 
   const bossGrab = useCallback((targetId) => {
     dispatch({ type: ActionTypes.BOSS_GRAB, payload: { targetId } });
+  }, [dispatch]);
+
+  const bossMove = useCallback((targetZoneId) => {
+    dispatch({ type: ActionTypes.BOSS_MOVE, payload: { targetZoneId } });
   }, [dispatch]);
 
   const endBossTurn = useCallback(() => {
@@ -241,6 +258,21 @@ export function useGameEngine() {
     dispatch({ type: ActionTypes.RUN_ENVIRONMENT, payload: {} });
   }, [dispatch]);
 
+  // ── Spatial selectors ─────────────────────────────────────────────────────
+
+  const bossIsVisible = useMemo(
+    () => isBossVisible(state.players, state.boss, state.searchedZones || []),
+    [state.players, state.boss, state.searchedZones]
+  );
+
+  // Per-player available actions (keyed by playerId) — only computed for active player
+  const activePlayerAvailableActions = useMemo(() => {
+    if (!activePlayerId || !blueprint) return null;
+    const player = state.players[activePlayerId];
+    if (!player) return null;
+    return getAvailableActions(player, state, blueprint);
+  }, [activePlayerId, blueprint, state]);
+
   return {
     state,
     dispatch,
@@ -251,6 +283,9 @@ export function useGameEngine() {
     activePlayerId,
     alivePlayers,
     blueprint,
+    // Spatial
+    bossIsVisible,
+    activePlayerAvailableActions,
     // Player actions
     playerAttack,
     playerUseAbility,
@@ -258,12 +293,16 @@ export function useGameEngine() {
     playerRetreat,
     playerSearchFlora,
     playerMove,
+    playerSearch,
+    playerHeal,
+    playerFlee,
     endPlayerTurn,
     // Boss actions
     bossAttack,
     bossAoeAttack,
     bossBurrow,
     bossGrab,
+    bossMove,
     endBossTurn,
     // Lifecycle
     setBlueprint,

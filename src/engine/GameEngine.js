@@ -14,10 +14,22 @@ import { processBossHunt } from './WildlifeSystem.js';
 import { spawnFlora, relocateFlora, searchFlora } from './FloraSystem.js';
 import { resolveRetreatLegacy } from './RetreatSystem.js';
 import { evaluateBehaviorTree } from './BehaviorTree.js';
+import {
+  initializeZoneMobs,
+  isBossVisible,
+  selectBossMoveTarget,
+  resolveBossHuntZone,
+  resolveSearch,
+  resolveHeal,
+  resolveFlee,
+  resolveZoneEncounter,
+  getAdjacentZones,
+} from './SpatialEngine.js';
 import { TurnPhase } from '@utils/constants.js';
 
-// Re-export TurnPhase so existing imports from GameEngine still work.
+// Re-export TurnPhase and spatial helpers so callers can import from one place.
 export { TurnPhase };
+export { isBossVisible, getAdjacentZones, getAvailableActions, hasMobsInZone } from './SpatialEngine.js';
 
 export const GameState = {
   LOBBY: 'LOBBY',
@@ -43,6 +55,9 @@ export const ActionTypes = {
   PLAYER_RETREAT: 'PLAYER_RETREAT',
   PLAYER_SEARCH_FLORA: 'PLAYER_SEARCH_FLORA',
   PLAYER_MOVE: 'PLAYER_MOVE',
+  PLAYER_SEARCH: 'PLAYER_SEARCH',
+  PLAYER_HEAL: 'PLAYER_HEAL',
+  PLAYER_FLEE: 'PLAYER_FLEE',
   PLAYER_END_TURN: 'PLAYER_END_TURN',
 
   // Boss actions
@@ -51,6 +66,7 @@ export const ActionTypes = {
   BOSS_BURROW: 'BOSS_BURROW',
   BOSS_GRAB: 'BOSS_GRAB',
   BOSS_DODGE: 'BOSS_DODGE',
+  BOSS_MOVE: 'BOSS_MOVE',
   BOSS_END_TURN: 'BOSS_END_TURN',
 
   // Environment phase
@@ -106,6 +122,7 @@ function createBossState(blueprint) {
 export function createInitialState(blueprint) {
   const bossState = createBossState(blueprint);
   const floraState = spawnFlora(blueprint.zones, blueprint.systems?.flora?.plants ?? []);
+  const zoneMobs = initializeZoneMobs(blueprint);
 
   return {
     phase: GameState.LOBBY,
@@ -119,6 +136,8 @@ export function createInitialState(blueprint) {
     boss: bossState,
     placedTraps: [],
     floraState,
+    zoneMobs,
+    searchedZones: [],  // zone IDs that have been searched this game
     narrativeLog: [],
     lastRoll: null,
     gameOverResult: null,
@@ -317,6 +336,7 @@ export function gameReducer(state, action) {
       const turnState = initializeTurnOrder(playerList.map((p) => p.id));
       const bossState = createBossState(blueprint);
       const floraState = spawnFlora(blueprint.zones, blueprint.systems?.flora?.plants ?? []);
+      const zoneMobs = initializeZoneMobs(blueprint);
 
       let newState = {
         ...state,
@@ -328,6 +348,8 @@ export function gameReducer(state, action) {
         boss: bossState,
         placedTraps: [],
         floraState,
+        zoneMobs,
+        searchedZones: [],
         narrativeLog: [],
         gameOverResult: null,
         isEvolving: false,
@@ -565,13 +587,77 @@ export function gameReducer(state, action) {
         return addNarrative(state, `${player.name} can't move there — not an adjacent zone.`);
       }
 
-      return {
+      let newState = {
         ...state,
         players: {
           ...state.players,
           [playerId]: { ...player, zone: targetZoneId },
         },
       };
+
+      // Zone encounter: check if mobs are present in the new zone
+      const encounterRoll = rollD20();
+      const encounter = resolveZoneEncounter(player, targetZoneId, state.zoneMobs, blueprint, encounterRoll);
+      if (encounter.narrative) {
+        newState = addNarrative(newState, encounter.narrative);
+      }
+      if (encounter.attacked && encounter.damage > 0) {
+        newState = applyDamageToPlayer(newState, playerId, encounter.damage);
+      }
+
+      return addNarrative(newState, `${player.name} moves to ${blueprint.zones.find(z => z.id === targetZoneId)?.name || targetZoneId}.`);
+    }
+
+    case ActionTypes.PLAYER_SEARCH: {
+      const { playerId, roll } = action.payload;
+      const player = state.players[playerId];
+      const { blueprint } = state;
+      if (!player || !blueprint) return state;
+
+      const searchResult = resolveSearch(player, player.zone, state, roll);
+      let newState = {
+        ...state,
+        searchedZones: searchResult.newSearchedZones,
+      };
+      return addNarrative(newState, searchResult.narrative);
+    }
+
+    case ActionTypes.PLAYER_HEAL: {
+      const { healerId, targetId, roll } = action.payload;
+      const healer = state.players[healerId];
+      const target = state.players[targetId || healerId];
+      const { blueprint } = state;
+      if (!healer || !target || !blueprint) return state;
+
+      const { healAmount, narrative } = resolveHeal(healer, target, roll, blueprint);
+      let newState = applyHealToPlayer(state, target.id, healAmount);
+      return addNarrative(newState, narrative);
+    }
+
+    case ActionTypes.PLAYER_FLEE: {
+      const { playerId, targetZoneId, roll } = action.payload;
+      const player = state.players[playerId];
+      const { blueprint } = state;
+      if (!player || !blueprint) return state;
+
+      const fleeResult = resolveFlee(player, targetZoneId, state, roll);
+      let newState = { ...state };
+
+      if (fleeResult.success) {
+        newState = {
+          ...newState,
+          players: {
+            ...newState.players,
+            [playerId]: { ...newState.players[playerId], zone: fleeResult.newZoneId },
+          },
+        };
+        // Apply opportunity attack damage if any
+        if (fleeResult.opportunityAttack && fleeResult.opportunityDamage > 0) {
+          newState = applyDamageToPlayer(newState, playerId, fleeResult.opportunityDamage);
+        }
+      }
+
+      return addNarrative(newState, fleeResult.narrative);
     }
 
     case ActionTypes.BOSS_ATTACK: {
@@ -670,6 +756,65 @@ export function gameReducer(state, action) {
         boss: { ...state.boss, hasActedThisTurn: true },
       };
       return addNarrative(newState, `${state.boss.name} evades incoming attacks!`);
+    }
+
+    case ActionTypes.BOSS_MOVE: {
+      const { targetZoneId, huntRoll } = action.payload;
+      const { boss, blueprint } = state;
+      if (!boss || !blueprint) return state;
+
+      const targetZone = blueprint.zones.find(z => z.id === targetZoneId);
+      if (!targetZone) return state;
+
+      // Move boss to new zone
+      let newState = {
+        ...state,
+        boss: { ...boss, zone: targetZoneId, hasActedThisTurn: true },
+      };
+
+      const fromZone = blueprint.zones.find(z => z.id === boss.zone);
+      const movementNarrative = `${boss.name} moves from ${fromZone?.name || boss.zone} to ${targetZone.name}.`;
+      newState = addNarrative(newState, movementNarrative);
+
+      // Hunt wildlife in new zone
+      const roll = huntRoll || rollD20();
+      const huntResult = resolveBossHuntZone(targetZoneId, newState.zoneMobs, blueprint, roll);
+
+      if (huntResult.hunted) {
+        newState = { ...newState, zoneMobs: huntResult.updatedZoneMobs };
+        newState = addNarrative(newState, huntResult.narrative);
+
+        // Apply buffs
+        for (const buff of huntResult.buffs) {
+          if (buff.type === 'hpRestore') {
+            const newHp = Math.min(newState.boss.maxHp, newState.boss.hp + buff.value);
+            newState = { ...newState, boss: { ...newState.boss, hp: newHp } };
+          }
+          if (buff.type === 'damageBoost') {
+            const [min, max] = newState.boss.damage;
+            newState = {
+              ...newState,
+              boss: {
+                ...newState.boss,
+                damage: [min + buff.value, max + buff.value],
+                _damageTempBoostTurns: buff.duration || 2,
+              },
+            };
+          }
+          if (buff.type === 'defenseBoost') {
+            newState = {
+              ...newState,
+              boss: {
+                ...newState.boss,
+                defense: newState.boss.defense + buff.value,
+                _defenseTempBoostTurns: buff.duration || 2,
+              },
+            };
+          }
+        }
+      }
+
+      return newState;
     }
 
     case ActionTypes.BOSS_END_TURN: {
@@ -833,6 +978,8 @@ export function gameReducer(state, action) {
         boss: null,
         placedTraps: [],
         floraState: {},
+        zoneMobs: {},
+        searchedZones: [],
         narrativeLog: [],
         lastRoll: null,
         gameOverResult: null,

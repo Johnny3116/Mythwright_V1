@@ -28,13 +28,19 @@ export default function GameView() {
     playerSetTrap,
     playerRetreat,
     playerSearchFlora,
+    playerMove,
+    playerSearch,
+    playerHeal,
+    playerFlee,
     endPlayerTurn,
     activePlayerId,
+    bossIsVisible,
+    activePlayerAvailableActions,
   } = useGameEngine();
   const { myPeerId } = usePeerConnection();
   const { turnPhase, round } = useTurnManager();
 
-  const { blueprint, players, boss, narrativeLog, floraState, placedTraps, gameOverResult, isEvolving } = state;
+  const { blueprint, players, boss, narrativeLog, floraState, placedTraps, zoneMobs, searchedZones, gameOverResult, isEvolving } = state;
   const myPlayer = players[myPeerId];
   const isMyTurn = activePlayerId === myPeerId;
 
@@ -134,6 +140,12 @@ export default function GameView() {
             boss={boss}
             floraState={floraState}
             placedTraps={placedTraps}
+            zoneMobs={zoneMobs || {}}
+            searchedZones={searchedZones || []}
+            myPlayerId={myPeerId}
+            isMyTurn={isMyTurn}
+            bossVisible={bossIsVisible}
+            onMove={isMyTurn ? (zoneId) => playerMove(myPeerId, zoneId) : null}
           />
         </div>
       </div>
@@ -144,11 +156,16 @@ export default function GameView() {
           player={myPlayer}
           isMyTurn={isMyTurn}
           blueprint={blueprint}
+          availableActions={activePlayerAvailableActions}
           onAttack={(roll) => playerAttack(myPeerId, roll)}
           onUseAbility={(roll) => playerUseAbility(myPeerId, null, roll)}
           onSetTrap={(trapTypeId, roll) => playerSetTrap(myPeerId, trapTypeId, roll)}
           onRetreat={(roll) => playerRetreat(myPeerId, roll)}
           onSearchFlora={(roll) => playerSearchFlora(myPeerId, roll)}
+          onMove={(zoneId) => playerMove(myPeerId, zoneId)}
+          onSearch={(roll) => playerSearch(myPeerId, roll)}
+          onHeal={(targetId, roll) => playerHeal(myPeerId, targetId, roll)}
+          onFlee={(zoneId, roll) => playerFlee(myPeerId, zoneId, roll)}
           onEndTurn={endPlayerTurn}
         />
       </div>

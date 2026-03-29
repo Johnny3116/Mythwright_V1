@@ -1,5 +1,34 @@
 # Mythwright Changelog
 
+## [Phase 10] - 2026-03-29
+
+### Completed
+- **SpatialEngine.js** (new) — Pure spatial game logic: zone adjacency, boss visibility, action availability, mob state, boss hunt resolution, zone encounters, search/heal/flee mechanics (60 new tests)
+- **Zone-based player positioning** — players and boss always have `currentZone` in state; `zoneMobs` tracks per-zone wildlife cleared/present status initialized from blueprint
+- **Boss Movement** — new `BOSS_MOVE` action: boss teleports to any zone, hunts wildlife on arrival, gains HP/damage/defense buffs from kills, clears zone mobs, generates narrative. BehaviorTree triggers move on roll 18-20 when wildlife exists elsewhere
+- **ScriptedDriver** — `bossActionToDispatch` handles new `move`/`hunt_wildlife` actions → dispatches `BOSS_MOVE`
+- **Context-aware ActionPanel** — full rebuild: Move (zone selector submenu), Attack (disabled if no targets in zone), Search (zone reveal), Heal (self or zone-ally selector), Set Trap (zone-aware), Search Flora, Ability, Flee (adjacent zone selector with OA roll), End Turn. Submenus anchor above button row
+- **Enhanced ZoneMap** — multi-player token stack (colored per player), boss token with glow animation (only if `bossVisible`), mob indicators (present/cleared), fog of war (unexplored zones dimmed), current player zone highlighted, adjacent zones pulse as clickable move targets, cleared/danger badges below zone names
+- **Fog of war** — zones are "explored" if any player is there, has been searched, or boss is visible there. Unexplored zones render at 40% opacity with grayscale filter
+- **Click-to-move** — clicking an adjacent pulsing zone during your turn moves your player directly (no button needed)
+- **Boss visibility system** — `isBossVisible()` in SpatialEngine; boss shown on map only when any player is in boss's zone OR zone has been searched; wired to `useGameEngine.bossIsVisible` selector
+- **Zone encounter on entry** — when player moves to zone with active mobs, wildlife rolls to attack (blueprint attackChance range)
+- **GameContext stubInitialState** — updated to include `zoneMobs: {}` and `searchedZones: []` fields
+- **game.module.css** — new classes: zoneNodeCurrent, zoneNodeMoveable (pulsing dashed border), zoneNodeUnexplored, playerTokenStack, playerToken, bossToken (glow), mobIndicator, trapBadge, zoneBadges, clearedBadge, dangerBadge, moveHint, actionWithSubmenu, actionSubmenu, submenuTitle
+- **GMDrivers.test.js** — updated VALID_BOSS_ACTIONS to include 'move' and 'hunt_wildlife'
+- **Test result: 455 tests, 0 failures** (395 original + 60 new SpatialEngine tests)
+
+### Known Issues
+- Boss movement is scripted-driver-only (roll 18-20 triggers). Human driver host can dispatch BOSS_MOVE manually from HostView GMControls (future enhancement: expose in UI)
+- AI driver fallback (scripted) now includes boss movement; AI driver with API key does not yet explicitly request movement — it uses the scripted behavior tree output which includes movement
+
+### Deviations from Spec
+- "Use Item" action not yet implemented (InventoryManager not wired to UI); Set Trap covers the main inventory use case for now
+- Boss visibility: `bossVisible` is computed at render time rather than stored in state — this is simpler and avoids stale state issues
+
+### Next Steps
+- Phase 11 candidates: HostView boss movement controls, inventory/loot system, zone encounter combat (mob HP tracking), AI driver movement awareness
+
 ## [Phase 8] - 2026-03-28
 
 ### Completed

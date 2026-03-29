@@ -36,7 +36,7 @@ const rawBlueprint = JSON.parse(
 );
 const { data: blueprint } = loadBlueprint(rawBlueprint);
 
-const VALID_BOSS_ACTIONS = new Set(['attack', 'aoe_attack', 'multi_attack', 'burrow', 'grab', 'dodge', 'idle']);
+const VALID_BOSS_ACTIONS = new Set(['attack', 'aoe_attack', 'multi_attack', 'burrow', 'grab', 'dodge', 'idle', 'move', 'hunt_wildlife']);
 
 // Build a minimal game state for a given boss stage
 function buildStateForStage(stageIndex, players = ['p1', 'p2']) {

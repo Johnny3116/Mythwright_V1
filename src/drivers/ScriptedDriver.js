@@ -89,6 +89,11 @@ export function bossActionToDispatch(bossAction, roll) {
       return { type: ActionTypes.BOSS_GRAB, payload: { targetId: target } };
     case 'dodge':
       return { type: ActionTypes.BOSS_DODGE, payload: {} };
+    case 'move':
+      return { type: ActionTypes.BOSS_MOVE, payload: { targetZoneId: target, huntRoll: roll } };
+    case 'hunt_wildlife':
+      // Boss stays in current zone and hunts — handled by BOSS_MOVE with current zone
+      return { type: ActionTypes.BOSS_MOVE, payload: { targetZoneId: target, huntRoll: roll } };
     default:
       return { type: ActionTypes.BOSS_END_TURN, payload: {} };
   }
