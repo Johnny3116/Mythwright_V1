@@ -1,6 +1,6 @@
 # Mythwright V1 — Project Status
 
-> Last updated: 2026-03-29
+> Last updated: 2026-04-01
 
 ## Overview
 
@@ -112,6 +112,20 @@ Polish:
 
 **Total: 440 tests passing.**
 
+### QA Playtest Fixes (2026-04-01)
+
+Applied targeted fixes from structured playtest report across 10 files:
+
+- **Bug #1**: ActionButton — `children` prop with `displayLabel` fallback, PropTypes validation added
+- **Bug #2**: useDiceRoll — accepts `{ onRollEnd }` options parameter, returns `result` alias for DiceRoller compatibility
+- **Bug #3**: GameState/ActionTypes consolidated into `@utils/constants.js` as single source of truth (GameEngine.js now imports instead of defining inline)
+- **Bug #5**: CombatResolver — roll normalization accepts both raw numbers and `{ natural, modified }` objects
+- **Bug #6**: PeerManager — 5-second connection timeouts added to `createRoom()` and `joinRoom()`
+- PropTypes added to DiceRoller and EncounterSplash components
+- `prop-types` added as runtime dependency
+
+**455 tests passing across 20 test files. Clean production build.**
+
 ---
 
 ## Test Status
@@ -120,14 +134,14 @@ Polish:
 |---|---|
 | Unit tests | 336 |
 | Integration tests | 104 |
-| **Total** | **440** |
+| Spatial engine tests | 15 |
+| **Total** | **455** |
 
-All tests passing. Build clean (Vite, ~1.3s).
+All tests passing. Build clean (Vite, ~2.6s, 126 modules).
 
 ---
 
 ## Dev Server
-
 ```bash
 npm run dev -- --host   # Vite on port 5173/5174
 ```
