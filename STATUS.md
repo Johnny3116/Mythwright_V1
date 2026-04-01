@@ -1,6 +1,6 @@
 # Mythwright V1 — Project Status
 
-> Last updated: 2026-04-01
+> Last updated: 2026-04-01 (rev 2)
 
 ## Overview
 
@@ -142,9 +142,24 @@ All tests passing. Build clean (Vite, ~2.6s, 126 modules).
 ---
 
 ## Dev Server
+
+### Quick Start (recommended)
+
+```powershell
+.\scripts\Start-Mythwright.ps1
+```
+
+Launches the Vite dev server in a hidden background process, waits for it to be ready, then opens `http://localhost:5173` in the default browser automatically.
+
+### Manual
+
 ```bash
 npm run dev -- --host   # Vite on port 5173/5174
 ```
+
+### Server Logging
+
+The startup script writes a timestamped log to `scripts/server logs/server_<timestamp>.log` on every run. Logs capture all Vite stdout/stderr — useful for diagnosing startup errors or crashes. Log files are gitignored and stay local only.
 
 ## Repository
 
