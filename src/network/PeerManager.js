@@ -467,8 +467,12 @@ export function createRoom() {
   const peerId = toPeerId(roomCode);
   return new Promise((resolve, reject) => {
     const peer = new Peer(peerId, { debug: 0 });
-    peer.on('open', () => resolve({ peer, roomCode }));
-    peer.on('error', reject);
+    const timeout = setTimeout(() => {
+      peer.destroy();
+      reject(new Error('Room creation timed out'));
+    }, 5000);
+    peer.on('open', () => { clearTimeout(timeout); resolve({ peer, roomCode }); });
+    peer.on('error', (err) => { clearTimeout(timeout); reject(err); });
   });
 }
 
@@ -482,12 +486,16 @@ export function joinRoom(code) {
   const roomCode = code.toUpperCase();
   return new Promise((resolve, reject) => {
     const peer = new Peer({ debug: 0 });
+    const timeout = setTimeout(() => {
+      peer.destroy();
+      reject(new Error('Join room timed out'));
+    }, 5000);
     peer.on('open', () => {
       const hostConnection = peer.connect(toPeerId(roomCode), { reliable: true });
-      hostConnection.on('open', () => resolve({ peer, hostConnection }));
-      hostConnection.on('error', reject);
+      hostConnection.on('open', () => { clearTimeout(timeout); resolve({ peer, hostConnection }); });
+      hostConnection.on('error', (err) => { clearTimeout(timeout); reject(err); });
     });
-    peer.on('error', reject);
+    peer.on('error', (err) => { clearTimeout(timeout); reject(err); });
   });
 }
 

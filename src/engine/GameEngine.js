@@ -25,72 +25,11 @@ import {
   resolveZoneEncounter,
   getAdjacentZones,
 } from './SpatialEngine.js';
-import { TurnPhase } from '@utils/constants.js';
+import { GameState, TurnPhase, ActionTypes } from '@utils/constants.js';
 
-// Re-export TurnPhase and spatial helpers so callers can import from one place.
-export { TurnPhase };
+// Re-export so callers can import from one place.
+export { GameState, TurnPhase, ActionTypes };
 export { isBossVisible, getAdjacentZones, getAvailableActions, hasMobsInZone } from './SpatialEngine.js';
-
-export const GameState = {
-  LOBBY: 'LOBBY',
-  CHARACTER_SELECT: 'CHARACTER_SELECT',
-  GAME_SETUP: 'GAME_SETUP',
-  TURN_LOOP: 'TURN_LOOP',
-  GAME_OVER: 'GAME_OVER',
-};
-
-export const ActionTypes = {
-  // Lobby / setup
-  SET_BLUEPRINT: 'SET_BLUEPRINT',
-  SET_GM_MODE: 'SET_GM_MODE',
-  START_CHARACTER_SELECT: 'START_CHARACTER_SELECT',
-  PLAYER_REGISTER: 'PLAYER_REGISTER',
-  PLAYER_SELECT_CLASS: 'PLAYER_SELECT_CLASS',
-  START_GAME: 'START_GAME',
-
-  // In-game player actions
-  PLAYER_ATTACK: 'PLAYER_ATTACK',
-  PLAYER_USE_ABILITY: 'PLAYER_USE_ABILITY',
-  PLAYER_SET_TRAP: 'PLAYER_SET_TRAP',
-  PLAYER_RETREAT: 'PLAYER_RETREAT',
-  PLAYER_SEARCH_FLORA: 'PLAYER_SEARCH_FLORA',
-  PLAYER_MOVE: 'PLAYER_MOVE',
-  PLAYER_SEARCH: 'PLAYER_SEARCH',
-  PLAYER_HEAL: 'PLAYER_HEAL',
-  PLAYER_FLEE: 'PLAYER_FLEE',
-  PLAYER_END_TURN: 'PLAYER_END_TURN',
-
-  // Boss actions
-  BOSS_ATTACK: 'BOSS_ATTACK',
-  BOSS_AOE_ATTACK: 'BOSS_AOE_ATTACK',
-  BOSS_BURROW: 'BOSS_BURROW',
-  BOSS_GRAB: 'BOSS_GRAB',
-  BOSS_DODGE: 'BOSS_DODGE',
-  BOSS_MOVE: 'BOSS_MOVE',
-  BOSS_END_TURN: 'BOSS_END_TURN',
-
-  // Environment phase
-  RUN_ENVIRONMENT: 'RUN_ENVIRONMENT',
-
-  // Phase / round control
-  ADVANCE_PHASE: 'ADVANCE_PHASE',
-
-  // Win/Lose
-  SET_GAME_OVER: 'SET_GAME_OVER',
-
-  // Save/Load
-  LOAD_STATE: 'LOAD_STATE',
-
-  // Narrator
-  ADD_NARRATIVE: 'ADD_NARRATIVE',
-
-  // Dice animation
-  SET_ROLL_RESULT: 'SET_ROLL_RESULT',
-
-  // UI state
-  CLEAR_EVOLVING: 'CLEAR_EVOLVING',
-  RESET_TO_LOBBY: 'RESET_TO_LOBBY',
-};
 
 /**
  * Create initial boss state from blueprint.

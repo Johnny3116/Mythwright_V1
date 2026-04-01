@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useDiceRoll } from '@hooks/useDiceRoll';
 import styles from './components.module.css';
 
@@ -145,3 +146,9 @@ export function DiceRoller({ onRollComplete, modifier = 0, disabled = false }) {
     </div>
   );
 }
+
+DiceRoller.propTypes = {
+  onRollComplete: PropTypes.func,
+  modifier: PropTypes.number,
+  disabled: PropTypes.bool,
+};

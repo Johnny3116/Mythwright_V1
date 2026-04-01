@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import styles from './components.module.css';
 
 /** Auto-dismiss delay in milliseconds. Only for non-terminal splashes. */
@@ -129,3 +130,18 @@ export function EncounterSplash({
     </div>
   );
 }
+
+EncounterSplash.propTypes = {
+  type: PropTypes.oneOf(['encounter', 'evolution', 'victory', 'defeat']),
+  title: PropTypes.string,
+  subtitle: PropTypes.string,
+  visible: PropTypes.bool,
+  isVisible: PropTypes.bool,
+  onComplete: PropTypes.func,
+  onReturnToLobby: PropTypes.func,
+  stats: PropTypes.shape({
+    rounds: PropTypes.number,
+    totalDamage: PropTypes.number,
+    mvp: PropTypes.string,
+  }),
+};

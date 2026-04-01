@@ -49,8 +49,13 @@ export function applyDefense(rawDamage, defense, shieldReduction = 0) {
 export function resolveCombat(attacker, defender, roll, settings) {
   const { hitRanges, critMultiplier = 2.0, lethalStrikeBonus = 0 } = settings;
 
-  // Use the natural roll (unmodified) for hit range lookup unless otherwise noted
-  const rollValue = roll.modified !== undefined ? roll.modified : roll.natural;
+  // Normalize: accept a plain number or a { natural, modified, modifier } object.
+  const normalizedRoll = typeof roll === 'number'
+    ? { natural: roll, modified: roll, modifier: 0 }
+    : roll;
+
+  // Use the modified roll for hit range lookup, falling back to natural.
+  const rollValue = normalizedRoll.modified !== undefined ? normalizedRoll.modified : normalizedRoll.natural;
   const rangeKey = rollInRange(rollValue, hitRanges);
 
   const isMiss = rangeKey === 'miss' || rangeKey === null;

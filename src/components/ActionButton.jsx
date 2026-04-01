@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import styles from './components.module.css';
 
 /**
@@ -46,8 +47,18 @@ export function ActionButton({
       ) : (
         icon && <span className={styles.actionButtonIcon} aria-hidden="true">{icon}</span>
       )}
-      {label && <span>{label}</span>}
-      {children}
+      {(label || children) && <span>{label || children}</span>}
     </button>
   );
 }
+
+ActionButton.propTypes = {
+  label: PropTypes.string,
+  icon: PropTypes.string,
+  onClick: PropTypes.func,
+  disabled: PropTypes.bool,
+  variant: PropTypes.oneOf(['default', 'primary', 'danger', 'success', 'ghost', 'loading']),
+  title: PropTypes.string,
+  isLoading: PropTypes.bool,
+  children: PropTypes.node,
+};

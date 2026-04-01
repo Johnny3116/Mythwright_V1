@@ -11,7 +11,8 @@ const ANIMATION_DURATION_MS = 1500;
  * Hook for triggering D20 rolls with animation state.
  * @returns {{ isRolling: boolean, lastRoll: object|null, roll: Function }}
  */
-export function useDiceRoll() {
+export function useDiceRoll(options = {}) {
+  const { onRollEnd } = options;
   const [isRolling, setIsRolling] = useState(false);
   const [lastRoll, setLastRoll] = useState(null);
   const [animationRolls, setAnimationRolls] = useState([]);
@@ -41,6 +42,7 @@ export function useDiceRoll() {
         setLastRoll(result);
         setIsRolling(false);
         setAnimationRolls([]);
+        onRollEnd?.(result);
         resolve(result);
       }, ANIMATION_DURATION_MS);
     });
@@ -60,6 +62,7 @@ export function useDiceRoll() {
   return {
     isRolling,
     lastRoll,
+    result: lastRoll,  // alias for DiceRoller component compatibility
     animationRolls,
     roll,
     rollImmediate,
