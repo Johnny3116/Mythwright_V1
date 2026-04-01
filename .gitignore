@@ -33,3 +33,7 @@ lerna-debug.log*
 
 # Testing
 coverage/
+
+# Dev server logs
+scripts/server logs/
+!scripts/server logs/.gitkeep
