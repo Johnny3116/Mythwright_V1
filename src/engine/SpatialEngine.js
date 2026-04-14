@@ -414,7 +414,8 @@ export function resolveSearch(player, zoneId, state, roll) {
 
   let narrative = '';
   if (roll.natural <= 5) {
-    narrative = `${player.name} searches but finds nothing of note.${wildlifeText}`;
+    // Failed search — no intel. Don't reveal wildlife or boss position.
+    narrative = `${player.name} searches but finds nothing of note.`;
   } else if (roll.natural <= 14) {
     narrative = `${player.name} searches the area carefully.${wildlifeText}${bossFoundNarrative}`;
   } else {

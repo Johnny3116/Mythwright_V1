@@ -327,7 +327,7 @@ export function gameReducer(state, action) {
           },
         };
       } else {
-        // Reset consecutive hits on miss
+        // Reset consecutive hits on miss or fumble
         newState = {
           ...newState,
           players: {
@@ -335,9 +335,44 @@ export function gameReducer(state, action) {
             [playerId]: { ...newState.players[playerId], consecutiveHits: 0 },
           },
         };
+        // Fumble: apply disarmed effect for 1 turn
+        if (result.fumble) {
+          newState = {
+            ...newState,
+            players: {
+              ...newState.players,
+              [playerId]: applyEffect(newState.players[playerId], {
+                type: 'disarmed',
+                duration: 1,
+                source: 'fumble',
+              }),
+            },
+          };
+        }
       }
 
-      newState = addNarrative(newState, `${player.name} attacks! ${result.narrative}`);
+      // Tier-aware attack narrative
+      let attackNarrative;
+      switch (result.tier) {
+        case 'critFail':
+          attackNarrative = `${player.name} fumbles! The weapon slips from their grasp — disarmed for 1 turn.`;
+          break;
+        case 'miss':
+          attackNarrative = `${player.name} swings at ${boss.name} — the attack misses completely!`;
+          break;
+        case 'glancing':
+          attackNarrative = `${player.name} grazes ${boss.name} — glancing hit for ${result.damageDealt} damage.`;
+          break;
+        case 'hit':
+          attackNarrative = `${player.name} strikes ${boss.name}! ${result.damageDealt} damage dealt.`;
+          break;
+        case 'critHit':
+          attackNarrative = `CRITICAL HIT! ${player.name} unleashes devastating force on ${boss.name} — ${result.damageDealt} damage!`;
+          break;
+        default:
+          attackNarrative = `${player.name} attacks! ${result.narrative}`;
+      }
+      newState = addNarrative(newState, attackNarrative);
 
       // Check evolution
       const evo = checkEvolutionThreshold(newState.boss, blueprint.enemies.boss.stages);

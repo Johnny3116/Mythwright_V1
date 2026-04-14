@@ -57,7 +57,7 @@ ActionButton.propTypes = {
   icon: PropTypes.string,
   onClick: PropTypes.func,
   disabled: PropTypes.bool,
-  variant: PropTypes.oneOf(['default', 'primary', 'danger', 'success', 'ghost', 'loading']),
+  variant: PropTypes.oneOf(['default', 'primary', 'danger', 'success', 'ghost', 'loading', 'warning']),
   title: PropTypes.string,
   isLoading: PropTypes.bool,
   children: PropTypes.node,

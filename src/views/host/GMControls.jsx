@@ -26,12 +26,12 @@ export function GMControls({
   async function handleBossAttack() {
     const result = await roll();
     const targetId = selectedTargetId || alivePlayers[0]?.id;
-    if (targetId) onBossAttack?.(targetId, result.raw);
+    if (targetId) onBossAttack?.(targetId, result);
   }
 
   async function handleBossAoe() {
     const result = await roll();
-    onBossAoe?.(result.raw);
+    onBossAoe?.(result);
   }
 
   return (
@@ -83,7 +83,7 @@ export function GMControls({
 
       <div style={{ marginLeft: 'auto', display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
         <ActionButton onClick={onSaveGame} icon="💾">Save</ActionButton>
-        <DiceRoller isRolling={isRolling} result={lastRoll} label="D20" />
+        <DiceRoller compact disabled={isRolling} />
       </div>
     </div>
   );

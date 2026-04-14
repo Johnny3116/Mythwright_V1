@@ -1,6 +1,6 @@
 # Mythwright V1 — Project Status
 
-> Last updated: 2026-04-01 (rev 2)
+> Last updated: 2026-04-13 (rev 4)
 
 ## Overview
 
@@ -126,16 +126,44 @@ Applied targeted fixes from structured playtest report across 10 files:
 
 **455 tests passing across 20 test files. Clean production build.**
 
+### Phase 11: 5-Tier Dice System & Action UX (2026-04-13)
+
+Implemented a full 5-tier roll outcome system, full-screen dice overlay, and 1-action-per-turn enforcement:
+
+**5-Tier Hit Range System:**
+- Blueprint `settings.hitRanges` updated from 3-tier to 5-tier: `critFail [1,1]`, `miss [2,5]`, `glancing [6,10]`, `hit [11,19]`, `critHit [20,20]`
+- `CombatResolver.js` — handles all 5 tiers; `critFail` returns `fumble:true` + `effectsApplied:['disarmed']`; `glancing` applies `multiplier * 0.5`; all results include `tier` field
+- `DiceSystem.js` — added `getOutcomeTier(rollValue, hitRanges)` utility (moved from `RollOutcomeCard.jsx` to fix Vite Fast Refresh HMR warning)
+- Tier-aware narrator in GameEngine `PLAYER_ATTACK` — distinct message for each of 5 tiers including boss/player name
+
+**Full-Screen Dice Roll Overlay:**
+- New `DiceRollOverlay.jsx` component — full-screen fixed overlay, 200px animated D20, number flickers at 70ms during 1.5s roll, result held 2s then auto-dismisses (or click to dismiss)
+- `RollOutcomeCard.jsx` — small persistent outcome card shown after overlay dismisses, auto-dismisses at 4.5s
+- All tier descriptions in both components are action-neutral (not attack-specific)
+- `rollWithOverlay(actionName)` in `ActionPanel` — wraps every rolled action, shows overlay during/after roll
+
+**1-Action-Per-Turn Enforcement:**
+- `endTurnAfterOverlay = useRef(false)` flag in `ActionPanel` — set after every rolled action dispatch
+- `handleOverlayDismiss` calls `onEndTurn?.()` when flag is set — turn advances after player sees result
+- Move action ends turn immediately (no roll/overlay)
+- "End Turn" button remains for manual pass
+
+**Bug Fixes:**
+- Failed Search roll (≤5) no longer reveals creature intel in narrator — `resolveSearch` in `SpatialEngine.js` only appends wildlife text on rolls > 5
+- Outcome descriptions were attack-specific ("may do damage") even on non-attack actions — replaced with generic tier text in both overlay and outcome card
+
+**Tests:** 4 new CombatResolver tests (critFail fumble, glancing half-damage, roll-specific tier assertions). **Total: 459 tests passing.**
+
 ---
 
 ## Test Status
 
 | Suite | Count |
 |---|---|
-| Unit tests | 336 |
+| Unit tests | 340 |
 | Integration tests | 104 |
 | Spatial engine tests | 15 |
-| **Total** | **455** |
+| **Total** | **459** |
 
 All tests passing. Build clean (Vite, ~2.6s, 126 modules).
 

@@ -10,7 +10,9 @@ import { NarratorFeed } from '@views/game/NarratorFeed.jsx';
 import { TurnTracker } from '@views/game/TurnTracker.jsx';
 import { EncounterSplash } from '@components/EncounterSplash.jsx';
 import { DisconnectOverlay } from '@components/DisconnectOverlay.jsx';
+import { ActionPanel } from '@views/game/ActionPanel.jsx';
 import { useGameEngine } from '@hooks/useGameEngine.js';
+import { usePeerConnection } from '@hooks/usePeerConnection.js';
 import { useGameContext } from '@context/GameContext.jsx';
 import { useNetworkContext } from '@context/NetworkContext.jsx';
 import { TurnPhase, GameState, ActionTypes } from '@engine/GameEngine.js';
@@ -29,7 +31,20 @@ export default function HostView() {
     advancePhase,
     setGmMode,
     addNarrative,
+    playerAttack,
+    playerUseAbility,
+    playerSetTrap,
+    playerRetreat,
+    playerSearchFlora,
+    playerMove,
+    playerSearch,
+    playerHeal,
+    playerFlee,
+    endPlayerTurn,
+    activePlayerId,
+    activePlayerAvailableActions,
   } = useGameEngine();
+  const { myPeerId } = usePeerConnection();
   const { saveGame } = useGameContext();
 
   const { network, clearDisconnected } = useNetworkContext();
@@ -112,7 +127,8 @@ export default function HostView() {
     }
   }, [turnPhase, blueprint, boss, players, state.turnState, state.round, addNarrative]);
 
-  const activePlayerId = state.turnState?.order?.[state.turnState?.currentIndex] || (turnPhase === TurnPhase.BOSS_TURN ? 'boss' : null);
+  const myPlayer = players[myPeerId];
+  const isMyTurn = activePlayerId === myPeerId;
 
   function handleReturnToLobby() {
     dispatch({ type: ActionTypes.RESET_TO_LOBBY });
@@ -166,17 +182,18 @@ export default function HostView() {
         <DriverToggle currentDriver={gmMode} onSwitch={setGmMode} />
       </div>
 
-      {/* Left — Monster Panel */}
-      <div className={styles.hostLeft}>
-        <div className={styles.sectionTitle}>Boss</div>
-        <MonsterPanel bossState={boss} blueprint={blueprint} />
+      {/* Boss Bar */}
+      <div className={styles.hostBoss}>
+        <MonsterPanel horizontal bossState={boss} blueprint={blueprint} />
       </div>
 
-      {/* Main */}
+      {/* Left — Narrator Feed */}
+      <div className={styles.hostLeft}>
+        <NarratorFeed entries={narrativeLog} />
+      </div>
+
+      {/* Main — Zone Map */}
       <div className={styles.hostMain}>
-        <div className={styles.narratorArea}>
-          <NarratorFeed entries={narrativeLog} />
-        </div>
         <div className={styles.zoneMapArea}>
           <ZoneMap
             zones={blueprint.zones}
@@ -192,6 +209,26 @@ export default function HostView() {
       <div className={styles.hostRight}>
         <div className={styles.sectionTitle}>Players</div>
         <PlayerOverview players={players} />
+      </div>
+
+      {/* Player Actions */}
+      <div className={styles.hostActions}>
+        <ActionPanel
+          player={myPlayer}
+          isMyTurn={isMyTurn}
+          blueprint={blueprint}
+          availableActions={activePlayerAvailableActions}
+          onAttack={(roll) => playerAttack(myPeerId, roll)}
+          onUseAbility={(roll) => playerUseAbility(myPeerId, null, roll)}
+          onSetTrap={(trapTypeId, roll) => playerSetTrap(myPeerId, trapTypeId, roll)}
+          onRetreat={(roll) => playerRetreat(myPeerId, roll)}
+          onSearchFlora={(roll) => playerSearchFlora(myPeerId, roll)}
+          onMove={(zoneId) => playerMove(myPeerId, zoneId)}
+          onSearch={(roll) => playerSearch(myPeerId, roll)}
+          onHeal={(targetId, roll) => playerHeal(myPeerId, targetId, roll)}
+          onFlee={(zoneId, roll) => playerFlee(myPeerId, zoneId, roll)}
+          onEndTurn={endPlayerTurn}
+        />
       </div>
 
       {/* Footer — GM Controls */}

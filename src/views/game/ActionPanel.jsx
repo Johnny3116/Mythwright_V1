@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { ActionButton } from '@components/ActionButton.jsx';
 import { DiceRoller } from '@components/DiceRoller.jsx';
+import { RollOutcomeCard } from '@components/RollOutcomeCard.jsx';
+import { DiceRollOverlay } from '@components/DiceRollOverlay.jsx';
 import { useDiceRoll } from '@hooks/useDiceRoll.js';
+import { getOutcomeTier } from '@engine/DiceSystem.js';
 import { getAvailableTrapTypes } from '@engine/TrapSystem.js';
 import styles from './game.module.css';
 
@@ -42,7 +45,30 @@ export function ActionPanel({
 }) {
   const { isRolling, lastRoll, roll } = useDiceRoll();
   const [openMenu, setOpenMenu] = useState(null); // 'trap' | 'move' | 'heal' | 'flee' | null
+  const [outcomeCard, setOutcomeCard] = useState(null); // { tier, roll }
+  const [overlay, setOverlay] = useState(null); // { actionName, tier, result } | null
   const menuRef = useRef(null);
+  const endTurnAfterOverlay = useRef(false); // set true after any rolled action
+
+  // Kick off a roll: show overlay, roll dice, resolve outcome
+  async function rollWithOverlay(actionName) {
+    setOverlay({ actionName, tier: null, result: null });
+    const result = await roll();
+    const tier = getOutcomeTier(result.modified, blueprint?.settings?.hitRanges);
+    setOverlay({ actionName, tier, result });
+    return result;
+  }
+
+  function handleOverlayDismiss() {
+    const { tier, result } = overlay || {};
+    setOverlay(null);
+    if (tier && result) setOutcomeCard({ tier, roll: result.modified });
+    // Auto-advance: 1 action per turn
+    if (endTurnAfterOverlay.current) {
+      endTurnAfterOverlay.current = false;
+      onEndTurn?.();
+    }
+  }
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -64,51 +90,60 @@ export function ActionPanel({
   // ── Action handlers ──────────────────────────────────────────────────────
 
   async function handleAttack() {
-    const result = await roll();
-    onAttack?.(result.raw);
+    const result = await rollWithOverlay('Attack');
+    endTurnAfterOverlay.current = true;
+    onAttack?.(result);
   }
 
   async function handleTrap(trapTypeId) {
     setOpenMenu(null);
-    const result = await roll();
-    onSetTrap?.(trapTypeId, result.raw);
+    const result = await rollWithOverlay('Set Trap');
+    endTurnAfterOverlay.current = true;
+    onSetTrap?.(trapTypeId, result);
   }
 
   async function handleRetreat() {
-    const result = await roll();
-    onRetreat?.(result.raw);
+    const result = await rollWithOverlay('Retreat');
+    endTurnAfterOverlay.current = true;
+    onRetreat?.(result);
   }
 
   async function handleSearchFlora() {
-    const result = await roll();
-    onSearchFlora?.(result.raw);
+    const result = await rollWithOverlay('Search Flora');
+    endTurnAfterOverlay.current = true;
+    onSearchFlora?.(result);
   }
 
   async function handleAbility() {
-    const result = await roll();
-    onUseAbility?.(result.raw);
+    const result = await rollWithOverlay('Class Ability');
+    endTurnAfterOverlay.current = true;
+    onUseAbility?.(result);
   }
 
   async function handleSearch() {
-    const result = await roll();
-    onSearch?.(result.raw);
+    const result = await rollWithOverlay('Search Zone');
+    endTurnAfterOverlay.current = true;
+    onSearch?.(result);
   }
 
   async function handleMove(targetZoneId) {
     setOpenMenu(null);
     onMove?.(targetZoneId);
+    onEndTurn?.(); // Move has no roll — end turn immediately
   }
 
   async function handleHeal(targetId) {
     setOpenMenu(null);
-    const result = await roll();
-    onHeal?.(targetId, result.raw);
+    const result = await rollWithOverlay('Heal');
+    endTurnAfterOverlay.current = true;
+    onHeal?.(targetId, result);
   }
 
   async function handleFlee(targetZoneId) {
     setOpenMenu(null);
-    const result = await roll();
-    onFlee?.(targetZoneId, result.raw);
+    const result = await rollWithOverlay('Flee');
+    endTurnAfterOverlay.current = true;
+    onFlee?.(targetZoneId, result);
   }
 
   // ── Submenu: zone list (Move or Flee) ────────────────────────────────────
@@ -159,8 +194,27 @@ export function ActionPanel({
 
   return (
     <div className={styles.actionPanel}>
+      {/* Full-screen dice roll overlay — renders over everything */}
+      <DiceRollOverlay
+        visible={!!overlay}
+        isRolling={isRolling}
+        result={overlay?.result ?? null}
+        tier={overlay?.tier ?? null}
+        actionName={overlay?.actionName ?? null}
+        onDismiss={handleOverlayDismiss}
+      />
+
+      {/* Small outcome card that lingers after overlay dismisses */}
+      {outcomeCard && (
+        <RollOutcomeCard
+          tier={outcomeCard.tier}
+          roll={outcomeCard.roll}
+          onDismiss={() => setOutcomeCard(null)}
+        />
+      )}
+
       {isMyTurn ? (
-        <>
+        <div className={styles.actionPanelRow}>
           <span className={styles.turnLabel}>Your Turn</span>
 
           <div className={styles.actionGroup}>
@@ -300,16 +354,18 @@ export function ActionPanel({
               End Turn
             </ActionButton>
           </div>
-        </>
-      ) : (
-        <span className={styles.turnLabel} style={{ color: 'var(--text-muted)' }}>
-          Waiting for your turn...
-        </span>
-      )}
 
-      <div className={styles.diceArea}>
-        <DiceRoller isRolling={isRolling} result={lastRoll} label="D20" />
-      </div>
+          <div className={styles.diceArea}>
+            <DiceRoller compact disabled={isRolling} />
+          </div>
+        </div>
+      ) : (
+        <div className={styles.actionPanelRow}>
+          <span className={styles.turnLabel} style={{ color: 'var(--text-muted)' }}>
+            Waiting for your turn...
+          </span>
+        </div>
+      )}
     </div>
   );
 }

@@ -20,9 +20,11 @@
     "turnTimer": { "enabled": false, "defaultSeconds": 60 },
     "combatSystem": "roll-to-hit",
     "hitRanges": {
-      "miss": [1, 5],
-      "hit": [6, 15],
-      "critical": [16, 20]
+      "critFail": [1, 1],
+      "miss": [2, 5],
+      "glancing": [6, 10],
+      "hit": [11, 19],
+      "critHit": [20, 20]
     },
     "critMultiplier": 2.0
   },

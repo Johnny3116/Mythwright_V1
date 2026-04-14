@@ -58,14 +58,34 @@ export function resolveCombat(attacker, defender, roll, settings) {
   const rollValue = normalizedRoll.modified !== undefined ? normalizedRoll.modified : normalizedRoll.natural;
   const rangeKey = rollInRange(rollValue, hitRanges);
 
-  const isMiss = rangeKey === 'miss' || rangeKey === null;
-  const isCritical = rangeKey === 'critical' || rangeKey === 'lethalStrike';
-  const isHit = !isMiss;
+  const isCritFail = rangeKey === 'critFail';
+  const isMiss     = rangeKey === 'miss' || (!isCritFail && rangeKey === null);
+  const isGlancing = rangeKey === 'glancing';
+  const isCritical = rangeKey === 'critHit' || rangeKey === 'critical' || rangeKey === 'lethalStrike';
 
+  // ── Critical failure: fumble ───────────────────────────────────────────────
+  if (isCritFail) {
+    return {
+      hit: false,
+      fumble: true,
+      critical: false,
+      glancing: false,
+      tier: 'critFail',
+      damageRoll: 0,
+      damageDealt: 0,
+      effectsApplied: ['disarmed'],
+      narrative: 'Critical failure! Fumble — weapon dropped for 1 turn.',
+    };
+  }
+
+  // ── Miss ──────────────────────────────────────────────────────────────────
   if (isMiss) {
     return {
       hit: false,
+      fumble: false,
       critical: false,
+      glancing: false,
+      tier: 'miss',
       damageRoll: 0,
       damageDealt: 0,
       effectsApplied: [],
@@ -73,16 +93,17 @@ export function resolveCombat(attacker, defender, roll, settings) {
     };
   }
 
-  // Build damage modifiers
+  // ── Build damage modifiers ────────────────────────────────────────────────
   const modifiers = { ...(attacker.modifiers || {}) };
   if (isCritical) {
-    // For lethalStrike apply bonus on top of regular multiplier; for critical use critMultiplier
     const multiplierBase = modifiers.multiplier || 1;
     if (rangeKey === 'lethalStrike') {
       modifiers.multiplier = multiplierBase * (1 + lethalStrikeBonus);
     } else {
       modifiers.multiplier = multiplierBase * critMultiplier;
     }
+  } else if (isGlancing) {
+    modifiers.multiplier = (modifiers.multiplier || 1) * 0.5;
   }
 
   const damageRoll = calculateDamage(attacker.damage, modifiers);
@@ -100,16 +121,23 @@ export function resolveCombat(attacker, defender, roll, settings) {
     }
   }
 
+  const tier = isCritical ? 'critHit' : isGlancing ? 'glancing' : 'hit';
+
   let narrative;
   if (isCritical) {
-    narrative = `Critical strike! ${damageDealt} damage dealt.`;
+    narrative = `Critical hit! ${damageDealt} damage dealt!`;
+  } else if (isGlancing) {
+    narrative = `Glancing hit! ${damageDealt} damage dealt (half damage).`;
   } else {
     narrative = `Hit! ${damageDealt} damage dealt.`;
   }
 
   return {
     hit: true,
+    fumble: false,
     critical: isCritical,
+    glancing: isGlancing,
+    tier,
     damageRoll,
     damageDealt,
     effectsApplied,

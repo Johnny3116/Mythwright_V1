@@ -173,7 +173,7 @@ describe('GameEngine', () => {
       s = gameReducer(s, { type: ActionTypes.START_GAME });
 
       const bossBefore = s.boss.hp;
-      // Roll 1 = guaranteed miss (miss range is [1,5] in blueprint)
+      // Roll 1 = critFail/fumble — no damage dealt (critFail range is [1,1] in blueprint)
       s = gameReducer(s, {
         type: ActionTypes.PLAYER_ATTACK,
         payload: { playerId: 'p1', roll: roll(1) },

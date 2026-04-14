@@ -22,11 +22,12 @@ function getResultTier(raw) {
  * DiceRoller — Full animated D20 roller component.
  *
  * Props:
- *   onRollComplete {Function} Called with the result object { raw, modifier, total } after animation.
+ *   onRollComplete {Function} Called with the result object after animation.
  *   modifier       {number}   Flat modifier added to the raw roll. Defaults 0.
  *   disabled       {boolean}  Prevents rolling. Defaults false.
+ *   compact        {boolean}  Compact inline style for toolbars. Defaults false.
  */
-export function DiceRoller({ onRollComplete, modifier = 0, disabled = false }) {
+export function DiceRoller({ onRollComplete, modifier = 0, disabled = false, compact = false }) {
   // Flicker number shown during the rolling animation.
   const [flickerNum, setFlickerNum] = useState(null);
   const flickerRef = useRef(null);
@@ -81,7 +82,8 @@ export function DiceRoller({ onRollComplete, modifier = 0, disabled = false }) {
   const rollerClass = [
     styles.diceRoller,
     styles[`diceRoller--${phase}`],
-  ].join(' ');
+    compact ? styles['diceRoller--compact'] : null,
+  ].filter(Boolean).join(' ');
 
   // Classes for the displayed number.
   const numberClass = [
@@ -151,4 +153,5 @@ DiceRoller.propTypes = {
   onRollComplete: PropTypes.func,
   modifier: PropTypes.number,
   disabled: PropTypes.bool,
+  compact: PropTypes.bool,
 };

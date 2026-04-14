@@ -126,8 +126,8 @@ loseConditions  → What triggers a loss
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/mythwright.git
-cd mythwright
+git clone https://github.com/Johnny3116/Mythwright_V1.git
+cd Mythwright_V1
 
 # Install dependencies
 npm install
@@ -155,18 +155,18 @@ npm run build
 ## Roadmap
 
 - [x] Campaign Blueprint schema design
-- [ ] Project scaffolding and folder structure
-- [ ] Core game engine (state machine, combat resolver, D20 system)
-- [ ] PeerJS networking layer
-- [ ] Host lobby and room creation
-- [ ] Character selection and customization
-- [ ] Main game board with zone map
-- [ ] Host DM view with GM driver toggle
-- [ ] Campaign compiler (Claude API integration)
-- [ ] Animated D20 dice roller
-- [ ] JSON save/resume
-- [ ] Scripted GM driver (auto-pilot mode)
-- [ ] AI GM driver (API key input)
+- [x] Project scaffolding and folder structure
+- [x] Core game engine (state machine, combat resolver, D20 system)
+- [x] PeerJS networking layer
+- [x] Host lobby and room creation
+- [x] Character selection and customization
+- [x] Main game board with zone map
+- [x] Host DM view with GM driver toggle
+- [x] Campaign compiler (Claude API integration)
+- [x] Animated D20 dice roller
+- [x] JSON save/resume
+- [x] Scripted GM driver (auto-pilot mode)
+- [x] AI GM driver (API key input)
 - [ ] Sound effects and ambient audio
 - [ ] Cloud save upgrade (Firebase/Supabase)
 

@@ -128,3 +128,17 @@ export function getRollHistory() {
 export function clearRollHistory() {
   _moduleHistory.clear();
 }
+
+/**
+ * Determine the outcome tier for a roll value given a hitRanges config.
+ * @param {number} rollValue - The d20 roll (modified)
+ * @param {object} hitRanges - e.g. { critFail:[1,1], miss:[2,5], ... }
+ * @returns {string|null} tier key, or null if no match
+ */
+export function getOutcomeTier(rollValue, hitRanges) {
+  if (!hitRanges || rollValue == null) return null;
+  for (const [key, [min, max]] of Object.entries(hitRanges)) {
+    if (rollValue >= min && rollValue <= max) return key;
+  }
+  return 'miss';
+}
