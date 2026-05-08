@@ -148,11 +148,16 @@ npm run build
 |`PROJECT.md`                         |Full technical specification and architecture             |
 |`BUILD_WORKFLOW.md`                  |Step-by-step build order and task breakdown               |
 |`CLAUDE.md`                          |AI assistant instructions for contributing to this project|
+|`STATUS.md`                          |V1 completion status, build snapshot, known gaps          |
+|`CHANGELOG.md`                       |Phase-by-phase build history                              |
+|`V2_VISION.md`                       |V2 architecture: 3D tabletop rendering, milestone plan    |
 |`campaigns/monster-hunt-tzorath.json`|First campaign blueprint (Monster Hunt: Tzorath)          |
 
 -----
 
 ## Roadmap
+
+### V1 — Complete
 
 - [x] Campaign Blueprint schema design
 - [x] Project scaffolding and folder structure
@@ -167,8 +172,29 @@ npm run build
 - [x] JSON save/resume
 - [x] Scripted GM driver (auto-pilot mode)
 - [x] AI GM driver (API key input)
-- [ ] Sound effects and ambient audio
-- [ ] Cloud save upgrade (Firebase/Supabase)
+
+### V2 — Roadmap
+
+| Milestone | Goal |
+|---|---|
+| M1 — 3D Combat Viewer | Terrain plane, miniatures, colored base rings, health bars, isometric camera |
+| M2 — Selection & Targeting | Click-to-select, targeting lines, distance labels, valid target highlights |
+| M3 — Engine Wiring | Connect actions → combat reducer → dice → damage on top of existing engine |
+| M4 — Encounter Presentation | Initiative bar, encounter splash, victory/defeat cinematic overlays |
+| M5 — Movement Preview | Movement radius, path preview, animated miniature movement |
+| M6 — First Playable Diorama | One full encounter, start-to-finish, in the 3D tactical style |
+
+**Also planned:** Sound effects and ambient audio, cloud save (Firebase/Supabase), schema-driven shared contracts, view-level UI tests.
+
+See [V2_VISION.md](V2_VISION.md) for the full architecture, rendering design, and development track.
+
+-----
+
+## V2 Direction
+
+*3D tabletop diorama, miniature-first combat, tactical UI overlays, cinematic encounter moments.*
+
+V2 adds a Three.js / React Three Fiber rendering layer on top of the V1 engine. The engine remains the deterministic source of truth; the 3D scene is a presentation layer only. V1 and V2 are separate concerns — V1 is the stable tactical engine foundation, V2 is the cinematic display layer built over it.
 
 -----
 

@@ -1,6 +1,6 @@
 # Mythwright V1 — Project Status
 
-> Last updated: 2026-04-13 (rev 4)
+> Last updated: 2026-05-08 (rev 5 — V1 closeout)
 
 ## Overview
 
@@ -189,6 +189,16 @@ npm run dev -- --host   # Vite on port 5173/5174
 
 The startup script writes a timestamped log to `scripts/server logs/server_<timestamp>.log` on every run. Logs capture all Vite stdout/stderr — useful for diagnosing startup errors or crashes. Log files are gitignored and stay local only.
 
+---
+
 ## Repository
 
 All work committed and pushed to GitHub. Branch: `main`.
+
+---
+
+## V2 Direction
+
+*3D tabletop diorama, miniature-first combat, tactical UI overlays, cinematic encounter moments.*
+
+V1 is sealed at this commit. V2 will add a Three.js / React Three Fiber rendering layer over the existing engine. See [V2_VISION.md](V2_VISION.md) for the full architecture and milestone plan.

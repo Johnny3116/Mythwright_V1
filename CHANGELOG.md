@@ -1,5 +1,20 @@
 # Mythwright Changelog
 
+## [V1 Closeout] - 2026-05-08
+
+### Completed
+- Audited repo state: 459/459 tests passing, clean production build
+- Confirmed WorkstationPrime has no live Mythwright working tree (archived bundle/tarball from
+  2026-03-25 are intentional)
+- Updated README.md roadmap to reflect actual V1 completion state
+- Updated STATUS.md to rev 5 — authoritative V1 snapshot through Phase 11
+- Created V2_VISION.md capturing 3D tabletop diorama architecture and milestone plan
+
+### Next Steps
+- Cut V2 branch for continued development
+
+---
+
 ## [Phase 10] - 2026-03-29
 
 ### Completed
@@ -55,7 +70,6 @@
 - Optional: wire FloatingDamage component to combat events (noted as deviation in Phase 5)
 - Optional: force-directed zone map layout (noted as improvement in Phase 5)
 
-
 ## [Phase 6] - 2026-03-25
 
 ### Completed
@@ -78,44 +92,6 @@
 ### Deviations from Spec
 - Added `terser` as explicit devDependency — required by Vite v3+ when `minify: 'terser'` is set (not listed in spec but necessary)
 - `eslint v8` deprecation warnings are expected — spec calls for `^8.x` explicitly
-
-### Next Steps
-- Phase 1: Asset Pipeline — create SVG icon sets, font loading, D20 dice element, base component styling
-- Phase 2: Game Engine — implement all 12 engine modules in dependency order
-
-## [Phase 0] - 2026-03-25
-
-### Completed
-- Initialized Vite + React 18 project with `type: module`
-- Created full folder structure per `PROJECT.md` specification
-- Set up path aliases in `vite.config.js` (`@engine`, `@views`, `@components`, `@network`, `@drivers`, `@hooks`, `@context`, `@utils`, `@compiler`)
-- Configured Vitest with jsdom environment and `passWithNoTests: true`
-- Created all 12 engine module stubs in `src/engine/` with JSDoc signatures
-- Created all 4 network module stubs in `src/network/`
-- Created all 3 GM driver stubs in `src/drivers/` plus `DriverInterface.js`
-- Created all 3 compiler module stubs in `src/compiler/`
-- Created all 4 view directories with placeholder components and CSS modules
-- Created all 8 shared components in `src/components/`
-- Created all 4 hooks in `src/hooks/`
-- Created `GameContext.jsx` and `NetworkContext.jsx` in `src/context/`
-- Created `constants.js`, `helpers.js`, `theme.js` in `src/utils/`
-- Set up React Router v6 with routes: `/` (Lobby), `/character-select`, `/game`, `/host`
-- Created full dark fantasy theme CSS in `src/index.css` with all CSS custom properties, reset, scrollbar styling
-- Created `public/assets/` directory tree (icons, zones, enemies, ui) and `public/fonts/`
-- Created `tests/` directory with subdirectories for engine, network, views
-- Copied `campaigns/monster-hunt-tzorath.json` campaign blueprint
-- Created placeholder `prompts/` directory with all 9 phase prompt files
-- Added `PROJECT.md` and `BUILD_WORKFLOW.md`
-- Added `.env.example` with `VITE_CLAUDE_API_KEY`
-- `npm run build` produces clean static bundle (~163KB JS, 53KB gzipped)
-- `npm run test` exits cleanly (no tests yet, `passWithNoTests: true`)
-
-### Known Issues
-- `npm run dev` not directly verified (no browser environment in build context), but `npm run build` confirms Vite processes all modules correctly
-- All engine, network, driver, and compiler modules throw `not yet implemented` errors — to be built in Phases 2-5
-
-### Deviations from Spec
-- None. All decisions match `PROJECT.md` exactly.
 
 ### Next Steps
 - Phase 1: Asset Pipeline — create SVG icon sets, font loading, D20 dice element, base component styling
@@ -159,3 +135,41 @@
 - Phase 6: Finalize package.json, production config, deployment
 - Phase 7: Code review — verify engine correctness, network reliability, UI consistency
 - Phase 8: Write unit tests for all engine modules
+
+## [Phase 0] - 2026-03-25
+
+### Completed
+- Initialized Vite + React 18 project with `type: module`
+- Created full folder structure per `PROJECT.md` specification
+- Set up path aliases in `vite.config.js` (`@engine`, `@views`, `@components`, `@network`, `@drivers`, `@hooks`, `@context`, `@utils`, `@compiler`)
+- Configured Vitest with jsdom environment and `passWithNoTests: true`
+- Created all 12 engine module stubs in `src/engine/` with JSDoc signatures
+- Created all 4 network module stubs in `src/network/`
+- Created all 3 GM driver stubs in `src/drivers/` plus `DriverInterface.js`
+- Created all 3 compiler module stubs in `src/compiler/`
+- Created all 4 view directories with placeholder components and CSS modules
+- Created all 8 shared components in `src/components/`
+- Created all 4 hooks in `src/hooks/`
+- Created `GameContext.jsx` and `NetworkContext.jsx` in `src/context/`
+- Created `constants.js`, `helpers.js`, `theme.js` in `src/utils/`
+- Set up React Router v6 with routes: `/` (Lobby), `/character-select`, `/game`, `/host`
+- Created full dark fantasy theme CSS in `src/index.css` with all CSS custom properties, reset, scrollbar styling
+- Created `public/assets/` directory tree (icons, zones, enemies, ui) and `public/fonts/`
+- Created `tests/` directory with subdirectories for engine, network, views
+- Copied `campaigns/monster-hunt-tzorath.json` campaign blueprint
+- Created placeholder `prompts/` directory with all 9 phase prompt files
+- Added `PROJECT.md` and `BUILD_WORKFLOW.md`
+- Added `.env.example` with `VITE_CLAUDE_API_KEY`
+- `npm run build` produces clean static bundle (~163KB JS, 53KB gzipped)
+- `npm run test` exits cleanly (no tests yet, `passWithNoTests: true`)
+
+### Known Issues
+- `npm run dev` not directly verified (no browser environment in build context), but `npm run build` confirms Vite processes all modules correctly
+- All engine, network, driver, and compiler modules throw `not yet implemented` errors — to be built in Phases 2-5
+
+### Deviations from Spec
+- None. All decisions match `PROJECT.md` exactly.
+
+### Next Steps
+- Phase 1: Asset Pipeline — create SVG icon sets, font loading, D20 dice element, base component styling
+- Phase 2: Game Engine — implement all 12 engine modules in dependency order
