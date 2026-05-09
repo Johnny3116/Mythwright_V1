@@ -15,6 +15,8 @@ export default defineConfig({
       '@context': path.resolve(__dirname, 'src/context'),
       '@utils': path.resolve(__dirname, 'src/utils'),
       '@compiler': path.resolve(__dirname, 'src/compiler'),
+      '@shared': path.resolve(__dirname, 'src/shared'),
+      '@scene3d': path.resolve(__dirname, 'src/scene3d'),
     },
   },
   test: {
@@ -44,6 +46,7 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) return 'vendor';
           if (id.includes('node_modules/peerjs') || id.includes('node_modules/webrtc-adapter')) return 'peer';
+          if (id.includes('node_modules/three') || id.includes('node_modules/@react-three')) return 'three';
           if (id.includes('/src/engine/')) return 'engine';
         },
       },
