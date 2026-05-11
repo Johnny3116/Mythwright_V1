@@ -1,6 +1,6 @@
-# Mythwright V1 — Project Status
+# Mythwright — Project Status
 
-> Last updated: 2026-05-08 (rev 5 — V1 closeout)
+> Last updated: 2026-05-10 (rev 6 — V2 M2 complete)
 
 ## Overview
 
@@ -156,16 +156,56 @@ Implemented a full 5-tier roll outcome system, full-screen dice overlay, and 1-a
 
 ---
 
+## V2 — In Progress
+
+### Track 1: Shared Contracts ✅ (2026-05-09)
+- `src/shared/contracts/dice.js` — `DiceResultSchema`, `TieredDiceResultSchema` (Zod)
+- `src/shared/contracts/actions.js` — `ActionIntentSchema`, `CombatResultSchema` (Zod)
+- `src/shared/contracts/cinematic.js` — `CinematicEventSchema` discriminated union (Zod)
+- `src/shared/contracts/encounter.js` — `MiniatureViewModelSchema`, `EncounterSceneSchema` (Zod)
+- `src/shared/index.js` — barrel export
+- Packages: `zod@^4`
+
+### M1: 3D Combat Viewer ✅ (2026-05-09)
+- `MythwrightCanvas.jsx` — R3F `<Canvas>` wrapper with shadows
+- `CameraRig.jsx` — orthographic isometric camera (45°), OrbitControls
+- `TabletopScene.jsx` — terrain plane, grid, ambient + directional lighting
+- `Miniature.jsx` — capsule mesh, HP label, active/targeted emissive states
+- `MiniBaseRing.jsx` — colored torus ring under each mini
+- `/scene-test` route mounted on `SceneTestView` — dev sandbox
+- Packages: `three@^0.184`, `@react-three/fiber@^8`, `@react-three/drei@^9`
+
+### M2: Selection & Targeting ✅ (2026-05-10)
+- `selectionReducer.js` — pure state machine: `IDLE → MINI_SELECTED → ACTION_PICKING → IDLE` with persistent `pendingAttack` slot. 13 unit tests.
+- `SelectionContext.jsx` — Context+useReducer per V1 architecture rule. Includes Canvas context bridge (`useSelectionBridgeValue` + `<SelectionBridge>`) because R3F v8 does not auto-propagate React context across `<Canvas>`.
+- `Miniature.jsx` — click-to-select for players, click-to-commit for enemies during ACTION_PICKING. White selection ring + orange/yellow target rings.
+- `MiniBaseRing.jsx` — fixed double-translation bug from M1; now correctly takes a local offset.
+- `TargetingLine.jsx` — dotted line + `XX FT` distance label between selected mini and hovered enemy. Visual range gating (red + "OUT OF RANGE" when distance > action range).
+- `ActionOverlay.jsx` (new `src/ui/`) — 2D HTML floating action panel via drei `<Html>`, anchored above selected mini in native screen-space size.
+- `TabletopScene.jsx` — terrain plane click clears selection. `onClick` chosen over `onPointerDown` to cooperate with OrbitControls.
+- `SceneTestView.jsx` — `SelectionProvider` + `SelectionBridge` plumbing, live phase indicator in header, pending-attack log in bottom-left as a stand-in for the engine wiring landing in M3.
+- `vite.config.js` — added `@ui` alias.
+- **End-to-end verified in Chrome over Tailscale** — full loop: click player → action panel → click action → enemies highlight → hover enemy → red dashed line + distance label → click enemy → exactly one `pendingAttack` log entry.
+
+### Bugs found and fixed during M2 verification
+1. drei `<Html>` name labels intercepted clicks (fixed by passing `pointerEvents: 'none'` on the wrapper, not just the inner div)
+2. `<Html>` with `distanceFactor` rendered overlays at huge world-scale (fixed by removing it for screen-space sizing)
+3. `onPointerDown` on minis fought OrbitControls (fixed by switching to `onClick`)
+4. `PendingAttackLogger` re-fired its effect on every render because `onLog` was a fresh function each parent render (fixed by `useCallback`)
+
+---
+
 ## Test Status
 
 | Suite | Count |
 |---|---|
-| Unit tests | 340 |
+| Unit tests (V1) | 340 |
 | Integration tests | 104 |
 | Spatial engine tests | 15 |
-| **Total** | **459** |
+| **V2 selection reducer** | **13** |
+| **Total** | **472** |
 
-All tests passing. Build clean (Vite, ~2.6s, 126 modules).
+All tests passing. Build clean (Vite, ~7s, 723 modules — three chunk 210 KB gz).
 
 ---
 
@@ -193,7 +233,7 @@ The startup script writes a timestamped log to `scripts/server logs/server_<time
 
 ## Repository
 
-All work committed and pushed to GitHub. Branch: `main`.
+V1 sealed on `main`. V2 work in progress on `main` as additive layers (engine untouched). All work committed and pushed to GitHub.
 
 ---
 
@@ -201,4 +241,16 @@ All work committed and pushed to GitHub. Branch: `main`.
 
 *3D tabletop diorama, miniature-first combat, tactical UI overlays, cinematic encounter moments.*
 
-V1 is sealed at this commit. V2 will add a Three.js / React Three Fiber rendering layer over the existing engine. See [V2_VISION.md](V2_VISION.md) for the full architecture and milestone plan.
+V2 adds a Three.js / React Three Fiber rendering layer over the existing V1 engine. Engine remains the source of truth — 3D is presentation only. See [V2_VISION.md](V2_VISION.md) for the full architecture and milestone plan.
+
+### Milestone progress
+- ✅ Track 1 — Shared Contracts (Zod schemas)
+- ✅ M1 — 3D Combat Viewer
+- ✅ M2 — Selection & Targeting
+- 🔲 M3 — Engine Wiring (route `pendingAttack` through V1 CombatResolver)
+- 🔲 M4 — Encounter Presentation (initiative bar, splash overlays)
+- 🔲 M5 — Movement Preview
+- 🔲 M6 — First Playable Diorama
+
+### Next up: M3
+Wire the M2 `pendingAttack` payload through the V1 engine's combat path. Replace ActionOverlay's stub actions with real class actions from the campaign blueprint. Add `src/scene3d/selectors/` to translate engine state into `MiniatureViewModel[]`.

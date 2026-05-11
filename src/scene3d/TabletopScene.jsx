@@ -1,11 +1,18 @@
 import CameraRig from './CameraRig.jsx';
 import Miniature from './Miniature.jsx';
+import TargetingLine from './TargetingLine.jsx';
+import { useSelectionActions } from './state/SelectionContext.jsx';
 
-// Terrain plane — flat tabletop surface with grid.
-function Terrain({ size = 20 }) {
+// Terrain plane — flat tabletop surface with grid. Clicking the plane (with
+// no mini between you and it) clears the current selection.
+function Terrain({ size = 20, onClick }) {
   return (
     <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        receiveShadow
+        onClick={onClick}
+      >
         <planeGeometry args={[size, size]} />
         <meshStandardMaterial color="#2a2a3e" />
       </mesh>
@@ -15,6 +22,15 @@ function Terrain({ size = 20 }) {
 }
 
 export default function TabletopScene({ miniatures = [] }) {
+  const { clear } = useSelectionActions();
+
+  // Clear selection on terrain click. Miniatures stop propagation via onClick,
+  // so this only fires when the user clicks empty ground. Using onClick (not
+  // onPointerDown) so OrbitControls camera rotation doesn't deselect.
+  const handlePlaneClick = (e) => {
+    if (e.button === 0) clear();
+  };
+
   return (
     <>
       <CameraRig zoom={60} />
@@ -29,11 +45,13 @@ export default function TabletopScene({ miniatures = [] }) {
       />
       <directionalLight position={[-5, 8, -5]} intensity={0.3} color="#8888ff" />
 
-      <Terrain size={20} />
+      <Terrain size={20} onClick={handlePlaneClick} />
 
       {miniatures.map((mini) => (
         <Miniature key={mini.id} mini={mini} />
       ))}
+
+      <TargetingLine miniatures={miniatures} />
     </>
   );
 }

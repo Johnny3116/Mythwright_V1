@@ -17,6 +17,7 @@ export default defineConfig({
       '@compiler': path.resolve(__dirname, 'src/compiler'),
       '@shared': path.resolve(__dirname, 'src/shared'),
       '@scene3d': path.resolve(__dirname, 'src/scene3d'),
+      '@ui': path.resolve(__dirname, 'src/ui'),
     },
   },
   test: {

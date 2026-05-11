@@ -1,5 +1,34 @@
 # Mythwright Changelog
 
+## [V2 M2 — Selection & Targeting] - 2026-05-10
+
+### Completed
+- **selectionReducer.js** (new) — pure state machine for the V2 selection/targeting loop: `IDLE → MINI_SELECTED → ACTION_PICKING → IDLE`, plus a `pendingAttack` slot that survives `CLEAR` so consumers can drain it. 13 unit tests, all passing.
+- **SelectionContext.jsx** — Context+useReducer wrapper following the V1 "no external state libraries" rule. Exposes `useSelection`, `useSelectionActions`, plus `useIsSelected`/`useIsTargetable`/`useIsHovered` selectors. Includes a Canvas context bridge (`useSelectionBridgeValue` + `<SelectionBridge>`) because R3F v8 does NOT auto-propagate React context across `<Canvas>`.
+- **Miniature.jsx** — now selection-aware: click a player mini to select, click an enemy mini while ACTION_PICKING to commit. White selection ring on the selected mini; orange/yellow target rings on enemies during ACTION_PICKING.
+- **MiniBaseRing.jsx** — fixed double-translation bug (was applying the parent group's world position twice). Now takes a local offset relative to its parent. Added `radius`/`thickness`/`emissiveIntensity` props for the new selection/target rings.
+- **TargetingLine.jsx** (new) — dotted line from selected mini to hovered enemy with mid-line distance label (`XX FT`). Turns red and shows "OUT OF RANGE" when distance exceeds the chosen action's range. Visual-only gating; engine gating belongs to M3.
+- **TabletopScene.jsx** — terrain plane click clears selection. `onClick` (not `onPointerDown`) so OrbitControls camera rotation doesn't deselect.
+- **ActionOverlay.jsx** (new, src/ui/) — 2D HTML floating action panel anchored above the selected mini via drei `<Html>` in native screen-space size. Stub 3-action set (Bow Shot 30 ft, Sword Slash 5 ft, Fireball 60 ft); M3 replaces these with V1 engine actions.
+- **SceneTestView.jsx** — wraps M2 in SelectionProvider, uses SelectionBridge to cross the Canvas boundary, shows a live phase indicator in the header bar and a pending-attack log in the bottom-left. `onLog` wrapped in `useCallback` so the logger effect doesn't re-fire on every render.
+- **vite.config.js** — added `@ui` alias.
+- **Tests: 472/472 passing** (459 prior + 13 new selectionReducer cases).
+- **Build: clean** at 6.97s; `three` chunk grew from 205 KB → 210 KB gz (drei `<Line>` pulled in meshline).
+- **End-to-end manual verification via Claude in Chrome** on workstation against Tailscale dev URL: click player → action overlay → click action → enemies show target rings → hover enemy → red dashed targeting line + "40 FT • OUT OF RANGE" label → click enemy → IDLE with single pendingAttack log entry.
+
+### Known Issues
+- ActionOverlay's `<Html>` panel overlaps the selected mini's body in screen space because the panel uses native CSS size and is anchored 1.4 units above the mini's y origin. Cosmetic only — the selection ring is still visible. Will be revisited when CharacterPanel arrives in M4.
+- The 3-action stub in ActionOverlay is hardcoded. M3 wires it to real class actions from the V1 engine.
+
+### Deviations from Spec
+- The V2 plan in V2_VISION.md sketched `useSelection.js` as a hook. Implementation uses `selectionReducer.js` + `SelectionContext.jsx` instead, matching the V1 "Context + useReducer, no Zustand" rule from CLAUDE.md. Same external API surface (`useSelection()`, etc.).
+- M2 introduced a Canvas context bridge that's not in the original plan. Required because R3F v8 isolates its reconciler from React DOM context. Documented inline in SelectionContext.jsx.
+
+### Next Steps
+- M3: wire `pendingAttack` to the V1 engine's combat path. Create `src/scene3d/selectors/` (engine state → MiniatureViewModel[]) and replace ActionOverlay's stub actions with real class data from the blueprint. Drain pendingAttack → ActionTypes.PLAYER_ATTACK → CombatResolver → state update → rerender. After that, the 3D scene becomes a real combat view rather than a sandbox.
+
+---
+
 ## [V1 Closeout] - 2026-05-08
 
 ### Completed
