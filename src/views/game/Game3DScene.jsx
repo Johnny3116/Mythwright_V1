@@ -37,7 +37,7 @@ function Game3DSceneInner({ zoneId }) {
   return (
     <MythwrightCanvas>
       <SelectionBridge value={bridge}>
-        <TabletopScene miniatures={miniatures} />
+        <TabletopScene miniatures={miniatures} zoneId={zoneId} />
         <MoveAnchors anchors={anchors} />
         <ActionOverlay miniatures={miniatures} />
       </SelectionBridge>
