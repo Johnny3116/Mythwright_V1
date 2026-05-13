@@ -41,10 +41,31 @@ export const EncounterSceneSchema = z.object({
   spawnPoints: z.array(SpawnPointSchema),
 });
 
+// V2 M3: spawn anchors authored on the campaign blueprint
+// Anchor = a fixed (x, y, z) point a mini can occupy.
+// `defaultZoneSpawnPoints` lives at the blueprint root; any zone may
+// override by including its own `spawnPoints` field with the same shape.
+
+export const SpawnAnchorSchema = z.object({
+  id: z.string(),
+  position: z.object({ x: z.number(), y: z.number(), z: z.number() }),
+});
+
+export const ZoneSpawnPointsSchema = z.object({
+  players: z.array(SpawnAnchorSchema).min(1),
+  enemies: z.array(SpawnAnchorSchema),
+  boss: SpawnAnchorSchema,
+  moveAnchors: z.array(SpawnAnchorSchema).min(1),
+});
+
 export function validateMiniatureViewModel(value) {
   return MiniatureViewModelSchema.safeParse(value);
 }
 
 export function validateEncounterScene(value) {
   return EncounterSceneSchema.safeParse(value);
+}
+
+export function validateZoneSpawnPoints(value) {
+  return ZoneSpawnPointsSchema.safeParse(value);
 }

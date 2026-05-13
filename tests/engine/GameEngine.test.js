@@ -181,6 +181,101 @@ describe('GameEngine', () => {
       expect(s.boss.hp).toBe(bossBefore);
     });
 
+    it('PLAYER_ATTACK with targetId="mob:<zoneId>" clears the mob on a hit', () => {
+      let s = gameReducer(state, {
+        type: ActionTypes.PLAYER_REGISTER,
+        payload: { peerId: 'p1', playerName: 'Alice' },
+      });
+      s = gameReducer(s, {
+        type: ActionTypes.PLAYER_SELECT_CLASS,
+        payload: { peerId: 'p1', classId: 'assault', playerName: 'Alice' },
+      });
+      s = gameReducer(s, { type: ActionTypes.START_GAME });
+
+      const startZone = s.players.p1.currentZone;
+      const mobBefore = s.zoneMobs[startZone];
+      expect(mobBefore?.present).toBe(true);
+      expect(mobBefore?.cleared).toBe(false);
+
+      const bossHpBefore = s.boss.hp;
+      s = gameReducer(s, {
+        type: ActionTypes.PLAYER_ATTACK,
+        payload: { playerId: 'p1', roll: roll(20), targetId: `mob:${startZone}` },
+      });
+
+      // Mob is cleared, boss is untouched
+      expect(s.zoneMobs[startZone].present).toBe(false);
+      expect(s.zoneMobs[startZone].cleared).toBe(true);
+      expect(s.boss.hp).toBe(bossHpBefore);
+      // Narrator fired
+      expect(s.narrativeLog.at(-1).text).toMatch(/CRITICAL HIT|strikes|clips/);
+    });
+
+    it('PLAYER_ATTACK on a mob with a miss does NOT clear the mob', () => {
+      let s = gameReducer(state, {
+        type: ActionTypes.PLAYER_REGISTER,
+        payload: { peerId: 'p1', playerName: 'Alice' },
+      });
+      s = gameReducer(s, {
+        type: ActionTypes.PLAYER_SELECT_CLASS,
+        payload: { peerId: 'p1', classId: 'assault', playerName: 'Alice' },
+      });
+      s = gameReducer(s, { type: ActionTypes.START_GAME });
+
+      const startZone = s.players.p1.currentZone;
+      // Roll 3 = miss range [2,5] in blueprint
+      s = gameReducer(s, {
+        type: ActionTypes.PLAYER_ATTACK,
+        payload: { playerId: 'p1', roll: roll(3), targetId: `mob:${startZone}` },
+      });
+      expect(s.zoneMobs[startZone].present).toBe(true);
+      expect(s.zoneMobs[startZone].cleared).toBe(false);
+    });
+
+    it('PLAYER_ATTACK on an already-cleared mob narrates "empty air" and is a no-op', () => {
+      let s = gameReducer(state, {
+        type: ActionTypes.PLAYER_REGISTER,
+        payload: { peerId: 'p1', playerName: 'Alice' },
+      });
+      s = gameReducer(s, {
+        type: ActionTypes.PLAYER_SELECT_CLASS,
+        payload: { peerId: 'p1', classId: 'assault', playerName: 'Alice' },
+      });
+      s = gameReducer(s, { type: ActionTypes.START_GAME });
+
+      const startZone = s.players.p1.currentZone;
+      // Clear it first
+      s = gameReducer(s, {
+        type: ActionTypes.PLAYER_ATTACK,
+        payload: { playerId: 'p1', roll: roll(20), targetId: `mob:${startZone}` },
+      });
+      // Try again
+      s = gameReducer(s, {
+        type: ActionTypes.PLAYER_ATTACK,
+        payload: { playerId: 'p1', roll: roll(20), targetId: `mob:${startZone}` },
+      });
+      expect(s.narrativeLog.at(-1).text).toMatch(/empty air/);
+    });
+
+    it('PLAYER_ATTACK with no targetId still hits the boss (V1 backward compat)', () => {
+      let s = gameReducer(state, {
+        type: ActionTypes.PLAYER_REGISTER,
+        payload: { peerId: 'p1', playerName: 'Alice' },
+      });
+      s = gameReducer(s, {
+        type: ActionTypes.PLAYER_SELECT_CLASS,
+        payload: { peerId: 'p1', classId: 'assault', playerName: 'Alice' },
+      });
+      s = gameReducer(s, { type: ActionTypes.START_GAME });
+
+      const bossBefore = s.boss.hp;
+      s = gameReducer(s, {
+        type: ActionTypes.PLAYER_ATTACK,
+        payload: { playerId: 'p1', roll: roll(20) }, // no targetId
+      });
+      expect(s.boss.hp).toBeLessThan(bossBefore);
+    });
+
     it('BOSS_ATTACK with a hit reduces player HP', () => {
       let s = gameReducer(state, {
         type: ActionTypes.PLAYER_REGISTER,

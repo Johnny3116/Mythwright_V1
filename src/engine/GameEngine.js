@@ -24,6 +24,7 @@ import {
   resolveFlee,
   resolveZoneEncounter,
   getAdjacentZones,
+  clearZoneMobs,
 } from './SpatialEngine.js';
 import { GameState, TurnPhase, ActionTypes } from '@utils/constants.js';
 
@@ -127,6 +128,69 @@ function addNarrative(state, text) {
       { id: `${Date.now()}-${arr[0]}`, text, timestamp: Date.now() },
     ],
   };
+}
+
+// V2 M3: target id helpers — UI passes `targetId` strings via PLAYER_ATTACK.
+// Convention: "mob:<zoneId>" targets a wildlife mob; null / "boss" / boss.id
+// keeps the legacy single-target behavior.
+function isMobTargetId(targetId) {
+  return typeof targetId === 'string' && targetId.startsWith('mob:');
+}
+
+function zoneIdFromMobTarget(targetId) {
+  return targetId.slice(4);
+}
+
+/**
+ * V2 M3: resolve a player attack against a zone mob (binary kill model).
+ * A successful hit clears the mob; a miss/fumble narrates without damage.
+ * Mobs have no HP in V1's data model, so this is intentionally simpler than
+ * the boss combat path — no consecutive-hit tracking, no evolution check.
+ */
+function applyPlayerAttackOnMob(state, player, zoneId, roll, blueprint) {
+  const mob = state.zoneMobs?.[zoneId];
+  if (!mob || !mob.present || mob.cleared) {
+    return addNarrative(state, `${player.name} swings at empty air — nothing here to fight.`);
+  }
+
+  const settings = {
+    hitRanges: blueprint.settings.hitRanges,
+    critMultiplier: blueprint.settings.critMultiplier || 2.0,
+  };
+  // Treat mob as a zero-defense dummy for hit resolution; we only care about
+  // the tier classification (miss vs hit) — damage value is ignored.
+  const dummyTarget = { defense: 0, hp: 1 };
+  const result = resolveCombat(player, dummyTarget, roll, settings);
+  let newState = { ...state, lastRoll: { roll, result } };
+
+  let narrative;
+  if (result.hit) {
+    newState = { ...newState, zoneMobs: clearZoneMobs(zoneId, newState.zoneMobs) };
+    if (result.tier === 'critHit') {
+      narrative = `CRITICAL HIT! ${player.name} obliterates the ${mob.creature} in a single brutal blow!`;
+    } else if (result.tier === 'glancing') {
+      narrative = `${player.name} clips the ${mob.creature} — it staggers and falls.`;
+    } else {
+      narrative = `${player.name} strikes the ${mob.creature} down — the zone is clear.`;
+    }
+  } else if (result.tier === 'critFail') {
+    narrative = `${player.name} fumbles the strike — the ${mob.creature} darts away unharmed.`;
+    newState = {
+      ...newState,
+      players: {
+        ...newState.players,
+        [player.id]: applyEffect(newState.players[player.id], {
+          type: 'disarmed',
+          duration: 1,
+          source: 'fumble',
+        }),
+      },
+    };
+  } else {
+    narrative = `${player.name} swings at the ${mob.creature} — the creature evades.`;
+  }
+
+  return addNarrative(newState, narrative);
 }
 
 /**
@@ -298,10 +362,17 @@ export function gameReducer(state, action) {
     }
 
     case ActionTypes.PLAYER_ATTACK: {
-      const { playerId, roll } = action.payload;
+      const { playerId, roll, targetId } = action.payload;
       const player = state.players[playerId];
       const { boss, blueprint } = state;
-      if (!player || !boss || !blueprint) return state;
+      if (!player || !blueprint) return state;
+
+      // V2 M3: route mob targets through the binary-kill helper. Boss path
+      // (targetId omitted, null, "boss", or matching boss.id) falls through.
+      if (isMobTargetId(targetId)) {
+        return applyPlayerAttackOnMob(state, player, zoneIdFromMobTarget(targetId), roll, blueprint);
+      }
+      if (!boss) return state;
 
       const settings = {
         hitRanges: blueprint.settings.hitRanges,

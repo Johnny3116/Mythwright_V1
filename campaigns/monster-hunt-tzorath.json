@@ -29,6 +29,32 @@
     "critMultiplier": 2.0
   },
 
+  "defaultZoneSpawnPoints": {
+    "players": [
+      { "id": "p-anchor-1", "position": { "x": -3, "y": 0, "z": -2 } },
+      { "id": "p-anchor-2", "position": { "x": -1, "y": 0, "z": -2 } },
+      { "id": "p-anchor-3", "position": { "x":  1, "y": 0, "z": -2 } },
+      { "id": "p-anchor-4", "position": { "x":  3, "y": 0, "z": -2 } }
+    ],
+    "enemies": [
+      { "id": "e-anchor-1", "position": { "x": -2, "y": 0, "z":  2 } },
+      { "id": "e-anchor-2", "position": { "x":  2, "y": 0, "z":  2 } },
+      { "id": "e-anchor-3", "position": { "x":  0, "y": 0, "z":  2 } }
+    ],
+    "boss":   { "id": "boss-anchor", "position": { "x": 0, "y": 0, "z": 4 } },
+    "moveAnchors": [
+      { "id": "front-left",      "position": { "x": -3, "y": 0, "z": -2 } },
+      { "id": "front-mid-left",  "position": { "x": -1, "y": 0, "z": -2 } },
+      { "id": "front-mid-right", "position": { "x":  1, "y": 0, "z": -2 } },
+      { "id": "front-right",     "position": { "x":  3, "y": 0, "z": -2 } },
+      { "id": "mid-left",        "position": { "x": -3, "y": 0, "z":  0 } },
+      { "id": "mid-center",      "position": { "x":  0, "y": 0, "z":  0 } },
+      { "id": "mid-right",       "position": { "x":  3, "y": 0, "z":  0 } },
+      { "id": "flank-left",      "position": { "x": -4, "y": 0, "z":  1 } },
+      { "id": "flank-right",     "position": { "x":  4, "y": 0, "z":  1 } }
+    ]
+  },
+
   "classes": [
     {
       "id": "assault",
