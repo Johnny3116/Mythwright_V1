@@ -1,63 +1,72 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import MythwrightCanvas from '@scene3d/MythwrightCanvas.jsx';
 import TabletopScene from '@scene3d/TabletopScene.jsx';
+import MoveAnchors from '@scene3d/MoveAnchors.jsx';
 import ActionOverlay from '@ui/ActionOverlay.jsx';
 import {
   SelectionProvider,
   SelectionBridge,
   useSelectionBridgeValue,
   useSelection,
-  useSelectionActions,
 } from '@scene3d/state/SelectionContext.jsx';
+import { useGameContext } from '@context/GameContext.jsx';
+import { useActionDispatcher } from '@hooks/useActionDispatcher.js';
+import {
+  toEncounterMiniatures,
+  getZoneSpawnPoints,
+} from '@scene3d/selectors/index.js';
+import { loadDefaultBlueprint } from '@engine/BlueprintLoader.js';
+import { ActionTypes } from '@utils/constants.js';
 
-// M2 verification view — adds selection/targeting on top of M1's rendering.
-// Click a player mini → action panel appears → click an action → enemies get
-// target rings → hover an enemy → dotted line + distance label → click to commit.
-const TEST_MINIATURES = [
-  {
-    id: 'p1', name: 'Assault', team: 'player', ringColor: '#4488ff',
-    position: { x: -3, y: 0, z: -2 }, rotation: 0,
-    hp: { current: 120, max: 120 }, statusEffects: [], isActive: true, isTargeted: false,
-  },
-  {
-    id: 'p2', name: 'Trapper', team: 'player', ringColor: '#44cc88',
-    position: { x: -1, y: 0, z: -2 }, rotation: 0,
-    hp: { current: 85, max: 100 }, statusEffects: [], isActive: false, isTargeted: false,
-  },
-  {
-    id: 'p3', name: 'Medic', team: 'player', ringColor: '#ffcc44',
-    position: { x: 1, y: 0, z: -2 }, rotation: 0,
-    hp: { current: 90, max: 90 }, statusEffects: [], isActive: false, isTargeted: false,
-  },
-  {
-    id: 'p4', name: 'Support', team: 'player', ringColor: '#cc44ff',
-    position: { x: 3, y: 0, z: -2 }, rotation: 0,
-    hp: { current: 110, max: 110 }, statusEffects: [], isActive: false, isTargeted: false,
-  },
-  {
-    id: 'boss', name: 'Tzorath', team: 'enemy', ringColor: '#ff4444',
-    position: { x: 0, y: 0, z: 3 }, rotation: Math.PI,
-    hp: { current: 340, max: 500 }, statusEffects: [], isActive: false, isTargeted: false,
-  },
-  {
-    id: 'mob1', name: 'Wolf', team: 'enemy', ringColor: '#cc6644',
-    position: { x: 4, y: 0, z: 2 }, rotation: Math.PI,
-    hp: { current: 30, max: 30 }, statusEffects: [], isActive: false, isTargeted: false,
-  },
+// V2 M3 verification view — selection + targeting now drives the real V1
+// engine. Click a player → action panel (data-driven from class) → click
+// target (enemy / ally / anchor) → engine reducer fires → narrator log
+// updates with tier-aware text.
+
+const PARTY = [
+  { peerId: 'p1', name: 'Aria',   classId: 'assault' },
+  { peerId: 'p2', name: 'Brenn',  classId: 'trapper' },
+  { peerId: 'p3', name: 'Cyra',   classId: 'medic'   },
+  { peerId: 'p4', name: 'Drust',  classId: 'support' },
 ];
 
-// Drains pendingAttack into a local log buffer so M2 is provably end-to-end
-// without the V1 engine wired in yet. M3 will replace this with a real
-// dispatch into the engine's combat reducer.
-function PendingAttackLogger({ onLog }) {
-  const { pendingAttack } = useSelection();
-  const { clear } = useSelectionActions();
+/**
+ * Bootstrap a fresh sandbox game on first render if no game is in progress.
+ * Idempotent — does nothing once state.boss exists.
+ */
+function useScenetestBootstrap() {
+  const { state, dispatch } = useGameContext();
+  const [bootstrapState, setBootstrapState] = useState('idle'); // idle|loading|ready|error
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    if (!pendingAttack) return;
-    onLog(pendingAttack);
-    clear();
-  }, [pendingAttack, clear, onLog]);
-  return null;
+    if (state.boss || bootstrapState !== 'idle') return;
+    let cancelled = false;
+    setBootstrapState('loading');
+    (async () => {
+      const result = await loadDefaultBlueprint();
+      if (cancelled) return;
+      if (!result.valid) {
+        setError(result.errors.join('; '));
+        setBootstrapState('error');
+        return;
+      }
+      dispatch({ type: ActionTypes.SET_BLUEPRINT, payload: { blueprint: result.data } });
+      dispatch({ type: ActionTypes.START_CHARACTER_SELECT, payload: {} });
+      for (const p of PARTY) {
+        dispatch({ type: ActionTypes.PLAYER_REGISTER, payload: { peerId: p.peerId, playerName: p.name } });
+        dispatch({
+          type: ActionTypes.PLAYER_SELECT_CLASS,
+          payload: { peerId: p.peerId, classId: p.classId, playerName: p.name },
+        });
+      }
+      dispatch({ type: ActionTypes.START_GAME, payload: {} });
+      setBootstrapState('ready');
+    })();
+    return () => { cancelled = true; };
+  }, [state.boss, dispatch, bootstrapState]);
+
+  return { ready: !!state.boss, bootstrapState, error };
 }
 
 function PhaseIndicator() {
@@ -72,17 +81,57 @@ function PhaseIndicator() {
   );
 }
 
-// Inner shell — runs inside SelectionProvider so the dev header bar can read
-// state, AND captures the bridge value to forward into the canvas.
-function SceneTestInner() {
-  const [log, setLog] = useState([]);
-  const bridge = useSelectionBridgeValue();
+function NarrativeLog() {
+  const { state } = useGameContext();
+  const lines = (state.narrativeLog ?? []).slice(-6).reverse();
+  if (lines.length === 0) return null;
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: 12,
+      left: 12,
+      padding: '8px 12px',
+      background: 'rgba(13,13,26,0.92)',
+      border: '1px solid #4488ff',
+      borderRadius: 6,
+      fontFamily: 'monospace',
+      fontSize: 11,
+      color: '#ffffff',
+      maxWidth: 480,
+    }}>
+      <div style={{ color: '#88aacc', fontSize: 10, marginBottom: 4 }}>
+        NARRATOR (latest first)
+      </div>
+      {lines.map((entry) => (
+        <div key={entry.id} style={{ marginBottom: 2 }}>· {entry.text}</div>
+      ))}
+    </div>
+  );
+}
 
-  // Stable identity so PendingAttackLogger's effect doesn't re-fire every
-  // render (which would re-log the same attack on each frame).
-  const handleLog = useCallback((att) => {
-    setLog((l) => [att, ...l].slice(0, 6));
-  }, []);
+function SceneTestInner() {
+  const { state } = useGameContext();
+  const bridge = useSelectionBridgeValue();
+  // Drains pendingAction → engine actions. Mount once.
+  useActionDispatcher();
+
+  // Pick the zone to render: first registered player's zone (all start in same zone).
+  const zoneId = useMemo(() => {
+    const firstId = state.playerOrder?.[0];
+    return state.players?.[firstId]?.zone ?? state.blueprint?.zones?.[0]?.id ?? null;
+  }, [state]);
+
+  // Drive minis from real engine state via the selectors.
+  const miniatures = useMemo(
+    () => (zoneId ? toEncounterMiniatures(state, zoneId) : []),
+    [state, zoneId],
+  );
+
+  // Move anchors for the rendered zone.
+  const anchors = useMemo(() => {
+    const sp = getZoneSpawnPoints(state.blueprint, zoneId);
+    return sp?.moveAnchors ?? [];
+  }, [state.blueprint, zoneId]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -98,50 +147,48 @@ function SceneTestInner() {
         alignItems: 'center',
         flexWrap: 'wrap',
       }}>
-        <span>M2 — Selection &amp; Targeting</span>
-        <span>Click player → action → hover enemy → click</span>
+        <span>M3 — Engine Wiring</span>
+        <span>Click player → action → target (enemy / ally / anchor)</span>
+        <span>zone=<b>{zoneId ?? '—'}</b></span>
         <PhaseIndicator />
       </div>
 
       <div style={{ flex: 1, position: 'relative' }}>
         <MythwrightCanvas>
           <SelectionBridge value={bridge}>
-            <TabletopScene miniatures={TEST_MINIATURES} />
-            <ActionOverlay miniatures={TEST_MINIATURES} />
-            <PendingAttackLogger onLog={handleLog} />
+            <TabletopScene miniatures={miniatures} />
+            <MoveAnchors anchors={anchors} />
+            <ActionOverlay miniatures={miniatures} />
           </SelectionBridge>
         </MythwrightCanvas>
-
-        {log.length > 0 && (
-          <div style={{
-            position: 'absolute',
-            bottom: 12,
-            left: 12,
-            padding: '8px 12px',
-            background: 'rgba(13,13,26,0.92)',
-            border: '1px solid #4488ff',
-            borderRadius: 6,
-            fontFamily: 'monospace',
-            fontSize: 11,
-            color: '#ffffff',
-            maxWidth: 360,
-          }}>
-            <div style={{ color: '#88aacc', fontSize: 10, marginBottom: 4 }}>
-              PENDING ATTACKS (latest first) — M3 will route these to the engine
-            </div>
-            {log.map((att, i) => (
-              <div key={i} style={{ opacity: 1 - i * 0.12 }}>
-                {att.attackerId} → {att.targetId} via {att.action?.label}
-              </div>
-            ))}
-          </div>
-        )}
+        <NarrativeLog />
       </div>
     </div>
   );
 }
 
 export default function SceneTestView() {
+  const { ready, bootstrapState, error } = useScenetestBootstrap();
+  if (error) {
+    return (
+      <div style={{
+        padding: 24, fontFamily: 'monospace', color: '#ff8844',
+        background: '#0d0d1a', minHeight: '100vh',
+      }}>
+        Failed to bootstrap scene-test: {error}
+      </div>
+    );
+  }
+  if (!ready) {
+    return (
+      <div style={{
+        padding: 24, fontFamily: 'monospace', color: '#88aacc',
+        background: '#0d0d1a', minHeight: '100vh',
+      }}>
+        Loading {bootstrapState}…
+      </div>
+    );
+  }
   return (
     <SelectionProvider>
       <SceneTestInner />

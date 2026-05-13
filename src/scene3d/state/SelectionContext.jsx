@@ -24,11 +24,13 @@ export function SelectionProvider({ children, initialState = initialSelectionSta
   const [state, dispatch] = useReducer(selectionReducer, initialState);
 
   const actions = useMemo(() => ({
-    selectMini:  (miniId)   => dispatch({ type: SELECTION_ACTIONS.SELECT_MINI, miniId }),
-    setAction:   (action)   => dispatch({ type: SELECTION_ACTIONS.SET_ACTION, action }),
-    hoverTarget: (targetId) => dispatch({ type: SELECTION_ACTIONS.HOVER_TARGET, targetId }),
-    commitTarget:(targetId) => dispatch({ type: SELECTION_ACTIONS.COMMIT_TARGET, targetId }),
-    clear:       ()         => dispatch({ type: SELECTION_ACTIONS.CLEAR }),
+    selectMini:     (miniId)   => dispatch({ type: SELECTION_ACTIONS.SELECT_MINI, miniId }),
+    setAction:      (action)   => dispatch({ type: SELECTION_ACTIONS.SET_ACTION, action }),
+    hoverTarget:    (targetId) => dispatch({ type: SELECTION_ACTIONS.HOVER_TARGET, targetId }),
+    commitTarget:   (targetId) => dispatch({ type: SELECTION_ACTIONS.COMMIT_TARGET, targetId }),
+    commitNoTarget: (action)   => dispatch({ type: SELECTION_ACTIONS.COMMIT_NO_TARGET, action }),
+    drainPending:   ()         => dispatch({ type: SELECTION_ACTIONS.DRAIN_PENDING }),
+    clear:          ()         => dispatch({ type: SELECTION_ACTIONS.CLEAR }),
   }), []);
 
   return (
@@ -97,9 +99,15 @@ export function useIsSelected(miniId) {
 }
 
 export function useIsTargetable(team) {
-  const { phase } = useSelection();
-  // During ACTION_PICKING, all enemy minis are targetable. Refined later.
-  return phase === 'ACTION_PICKING' && team === 'enemy';
+  const { phase, selectedAction } = useSelection();
+  if (phase !== 'ACTION_PICKING' || !selectedAction) return false;
+  // V2 M3: targetability depends on the action's targetType.
+  switch (selectedAction.targetType) {
+    case 'enemy':  return team === 'enemy';
+    case 'ally':   return team === 'player';
+    case 'anchor': return team === 'anchor';
+    default:       return false;
+  }
 }
 
 export function useIsHovered(miniId) {
@@ -108,6 +116,7 @@ export function useIsHovered(miniId) {
 }
 
 // Drain helper — consumer reads pendingAttack, runs side effect, then clears.
+// V2 M3: prefer `usePendingAction` + `drainPending` from the dispatcher hook.
 export function usePendingAttackDrain() {
   const { pendingAttack } = useSelection();
   const { clear } = useSelectionActions();
@@ -115,6 +124,12 @@ export function usePendingAttackDrain() {
     if (pendingAttack) clear();
     return pendingAttack;
   }, [pendingAttack, clear]);
+}
+
+// V2 M3: subscribe to the generalized pending-action slot for the dispatcher.
+export function usePendingAction() {
+  const { pendingAction } = useSelection();
+  return pendingAction;
 }
 
 // Re-export phase enum for the convenience selectors (string compares above are

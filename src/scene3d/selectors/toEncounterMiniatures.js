@@ -30,7 +30,7 @@ export function toEncounterMiniatures(state, zoneId, options = {}) {
   for (const playerId of playerOrder) {
     const player = state.players?.[playerId];
     if (!player) continue;
-    if (player.currentZone && player.currentZone !== zoneId) continue;
+    if (player.zone && player.zone !== zoneId) continue;
     const vm = playerToMiniatureViewModel(player, {
       spawnPoints,
       indexInZone: playerSlot,

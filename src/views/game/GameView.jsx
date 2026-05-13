@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './game.module.css';
 import { ZoneMap } from './ZoneMap.jsx';
+import Game3DScene from './Game3DScene.jsx';
 import { ActionPanel } from './ActionPanel.jsx';
 import { CharacterSheet } from './CharacterSheet.jsx';
 import { NarratorFeed } from './NarratorFeed.jsx';
@@ -134,19 +135,25 @@ export default function GameView() {
           <NarratorFeed entries={narrativeLog} />
         </div>
         <div className={styles.zoneMapArea}>
-          <ZoneMap
-            zones={blueprint.zones}
-            players={players}
-            boss={boss}
-            floraState={floraState}
-            placedTraps={placedTraps}
-            zoneMobs={zoneMobs || {}}
-            searchedZones={searchedZones || []}
-            myPlayerId={myPeerId}
-            isMyTurn={isMyTurn}
-            bossVisible={bossIsVisible}
-            onMove={isMyTurn ? (zoneId) => playerMove(myPeerId, zoneId) : null}
-          />
+          {/* V2 M3: opt-in 3D scene — append ?view3d=1 to the URL.
+              Default remains the 2D ZoneMap so V1 gameplay is undisturbed. */}
+          {new URLSearchParams(window.location.search).get('view3d') === '1' ? (
+            <Game3DScene zoneId={myPlayer?.zone ?? blueprint.zones[0]?.id} />
+          ) : (
+            <ZoneMap
+              zones={blueprint.zones}
+              players={players}
+              boss={boss}
+              floraState={floraState}
+              placedTraps={placedTraps}
+              zoneMobs={zoneMobs || {}}
+              searchedZones={searchedZones || []}
+              myPlayerId={myPeerId}
+              isMyTurn={isMyTurn}
+              bossVisible={bossIsVisible}
+              onMove={isMyTurn ? (zoneId) => playerMove(myPeerId, zoneId) : null}
+            />
+          )}
         </div>
       </div>
 

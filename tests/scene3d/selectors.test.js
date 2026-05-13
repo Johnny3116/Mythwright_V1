@@ -27,7 +27,7 @@ const mkPlayer = (overrides = {}) => ({
   classId: 'assault',
   hp: 100,
   maxHp: 120,
-  currentZone: 'verdant-maw',
+  zone: 'verdant-maw',
   statusEffects: [],
   ...overrides,
 });
@@ -172,7 +172,7 @@ describe('toEncounterMiniatures', () => {
 
   it('omits a player whose currentZone differs from the rendered zone', () => {
     const state = mkState({
-      players: { p1: mkPlayer({ currentZone: 'razorback-canopy' }) },
+      players: { p1: mkPlayer({ zone: 'razorback-canopy' }) },
     });
     const minis = toEncounterMiniatures(state, 'verdant-maw');
     expect(minis.find((m) => m.team === 'player')).toBeUndefined();

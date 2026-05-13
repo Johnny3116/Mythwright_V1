@@ -79,6 +79,10 @@ export const ActionTypes = {
   PLAYER_FLEE: 'PLAYER_FLEE',
   PLAYER_END_TURN: 'PLAYER_END_TURN',
 
+  // V2 M3: 3D presentation-only — set the player's axis anchor in their zone.
+  // Engine state (range, AC, zone-based combat) is unaffected.
+  PLAYER_SET_ANCHOR: 'PLAYER_SET_ANCHOR',
+
   // Boss actions
   BOSS_ATTACK: 'BOSS_ATTACK',
   BOSS_AOE_ATTACK: 'BOSS_AOE_ATTACK',

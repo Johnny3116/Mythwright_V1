@@ -43,7 +43,12 @@ function anchorAt(anchors, index) {
 export function playerToMiniatureViewModel(player, ctx) {
   const { spawnPoints, indexInZone, isActive, isTargeted } = ctx;
   if (!player || !spawnPoints) return null;
-  const position = anchorAt(spawnPoints.players, indexInZone);
+  // V2 M3: if the player has chosen an axisAnchor (PLAYER_SET_ANCHOR), use it;
+  // otherwise fall back to the stable per-class indexed slot.
+  const axisAnchor = player.axisAnchor
+    ? spawnPoints.moveAnchors?.find((a) => a.id === player.axisAnchor)?.position
+    : null;
+  const position = axisAnchor ?? anchorAt(spawnPoints.players, indexInZone);
   if (!position) return null;
 
   const ringColor = CLASS_RING_COLORS[player.classId] ?? DEFAULT_PLAYER_RING;

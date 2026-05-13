@@ -109,6 +109,8 @@ export function createPlayerState(peerId, playerName, classId, blueprint) {
     statusEffects: [],
     consecutiveHits: 0,
     damageDealt: 0,
+    // V2 M3 — 3D anchor in current zone. null = use the indexed default anchor.
+    axisAnchor: null,
     alive: true,
     ready: false,
     isHost: false,
@@ -651,6 +653,32 @@ export function gameReducer(state, action) {
       }
 
       return addNarrative(newState, `${player.name} moves to ${blueprint.zones.find(z => z.id === targetZoneId)?.name || targetZoneId}.`);
+    }
+
+    // V2 M3: 3D-only axis movement within the player's current zone.
+    // The engine treats this as cosmetic — combat, range, and zone logic
+    // are unchanged. Only the 3D scene reads `axisAnchor` to position the mini.
+    case ActionTypes.PLAYER_SET_ANCHOR: {
+      const { playerId, anchorId } = action.payload;
+      const player = state.players[playerId];
+      if (!player) return state;
+
+      const spawnPoints =
+        state.blueprint?.zones?.find((z) => z.id === player.zone)?.spawnPoints ??
+        state.blueprint?.defaultZoneSpawnPoints ?? null;
+      const anchor = spawnPoints?.moveAnchors?.find((a) => a.id === anchorId);
+      if (!anchor) {
+        return addNarrative(state, `${player.name} hesitates — that position isn't reachable.`);
+      }
+
+      let newState = {
+        ...state,
+        players: {
+          ...state.players,
+          [playerId]: { ...player, axisAnchor: anchorId },
+        },
+      };
+      return addNarrative(newState, `${player.name} repositions on the field.`);
     }
 
     case ActionTypes.PLAYER_SEARCH: {
