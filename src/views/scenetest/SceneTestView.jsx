@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import MythwrightCanvas from '@scene3d/MythwrightCanvas.jsx';
 import TabletopScene from '@scene3d/TabletopScene.jsx';
 import MoveAnchors from '@scene3d/MoveAnchors.jsx';
@@ -38,14 +38,17 @@ function useScenetestBootstrap() {
   const { state, dispatch } = useGameContext();
   const [bootstrapState, setBootstrapState] = useState('idle'); // idle|loading|ready|error
   const [error, setError] = useState(null);
+  // Use a ref instead of state for the once-guard. StrictMode double-invokes
+  // effects in dev; a closure-captured cancellation flag would cancel the only
+  // run that ever dispatched, leaving the view stuck on "Loading…".
+  const startedRef = useRef(false);
 
   useEffect(() => {
-    if (state.boss || bootstrapState !== 'idle') return;
-    let cancelled = false;
+    if (state.boss || startedRef.current) return;
+    startedRef.current = true;
     setBootstrapState('loading');
     (async () => {
       const result = await loadDefaultBlueprint();
-      if (cancelled) return;
       if (!result.valid) {
         setError(result.errors.join('; '));
         setBootstrapState('error');
@@ -63,8 +66,7 @@ function useScenetestBootstrap() {
       dispatch({ type: ActionTypes.START_GAME, payload: {} });
       setBootstrapState('ready');
     })();
-    return () => { cancelled = true; };
-  }, [state.boss, dispatch, bootstrapState]);
+  }, [state.boss, dispatch]);
 
   return { ready: !!state.boss, bootstrapState, error };
 }
