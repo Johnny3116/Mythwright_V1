@@ -29,16 +29,16 @@ export default function SceneAtmosphere({ biome, shadows = true }) {
       <hemisphereLight
         color={biome.ambient}
         groundColor={biome.ambientGround}
-        intensity={0.85}
+        intensity={1.4}
       />
 
-      {/* Tiny ambient floor — keeps the deepest shadows from going to black. */}
-      <ambientLight intensity={0.18} color={biome.ambient} />
+      {/* Soft ambient floor — keeps the deepest shadows from going to black. */}
+      <ambientLight intensity={0.30} color={biome.ambient} />
 
       {/* Warm key — the sun. Above-front-right. Casts soft shadows. */}
       <directionalLight
         position={[8, 16, 6]}
-        intensity={1.4}
+        intensity={2.2}
         color={biome.keyLight}
         castShadow={shadows}
         shadow-mapSize-width={2048}
@@ -57,7 +57,7 @@ export default function SceneAtmosphere({ biome, shadows = true }) {
           Pulls miniature silhouettes off the background. */}
       <directionalLight
         position={[-10, 8, -10]}
-        intensity={0.55}
+        intensity={0.85}
         color={biome.rimLight}
       />
     </>

@@ -52,7 +52,17 @@ export default function DioramaBase({ size = 20, biome, onClick }) {
         receiveShadow
       >
         <circleGeometry args={[bevelOuter * 1.6, 64]} />
-        <meshStandardMaterial color="#0a0a10" roughness={1.0} />
+        <meshStandardMaterial color={darken(biome.fog, 0.35)} roughness={1.0} />
+      </mesh>
+
+      {/* Wide dim "studio floor" — keeps the diorama from sitting in absolute
+          black void. Picks up a hint of fog color so it integrates atmospherically. */}
+      <mesh
+        position={[0, -BEVEL_HEIGHT - PEDESTAL_HEIGHT - 0.02, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <circleGeometry args={[bevelOuter * 12, 64]} />
+        <meshStandardMaterial color={darken(biome.fog, 0.6)} roughness={1.0} />
       </mesh>
     </group>
   );

@@ -69,10 +69,12 @@ export default function Miniature({ mini }) {
 
   return (
     <group key={id} position={[x, y, z]} rotation={[0, rotation, 0]}>
-      {/* Body */}
+      {/* Body — castShadow + receiveShadow so minis cast onto the diorama
+          and onto each other for depth separation. */}
       <mesh
         position={[0, 0.7, 0]}
         castShadow
+        receiveShadow
         onClick={handleClick}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}

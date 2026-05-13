@@ -152,6 +152,7 @@ function SceneTestInner() {
         <span>M3 — Engine Wiring</span>
         <span>Click player → action → target (enemy / ally / anchor)</span>
         <span>zone=<b>{zoneId ?? '—'}</b></span>
+        <span>minis=<b>{miniatures.length}</b> [{miniatures.map((m) => m.id).join(', ')}]</span>
         <PhaseIndicator />
       </div>
 
